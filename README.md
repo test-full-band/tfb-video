@@ -6,13 +6,13 @@ and/or processing video.
 There are also files useful for calibrating TV sets.
 
 For user documentations and downloading compiled test video files
-see our [Wiki](https://github.com/testing-av/testing-video/wiki)
+see our [Wiki](https://github.com/testing-av/testing-video/wiki).
 
 ## Development environment
 
 The test generator is written in Java 8 and you need Java Development Kit
 (JDK) installed to build the project. You can get Java for your platform
-from [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+from [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html).
 
 Also you will need Apache Maven to build the project. x264, x265 and ffmpeg
 executables need to be installed and available in the system PATH to encode
@@ -44,7 +44,7 @@ details):
 brew install hg
 brew install cmake
 hg clone https://bitbucket.org/multicoreware/x265
-cd x265/build/xcode
+cd x265/build/linux
 ./multilib.sh
 cd 8bit/
 make install
