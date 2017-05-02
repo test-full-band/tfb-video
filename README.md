@@ -10,26 +10,35 @@ see our [Wiki](https://github.com/testing-av/testing-video/wiki)
 
 ## Development environment
 
-You need x264, x265 and ffmpeg executables installed and available in
-the PATH to encode videos.
+The test generator is written in Java 8 and you need Java Development Kit
+(JDK) installed to build the project. You can get Java for your platform
+from [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+
+Also you will need Apache Maven to build the project. x264, x265 and ffmpeg
+executables need to be installed and available in the system PATH to encode
+videos.
+
+We use Eclipse as an IDE. If you are using some other IDE and want to
+contribute you are welcome to do it but the job to get preferences for
+code style, formatting etc. is on you. The checked in eclipse preference
+is the single source of truth about code style and formatting and you
+have to follow it when sending pull requests.
 
 ### macOS
 
 Required executables can be installed with [Homebrew](https://brew.sh/): 
 
 ```sh
+brew install maven
 brew install x264
-brew install x265 --with-16-bit
 brew install ffmpeg --with-x265
 ```
 
-The issue with the above method is that the x265 executable can either
-encode 8bit or 10bit but both cannot be supported and 12 bit encode is
-also cannot be supported by this method of installation. Compiling from
-the source is the only method for _multilib_ support in a single
-executable. Build it with (or see
-[x265 Wiki](https://bitbucket.org/multicoreware/x265/wiki/Home)
-for details):
+Homebrew doesn't allow you to install _multilib_ x265 executable that
+supports multiple bitdepths so you have to compile it yourself so all HEVC
+bitdepths (8, 10, 12 bit) are supported by single executable. Build it with
+(or see [x265 Wiki](https://bitbucket.org/multicoreware/x265/wiki/Home) for
+details):
 
 ```sh
 brew install hg
@@ -41,8 +50,9 @@ cd 8bit/
 make install
 ```
 
-
-If you want to install multiple versions read [this](https://github.com/Homebrew/legacy-homebrew/issues/48902)
+If you want to install multiple bitdepth versions of x264 read
+[this](https://github.com/Homebrew/legacy-homebrew/issues/48902).
+Although we do not plan to use anything but 8 bit with x264.
 
 You need to start Eclipse from terminal window for it to get the same
 PATH environment variable. If started from Dock the PATH will be from
@@ -51,4 +61,15 @@ x265 and ffmpeg executables. You can do it with the command:
 
 ```sh
 open -a Eclipse
+```
+
+## Building the project and encoding test videos
+
+We use _JUnit_ together with _maven-failsafe-plugin_ as a framework to
+generate test videos.
+
+To build all test videos in the project run:
+
+```sh
+mvn verify
 ```
