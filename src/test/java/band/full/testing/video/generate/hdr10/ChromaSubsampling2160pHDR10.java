@@ -1,9 +1,6 @@
 package band.full.testing.video.generate.hdr10;
 
-import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_2160p;
-import static band.full.testing.video.itu.BT2020_10bit.ACHROMATIC;
-import static band.full.testing.video.itu.BT2020_10bit.BLACK;
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.exp;
@@ -12,24 +9,23 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static java.time.Duration.ofSeconds;
 
+import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.encoder.EncoderHDR10;
+import band.full.testing.video.generate.GenerateVideo;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import band.full.testing.video.core.CanvasYCbCr;
-import band.full.testing.video.encoder.EncoderHDR10;
-import band.full.testing.video.encoder.EncoderHEVC;
-import band.full.testing.video.generate.GenerateVideo;
-
 /**
  * Testing quality of chroma upsampling.
- * 
+ *
  * @author Igor Malinin
  */
 @Category(GenerateVideo.class)
 public class ChromaSubsampling2160pHDR10 {
     private static final int CENTER_X = STD_2160p.width / 2;
     private static final int CENTER_Y = STD_2160p.height / 2;
-    private static final double MAX_DISTANCE = r(0, 0);
+    private static final double MAX_DISTANCE = CENTER_Y;
     private static final double RANGE = 64; // Fmax / Fmin
 
     /**
@@ -39,37 +35,45 @@ public class ChromaSubsampling2160pHDR10 {
      */
     @Test
     public void concentricRedBlueSine() throws Exception {
-        CanvasYCbCr canvas = new CanvasYCbCr(STD_2160p);
+        EncoderHDR10.encode("HDR10/Chroma-RedBlueSine", e -> {
+            CanvasYCbCr c = e.newCanvas();
 
-        double yAmp = (512 - BLACK) / 2;
-        canvas.Y.calculate((x, y) -> BLACK + (int) ((1f - yCos(x, y)) * yAmp));
+            int black = c.parameters.YMIN;
+            double yAmp = (512 - black) / 2;
 
-        // TODO: Find correct amplitudes according to DCI-P3 primaries
-        canvas.Cb.calculate((x, y) -> ACHROMATIC + (int) (cSin(x, y) * 400f));
-        canvas.Cr.calculate((x, y) -> ACHROMATIC - (int) (cSin(x, y) * 400f));
+            c.Y.calculate((x, y) -> black + (int) ((1f - yCos(x, y)) * yAmp));
 
-        try (EncoderHEVC encoder = new EncoderHDR10("HDR10/Chroma-RedBlueSine",
-                STD_2160p, FPS_23_976)) {
-            encoder.render(ofSeconds(30), () -> canvas);
-        }
+            int achromatic = c.parameters.ACHROMATIC;
+
+            // TODO: Find correct amplitudes according to DCI-P3 primaries
+            c.Cb.calculate((x, y) -> achromatic + (int) (cSin(x, y) * 400f));
+            c.Cr.calculate((x, y) -> achromatic - (int) (cSin(x, y) * 400f));
+
+            e.render(ofSeconds(30), () -> c);
+        });
     }
 
     /** luma sweep */
     private double yCos(int x, int y) {
+        double r = r(x, y);
+        if (r > MAX_DISTANCE) return 0;
+        // if (true) return 0; // Do we need to modulate luma?
+
         double w1 = PI * MAX_DISTANCE / RANGE; // double frequency
         double L = 1.0 / log(RANGE);
 
-        return cos(w1 * L
-                * (exp(r(x, y) / MAX_DISTANCE / L) - 1.0));
+        return cos(w1 * L * (exp(r / MAX_DISTANCE / L) - 1.0));
     }
 
     /** chroma half frequency sweep */
     private double cSin(int x, int y) {
+        double r = r(x * 2, y * 2);
+        if (r > MAX_DISTANCE) return 0;
+
         double w1 = PI * MAX_DISTANCE / RANGE / 2.0;
         double L = 1.0 / log(RANGE);
 
-        return sin(w1 * L
-                * (exp(r(x * 2, y * 2) / MAX_DISTANCE / L) - 1.0));
+        return sin(w1 * L * (exp(r / MAX_DISTANCE / L) - 1.0));
     }
 
     /** radius from screen center */

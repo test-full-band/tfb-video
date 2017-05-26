@@ -6,6 +6,11 @@ import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Collections.addAll;
 
+import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.core.Framerate;
+import band.full.testing.video.core.Resolution;
+import band.full.testing.video.itu.YCbCr;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
@@ -15,10 +20,6 @@ import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Supplier;
-
-import band.full.testing.video.core.CanvasYCbCr;
-import band.full.testing.video.core.Framerate;
-import band.full.testing.video.core.Resolution;
 
 /**
  * @author Igor Malinin
@@ -84,7 +85,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     public final String name;
     public final Resolution resolution;
     public final Framerate fps;
-    public final int bitdepth;
+    public final YCbCr parameters;
 
     public final File dir;
     public final File y4m;
@@ -94,14 +95,14 @@ public abstract class EncoderY4M implements AutoCloseable {
     private final byte[] frameBuffer;
 
     private Process process;
-    private OutputStream yuv4mpegOut;
+    private final OutputStream yuv4mpegOut;
 
-    public EncoderY4M(String name, Resolution resolution, Framerate fps,
-            int bitdepth) throws IOException {
+    protected EncoderY4M(String name, Resolution resolution, Framerate fps,
+            YCbCr parameters) throws IOException {
         this.name = name;
         this.resolution = resolution;
         this.fps = fps;
-        this.bitdepth = bitdepth;
+        this.parameters = parameters;
 
         String prefix = "target/video/" + name;
 
@@ -112,8 +113,8 @@ public abstract class EncoderY4M implements AutoCloseable {
         dir = mp4.getParentFile();
 
         if (!dir.isDirectory()) {
-            if (!dir.mkdirs()) { throw new IOException(
-                    "Cannot create directory: " + dir); }
+            if (!dir.mkdirs()) throw new IOException(
+                    "Cannot create directory: " + dir);
         }
 
         int frameLength = resolution.width * resolution.height * 3
@@ -125,17 +126,13 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         String header = "YUV4MPEG2"
                 + " W" + resolution.width + " H" + resolution.height
-                + " F" + fps + " Ip A1:1 C420p" + bitdepth + "\n";
+                + " F" + fps + " Ip A1:1 C420p" + parameters.bitdepth + "\n";
 
         yuv4mpegOut.write(header.getBytes(US_ASCII));
     }
 
-    private int y4mBytesPerSample() {
-        return bitdepth > 8 ? 2 : 1;
-    }
-
     private OutputStream open() throws IOException {
-        if (!IO.Y4M.isPipe()) { return new FileOutputStream(y4m); }
+        if (!IO.Y4M.isPipe()) return new FileOutputStream(y4m);
 
         ProcessBuilder builder = new ProcessBuilder(getExecutable(),
                 "-", out.getPath())
@@ -143,6 +140,8 @@ public abstract class EncoderY4M implements AutoCloseable {
                         .redirectError(INHERIT);
 
         addEncoderParams(builder.command());
+
+        System.out.println(builder.command());
 
         process = builder.start();
 
@@ -156,7 +155,8 @@ public abstract class EncoderY4M implements AutoCloseable {
     public abstract String getFFMpegFormat();
 
     protected void addEncoderParams(List<String> command) {
-        addAll(command, "--y4m", "--preset=veryslow");
+        addAll(command, "--y4m", "--preset=veryslow"
+        /* , "--lossless", "--tune=grain" */);
     }
 
     @Override
@@ -168,29 +168,36 @@ public abstract class EncoderY4M implements AutoCloseable {
                     y4m.getPath(), out.getPath())
                             .redirectOutput(INHERIT)
                             .redirectError(INHERIT);
+
             addEncoderParams(builder.command());
+
+            System.out.println(builder.command());
+
             process = builder.start();
             process.waitFor();
         }
 
         int result = process.waitFor();
-        if (result != 0) { throw new IOException("x265 failed: " + result); }
+        if (result != 0) throw new IOException("x265 failed: " + result);
 
         if (IO.Y4M.isTempFile()) {
             y4m.delete();
         }
 
-        new ProcessBuilder("ffmpeg", "-f", getFFMpegFormat(),
-                "-i", out.getPath(), "-c", "copy", "-y", // force overwrite
+        ProcessBuilder builder = new ProcessBuilder("ffmpeg",
+                "-f", getFFMpegFormat(), "-i", out.getPath(), "-c", "copy",
+                "-y", // force overwrite
                 mp4.getPath())
                         .redirectOutput(INHERIT)
-                        .redirectError(INHERIT)
-                        .start().waitFor();
+                        .redirectError(INHERIT);
+
+        builder.start().waitFor();
 
         out.delete();
     }
 
-    private void fillFrame(int offset, short[] pixels) throws IOException {
+    private void fillFrame(int offset, short[] pixels) {
+        boolean extended = parameters.bitdepth > 8;
         byte[] buf = frameBuffer;
 
         for (int i = 0, j = offset; i < pixels.length; i++) {
@@ -198,33 +205,45 @@ public abstract class EncoderY4M implements AutoCloseable {
 
             // LittleEndian
             buf[j++] = (byte) sample;
-            if (bitdepth > 8) {
+            if (extended) {
                 buf[j++] = (byte) (sample >>> 8);
             }
         }
     }
 
-    public void render(CanvasYCbCr canvas) throws IOException {
+    public void render(CanvasYCbCr canvas) {
+        int bps = y4mBytesPerSample();
+
         int offsetY = FRAME_HEADER.length;
-        int offsetCb = offsetY + canvas.Y.pixels.length * y4mBytesPerSample();
-        int offsetCr = offsetCb + canvas.Cb.pixels.length * y4mBytesPerSample();
+        int offsetCb = offsetY + canvas.Y.pixels.length * bps;
+        int offsetCr = offsetCb + canvas.Cb.pixels.length * bps;
 
         fillFrame(offsetY, canvas.Y.pixels);
         fillFrame(offsetCb, canvas.Cb.pixels);
         fillFrame(offsetCr, canvas.Cr.pixels);
 
-        yuv4mpegOut.write(frameBuffer);
+        try {
+            yuv4mpegOut.write(frameBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void render(int frames, Supplier<CanvasYCbCr> supplier)
-            throws IOException {
+    public void render(int frames, Supplier<CanvasYCbCr> supplier) {
         for (int i = 0; i < frames; i++) {
             render(supplier.get());
         }
     }
 
-    public void render(Duration duration, Supplier<CanvasYCbCr> supplier)
-            throws IOException {
+    public void render(Duration duration, Supplier<CanvasYCbCr> supplier) {
         render(fps.toFrames(duration), supplier);
+    }
+
+    private int y4mBytesPerSample() {
+        return parameters.bitdepth > 8 ? 2 : 1;
+    }
+
+    public CanvasYCbCr newCanvas() {
+        return new CanvasYCbCr(resolution, parameters);
     }
 }

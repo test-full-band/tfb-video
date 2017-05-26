@@ -1,20 +1,23 @@
 package band.full.testing.video.encoder;
 
+import static band.full.testing.video.encoder.EncoderParameters.MAIN8;
 import static java.util.Collections.addAll;
-
-import java.io.IOException;
-import java.util.List;
 
 import band.full.testing.video.core.Framerate;
 import band.full.testing.video.core.Resolution;
+import band.full.testing.video.itu.YCbCr;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Igor Malinin
  */
 public class EncoderHEVC extends EncoderY4M {
-    public EncoderHEVC(String name, Resolution resolution, Framerate fps,
-            int bitdepth) throws IOException {
-        super(name, resolution, fps, bitdepth);
+    protected EncoderHEVC(String name, Resolution resolution, Framerate fps,
+            YCbCr parameters) throws IOException {
+        super(name, resolution, fps, parameters);
     }
 
     @Override
@@ -25,8 +28,9 @@ public class EncoderHEVC extends EncoderY4M {
     @Override
     protected void addEncoderParams(List<String> command) {
         super.addEncoderParams(command);
-        addAll(command, "--output-depth", Integer.toString(bitdepth),
-                "--range=limited");
+
+        addAll(command, "--output-depth=" + parameters.bitdepth,
+                "--repeat-headers", "--range=limited", "--cu-lossless");
     }
 
     @Override
@@ -37,6 +41,21 @@ public class EncoderHEVC extends EncoderY4M {
     @Override
     public String getFFMpegFormat() {
         return "hevc";
+    }
+
+    public static void encode(String name, Consumer<EncoderY4M> consumer) {
+        encode(name, MAIN8, consumer);
+    }
+
+    public static void encode(String name, EncoderParameters parameters,
+            Consumer<EncoderY4M> consumer) {
+        try (EncoderHEVC encoder = new EncoderHEVC(name,
+                parameters.resolution, parameters.framerate,
+                parameters.parameters)) {
+            consumer.accept(encoder);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

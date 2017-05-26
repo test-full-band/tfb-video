@@ -6,7 +6,8 @@ package band.full.testing.video.core;
 public enum Resolution {
     STD_720p(1280, 720),
     STD_1080p(1920, 1080),
-    STD_2160p(3840, 2160);
+    STD_2160p(3840, 2160),
+    STD_4320p(7680, 4320);
 
     public final int width;
     public final int height;

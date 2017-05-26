@@ -1,17 +1,19 @@
 package band.full.testing.video.encoder;
 
-import java.io.IOException;
+import static band.full.testing.video.itu.BT709.BT709;
 
 import band.full.testing.video.core.Framerate;
 import band.full.testing.video.core.Resolution;
+
+import java.io.IOException;
 
 /**
  * @author Igor Malinin
  */
 public class EncoderAVC extends EncoderY4M {
-    public EncoderAVC(String name, Resolution resolution, Framerate fps,
+    private EncoderAVC(String name, Resolution resolution, Framerate fps,
             int bitdepth) throws IOException {
-        super(name, resolution, fps, bitdepth);
+        super(name, resolution, fps, BT709);
     }
 
     @Override
