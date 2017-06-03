@@ -32,7 +32,7 @@ public class EncoderHEVC extends EncoderY4M {
         if (LOSSLESS) {
             command.add("--lossless");
         } else if (!QUICK) {
-            addAll(command, "--cu-lossless", "--tune=grain");
+            addAll(command, "--cu-lossless");
         }
 
         addAll(command, "--repeat-headers", "--range=limited",
@@ -78,7 +78,6 @@ public class EncoderHEVC extends EncoderY4M {
 // "--no-amp",
 // "--no-tskip",
 // "--limit-modes",
-// "--chromaloc=2",
 // "--repeat-headers",
 // "--no-b-pyramid",
 // "--rd=4",
@@ -92,11 +91,6 @@ public class EncoderHEVC extends EncoderY4M {
 // "--vbv-init=0.9",
 // "--ipratio=1.40",
 // "--qg-size=32",
-// "--no-rc-grain",
-// "--tune", "grain",
-// "--colorprim", "bt2020",
-// "--transfer", "smpte-st-2084",
-// "--colormatrix", "bt2020nc",
-// "--master-display",
-// "G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,5)",
 // "--max-cll", "1000,400",
+
+// "--tune=grain",

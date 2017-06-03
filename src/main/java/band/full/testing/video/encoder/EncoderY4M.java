@@ -186,7 +186,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         if (QUICK) { // quickly test build
             command.add("--preset=ultrafast");
         } else { // production release mode
-            command.add("--preset=placebo");
+            command.add("--preset=veryslow");
         }
     }
 
