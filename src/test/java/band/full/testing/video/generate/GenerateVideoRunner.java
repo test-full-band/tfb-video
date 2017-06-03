@@ -85,13 +85,22 @@ public class GenerateVideoRunner extends BlockJUnit4ClassRunner {
             throw new UnsupportedOperationException(ERROR_ON_TIMEOUT);
         }
 
+        RuntimeException[] exception = {null};
+
         Platform.runLater(() -> {
-            GenerateVideoRunner.super.runChild(method, notifier);
-            latch.countDown();
+            try {
+                GenerateVideoRunner.super.runChild(method, notifier);
+            } catch (RuntimeException e) {
+                exception[0] = e;
+            } finally {
+                latch.countDown();
+            }
         });
 
         try {
             latch.await();
         } catch (InterruptedException e) {}
+
+        if (exception[0] != null) throw exception[0];
     }
 }

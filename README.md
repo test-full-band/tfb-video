@@ -71,5 +71,5 @@ generate test videos.
 To build all test videos in the project run:
 
 ```sh
-mvn verify
+mvn clean verify
 ```

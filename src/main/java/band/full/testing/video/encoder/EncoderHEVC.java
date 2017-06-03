@@ -29,8 +29,14 @@ public class EncoderHEVC extends EncoderY4M {
     protected void addEncoderParams(List<String> command) {
         super.addEncoderParams(command);
 
-        addAll(command, "--output-depth=" + parameters.bitdepth,
-                "--repeat-headers", "--range=limited", "--cu-lossless");
+        if (LOSSLESS) {
+            command.add("--lossless");
+        } else if (!QUICK) {
+            addAll(command, "--cu-lossless", "--tune=grain");
+        }
+
+        addAll(command, "--repeat-headers", "--range=limited",
+                "--output-depth=" + parameters.bitdepth);
     }
 
     @Override

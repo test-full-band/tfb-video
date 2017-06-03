@@ -1,10 +1,11 @@
 package band.full.testing.video.encoder;
 
+import static java.lang.Boolean.getBoolean;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static java.util.Collections.addAll;
+import static java.time.Duration.ofSeconds;
 
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.core.Framerate;
@@ -48,6 +49,16 @@ public abstract class EncoderY4M implements AutoCloseable {
             return Y4M == PIPE;
         }
     }
+
+    protected static final boolean LOSSLESS = getBoolean("encoder.lossless");
+
+    /**
+     * Quick mode limits duration of render calls to 2 seconds. This is useful
+     * for quick testing the build procedures. Produced videos will not be fully
+     * usable!
+     */
+    protected static final boolean QUICK = getBoolean("encoder.quick");
+    protected static final Duration QDURATION = ofSeconds(1);
 
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
 
@@ -104,7 +115,10 @@ public abstract class EncoderY4M implements AutoCloseable {
         this.fps = fps;
         this.parameters = parameters;
 
-        String prefix = "target/video/" + name;
+        String root = "target/testing-video"
+                + (LOSSLESS ? "-lossless" : "");
+
+        String prefix = root + "/" + name;
 
         y4m = new File(prefix + ".y4m");
         out = new File(prefix + ".out");
@@ -134,6 +148,18 @@ public abstract class EncoderY4M implements AutoCloseable {
     private OutputStream open() throws IOException {
         if (!IO.Y4M.isPipe()) return new FileOutputStream(y4m);
 
+        if (QUICK) {
+            System.err.println("Encoding in QUICK mode."
+                    + " This is only for build testing purposes, "
+                    + "resulting files will not be fully usable!");
+        }
+
+        if (LOSSLESS) {
+            System.out.println("Generating lossless encode...");
+        } else {
+            System.out.println("Generating normal encode...");
+        }
+
         ProcessBuilder builder = new ProcessBuilder(getExecutable(),
                 "-", out.getPath())
                         .redirectOutput(INHERIT)
@@ -155,8 +181,13 @@ public abstract class EncoderY4M implements AutoCloseable {
     public abstract String getFFMpegFormat();
 
     protected void addEncoderParams(List<String> command) {
-        addAll(command, "--y4m", "--preset=veryslow"
-        /* , "--lossless", "--tune=grain" */);
+        command.add("--y4m");
+
+        if (QUICK) { // quickly test build
+            command.add("--preset=ultrafast");
+        } else { // production release mode
+            command.add("--preset=placebo");
+        }
     }
 
     @Override
@@ -236,7 +267,8 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     public void render(Duration duration, Supplier<CanvasYCbCr> supplier) {
-        render(fps.toFrames(duration), supplier);
+        boolean useQuick = QUICK || duration.compareTo(QDURATION) < 0;
+        render(fps.toFrames(useQuick ? QDURATION : duration), supplier);
     }
 
     private int y4mBytesPerSample() {
