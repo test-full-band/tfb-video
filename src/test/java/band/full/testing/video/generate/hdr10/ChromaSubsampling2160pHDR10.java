@@ -26,7 +26,7 @@ import java.time.Duration;
  */
 @Category(GenerateVideo.class)
 public class ChromaSubsampling2160pHDR10 {
-    /** Each test clip length is 1 minute */
+    private static final String PATH = "HEVC/UHD4K/HDR10/Chroma";
     private static final Duration DURATION = ofMinutes(1);
 
     private static final int CENTER_X = STD_2160p.width / 2;
@@ -39,7 +39,7 @@ public class ChromaSubsampling2160pHDR10 {
      */
     @Test
     public void concentricBlackWhiteSine() throws Exception {
-        EncoderHDR10.encode("HDR10/Chroma-BlackWhiteReference", e -> {
+        EncoderHDR10.encode(PATH + "Chroma-BlackWhiteReference", e -> {
             CanvasYCbCr c = e.newCanvas();
 
             int black = c.parameters.YMIN;

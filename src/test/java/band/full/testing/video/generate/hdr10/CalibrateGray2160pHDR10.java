@@ -8,6 +8,7 @@ import static band.full.testing.video.itu.BT709.BT709;
 import static band.full.testing.video.smpte.ST2084.PQ;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.String.format;
 import static java.time.Duration.ofMinutes;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.paint.Color.gray;
@@ -59,25 +60,32 @@ public class CalibrateGray2160pHDR10 {
 
     @Test
     public void gray10() {
-        for (int i = 0; i <= 20; i++) {
-            gray10(round(BT2020_10bit.toLumaCode(i / 20.0)));
+        int gradations = 20;
+        for (int i = 0; i <= gradations; i++) {
+            gray10(i / (double) gradations);
         }
     }
 
-    private void gray10(int yCode) {
-        EncoderHDR10.encode(PATH + "10pc/Gray" + yCode, e -> {
+    private void gray10(double ye) {
+        int yCode = round(BT2020_10bit.toLumaCode(ye));
+
+        String name = PATH + "10pc/Gray10-"
+                + format("%02.1d", min(99.9, ye * 100.0))
+                + "-Y" + format("%03d", yCode);
+
+        EncoderHDR10.encode(name, e -> {
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Y.fill(e.parameters.YMIN);
             canvas.Y.fillRect(OFFSET_X, OFFSET_Y, WIDTH, HEIGHT, yCode);
             canvas.Cb.fill(e.parameters.ACHROMATIC);
             canvas.Cr.fill(e.parameters.ACHROMATIC);
-            canvas.overlay(overlay(yCode));
+            canvas.overlay(overlay(ye));
             e.render(DURATION, () -> canvas);
         });
     }
 
-    private static Parent overlay(int yCode) {
-        double ye = BT2020_10bit.fromLumaCode(yCode);
+    private static Parent overlay(double ye) {
+        int yCode = round(BT2020_10bit.toLumaCode(ye));
         double yo = PQ.eotf(ye);
 
         double[] rgb = {yo, yo, yo};
@@ -100,7 +108,7 @@ public class CalibrateGray2160pHDR10 {
     }
 
     public static void main(String[] args) {
-        FxDisplay.show(HDR10.resolution, () -> overlay(256));
+        FxDisplay.show(HDR10.resolution, () -> overlay(0.5));
     }
 
     // TODO Calman codes for red

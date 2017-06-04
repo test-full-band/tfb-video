@@ -110,7 +110,7 @@ public class CanvasYCbCr {
                 if (hasChromaX && hasChromaY) {
                     // for overlay chroma just drop in-between samples (equals
                     // to nearest neighbor) there is no need of higher quality
-                    int cx = x >> 2, cy = y >> 2;
+                    int cx = x >> 1, cy = y >> 1;
 
                     double overCb = params.getCb(overY, overB);
                     double oldCb = params.fromChromaCode(Cb.get(cx, cy));

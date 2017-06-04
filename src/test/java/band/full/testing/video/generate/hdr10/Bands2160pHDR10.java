@@ -7,6 +7,7 @@ import static java.time.Duration.ofMinutes;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 import static javafx.scene.layout.Background.EMPTY;
+import static javafx.scene.paint.Color.color;
 import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
 
@@ -183,7 +184,8 @@ public class Bands2160pHDR10 {
                 text("↓", color, midCol, ROWS - 2),
                 text("C'b\nC" + cMax, color, midCol, ROWS - 1));
 
-        color = Color.color(0.1, 0.0, 0.0);
+        color = color(0.1, 0.0, 0.0);
+
         for (int yCode = yMin; yCode <= yMax; yCode++) {
             for (int cCode = cMin; cCode <= cMax; cCode++) {
                 double y = BT2020_10bit.fromLumaCode(yCode);
