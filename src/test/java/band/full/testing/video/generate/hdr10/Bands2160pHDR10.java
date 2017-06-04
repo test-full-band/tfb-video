@@ -3,10 +3,11 @@ package band.full.testing.video.generate.hdr10;
 import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
-import static java.time.Duration.ofSeconds;
+import static java.time.Duration.ofMinutes;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 import static javafx.scene.layout.Background.EMPTY;
+import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
 
 import band.full.testing.video.core.CanvasYCbCr;
@@ -20,8 +21,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import java.time.Duration;
+
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -36,77 +38,70 @@ import javafx.scene.text.TextAlignment;
 @RunWith(GenerateVideoRunner.class)
 @Category(GenerateVideo.class)
 public class Bands2160pHDR10 {
+    private static final String PATH = "HEVC/UHD4K/HDR10/bands";
+    private static final Duration DURATION = ofMinutes(1);
+
     /** Number of rows have to be an odd number - center row is neutral. */
-    private static final int ROWS = 15;
+    private static final int ROWS = 17;
     private static final int COLS = 32;
 
     @Test
-    public void small() throws Exception {
-        EncoderHDR10.encode("HDR10/small", e -> {
-            CanvasYCbCr canvas = e.newCanvas();
-            canvas.Cb.fill(e.parameters.ACHROMATIC);
-            bandsNearBlack(canvas, e.parameters.YMIN, canvas.Cr);
-            e.render(ofSeconds(3), () -> canvas);
-        });
-    }
-
-    @Test
     public void bandsY064CrNearBlack() throws Exception {
-        EncoderHDR10.encode("HDR10/Bands-Y064Cr-NearBlack", e -> {
+        EncoderHDR10.encode(PATH + "/Bands-Y064Cr-NearBlack", e -> {
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Cb.fill(e.parameters.ACHROMATIC);
             bandsNearBlack(canvas, e.parameters.YMIN, canvas.Cr);
-            e.render(ofSeconds(30), () -> canvas);
+            e.render(DURATION, () -> canvas);
         });
     }
 
     @Test
     public void bandsY064CbNearBlack() throws Exception {
-        EncoderHDR10.encode("HDR10/Bands-Y064Cb-NearBlack", e -> {
+        EncoderHDR10.encode(PATH + "/Bands-Y064Cb-NearBlack", e -> {
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Cr.fill(e.parameters.ACHROMATIC);
             bandsNearBlack(canvas, e.parameters.YMIN, canvas.Cb);
-            e.render(ofSeconds(30), () -> canvas);
+            e.render(DURATION, () -> canvas);
         });
     }
 
     @Test
     public void bandsY096CrNearBlack() throws Exception {
-        EncoderHDR10.encode("HDR10/Bands-Y096Cr-NearBlack", e -> {
+        EncoderHDR10.encode(PATH + "/Bands-Y096Cr-NearBlack", e -> {
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Cb.fill(e.parameters.ACHROMATIC);
             bandsNearBlack(canvas, e.parameters.YMIN + COLS, canvas.Cr);
-            e.render(ofSeconds(30), () -> canvas);
+            e.render(DURATION, () -> canvas);
         });
     }
 
     @Test
     public void bandsY096CbNearBlack() throws Exception {
-        EncoderHDR10.encode("HDR10/Bands-Y096Cb-NearBlack", e -> {
+        EncoderHDR10.encode(PATH + "/Bands-Y096Cb-NearBlack", e -> {
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Cr.fill(e.parameters.ACHROMATIC);
             bandsNearBlack(canvas, e.parameters.YMIN + COLS, canvas.Cb);
-            e.render(ofSeconds(30), () -> canvas);
+            e.render(DURATION, () -> canvas);
         });
     }
 
     @Test
     public void bandsY128CrDark() throws Exception {
-        EncoderHDR10.encode("HDR10/Bands-Y128Cr-DarkGray", e -> {
+        EncoderHDR10.encode(PATH + "/Bands-Y128Cr-DarkGray", e -> {
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Cb.fill(e.parameters.ACHROMATIC);
             bandsNearBlack(canvas, e.parameters.YMIN + 2 * COLS, canvas.Cr);
-            e.render(ofSeconds(30), () -> canvas);
+            e.render(DURATION, () -> canvas);
         });
     }
 
     @Test
     public void bandsY128CbDark() throws Exception {
-        EncoderHDR10.encode("HDR10/Bands-Y128Cb-DarkGray", e -> {
+        EncoderHDR10.encode(PATH + "/Bands-Y128Cb-DarkGray", e -> {
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Cr.fill(e.parameters.ACHROMATIC);
             bandsNearBlack(canvas, e.parameters.YMIN + 2 * COLS, canvas.Cb);
-            e.render(ofSeconds(30), () -> canvas);
+            e.render(DURATION, () -> canvas);
         });
     }
 
@@ -172,19 +167,23 @@ public class Bands2160pHDR10 {
         int midRow = ROWS / 2;
         int midCol = COLS / 2;
 
-        int cMin = 512 - 7;
-        int cMax = 512 + 7;
+        int cMin = 512 - midRow;
+        int cMax = 512 + midRow;
+
+        Color color = yMin > 192 ? Color.BLACK
+                : gray(BT2020_10bit.fromLumaCode(yMin + 192));
 
         Pane grid = new Pane(
-                text("Y'\nC" + yMin, 0, midRow),
-                text("→", 1, midRow),
-                text("→", COLS - 2, midRow),
-                text("Y'\nC" + yMax, COLS - 1, midRow),
-                text("C'b\nC" + cMin, midCol, 0),
-                text("↓", midCol, 1),
-                text("↓", midCol, ROWS - 2),
-                text("C'b\nC" + cMax, midCol, ROWS - 1));
+                text("Y'\nC" + yMin, color, 0, midRow),
+                text("→", color, 1, midRow),
+                text("→", color, COLS - 2, midRow),
+                text("Y'\nC" + yMax, color, COLS - 1, midRow),
+                text("C'b\nC" + cMin, color, midCol, 0),
+                text("↓", color, midCol, 1),
+                text("↓", color, midCol, ROWS - 2),
+                text("C'b\nC" + cMax, color, midCol, ROWS - 1));
 
+        color = Color.color(0.1, 0.0, 0.0);
         for (int yCode = yMin; yCode <= yMax; yCode++) {
             for (int cCode = cMin; cCode <= cMax; cCode++) {
                 double y = BT2020_10bit.fromLumaCode(yCode);
@@ -196,7 +195,7 @@ public class Bands2160pHDR10 {
 
                 if (r < 0 || g < 0 || b < 0) {
                     grid.getChildren().add(
-                            text("X", yCode - yMin, cCode - cMin));
+                            text("X", color, yCode - yMin, cCode - cMin));
                 }
             }
         }
@@ -206,11 +205,11 @@ public class Bands2160pHDR10 {
         return grid;
     }
 
-    private static Node text(String text, int col, int row) {
+    private static Label text(String text, Color color, int col, int row) {
         Label l = new Label(text);
         l.setFont(font(40));
+        l.setTextFill(color);
         l.setTextAlignment(TextAlignment.CENTER);
-        l.setTextFill(Color.WHITE);
         l.setAlignment(Pos.CENTER);
 
         l.relocate(

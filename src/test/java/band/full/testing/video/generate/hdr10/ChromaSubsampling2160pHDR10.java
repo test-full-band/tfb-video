@@ -7,7 +7,8 @@ import static java.lang.Math.exp;
 import static java.lang.Math.log;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
-import static java.time.Duration.ofSeconds;
+import static java.time.Duration.ofMinutes;
+import static java.util.Arrays.fill;
 
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.encoder.EncoderHDR10;
@@ -16,6 +17,8 @@ import band.full.testing.video.generate.GenerateVideo;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.time.Duration;
+
 /**
  * Testing quality of chroma upsampling.
  *
@@ -23,10 +26,35 @@ import org.junit.experimental.categories.Category;
  */
 @Category(GenerateVideo.class)
 public class ChromaSubsampling2160pHDR10 {
+    /** Each test clip length is 1 minute */
+    private static final Duration DURATION = ofMinutes(1);
+
     private static final int CENTER_X = STD_2160p.width / 2;
     private static final int CENTER_Y = STD_2160p.height / 2;
     private static final double MAX_DISTANCE = CENTER_Y;
     private static final double RANGE = 64; // Fmax / Fmin
+
+    /**
+     * Black & White luma reference for concentric sine circles
+     */
+    @Test
+    public void concentricBlackWhiteSine() throws Exception {
+        EncoderHDR10.encode("HDR10/Chroma-BlackWhiteReference", e -> {
+            CanvasYCbCr c = e.newCanvas();
+
+            int black = c.parameters.YMIN;
+            double yAmp = (512 - black) / 2;
+
+            c.Y.calculate((x, y) -> black + (int) ((1f - yCos(x, y)) * yAmp));
+
+            short achromatic = (short) c.parameters.ACHROMATIC;
+
+            fill(c.Cb.pixels, achromatic);
+            fill(c.Cr.pixels, achromatic);
+
+            e.render(DURATION, () -> c);
+        });
+    }
 
     /**
      * Still video consisting of concentric circles of varying width alternating
@@ -49,7 +77,7 @@ public class ChromaSubsampling2160pHDR10 {
             c.Cb.calculate((x, y) -> achromatic + (int) (cSin(x, y) * 400f));
             c.Cr.calculate((x, y) -> achromatic - (int) (cSin(x, y) * 400f));
 
-            e.render(ofSeconds(30), () -> c);
+            e.render(DURATION, () -> c);
         });
     }
 

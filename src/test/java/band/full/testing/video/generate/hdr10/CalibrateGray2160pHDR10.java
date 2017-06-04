@@ -6,7 +6,9 @@ import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
 import static band.full.testing.video.itu.BT709.BT709;
 import static band.full.testing.video.smpte.ST2084.PQ;
-import static java.time.Duration.ofSeconds;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.time.Duration.ofMinutes;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
@@ -28,6 +30,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
+import java.time.Duration;
+
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
@@ -42,6 +46,9 @@ import javafx.scene.layout.BorderPane;
 @Category(GenerateVideo.class)
 @UseParametersRunnerFactory
 public class CalibrateGray2160pHDR10 {
+    private static final String PATH = "HEVC/UHD4K/HDR10/calibrate/gray";
+    private static final Duration DURATION = ofMinutes(1);
+
     private final int WIDTH = 910;
     private final int HEIGHT = 910;
 
@@ -58,14 +65,14 @@ public class CalibrateGray2160pHDR10 {
     }
 
     private void gray10(int yCode) {
-        EncoderHDR10.encode("HDR10/10pcGray" + yCode, e -> {
+        EncoderHDR10.encode(PATH + "10pc/Gray" + yCode, e -> {
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Y.fill(e.parameters.YMIN);
             canvas.Y.fillRect(OFFSET_X, OFFSET_Y, WIDTH, HEIGHT, yCode);
             canvas.Cb.fill(e.parameters.ACHROMATIC);
             canvas.Cr.fill(e.parameters.ACHROMATIC);
             canvas.overlay(overlay(yCode));
-            e.render(ofSeconds(30), () -> canvas);
+            e.render(DURATION, () -> canvas);
         });
     }
 
@@ -83,7 +90,7 @@ public class CalibrateGray2160pHDR10 {
 
         Label label = new Label(text);
         label.setFont(font(40));
-        label.setTextFill(gray(0.2));
+        label.setTextFill(gray(max(0.25, min(0.5, ye))));
 
         BorderPane.setMargin(label, new Insets(20));
         BorderPane layout = new BorderPane();
