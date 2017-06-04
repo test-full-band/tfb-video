@@ -8,7 +8,6 @@
     <fileSet>
       <directory>${project.basedir}</directory>
       <includes>
-        <include>README*</include>
         <include>LICENSE*</include>
         <include>NOTICE*</include>
       </includes>
