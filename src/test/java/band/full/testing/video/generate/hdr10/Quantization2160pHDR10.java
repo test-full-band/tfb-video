@@ -3,6 +3,7 @@ package band.full.testing.video.generate.hdr10;
 import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
+import static java.lang.String.format;
 import static java.time.Duration.ofMinutes;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
@@ -32,14 +33,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 
 /**
- * Testing color bands for separation / step uniformity.
+ * Testing color bands separation / quantization step uniformity.
  *
  * @author Igor Malinin
  */
 @RunWith(GenerateVideoRunner.class)
 @Category(GenerateVideo.class)
-public class Bands2160pHDR10 {
-    private static final String PATH = "HEVC/UHD4K/HDR10/bands";
+public class Quantization2160pHDR10 {
+    private static final String PATH = "HEVC/UHD4K/HDR10/Quantization";
     private static final Duration DURATION = ofMinutes(1);
 
     /** Number of rows have to be an odd number - center row is neutral. */
@@ -47,69 +48,70 @@ public class Bands2160pHDR10 {
     private static final int COLS = 32;
 
     @Test
-    public void bandsY064CrNearBlack() throws Exception {
-        EncoderHDR10.encode(PATH + "/Bands-Y064Cr-NearBlack", e -> {
-            CanvasYCbCr canvas = e.newCanvas();
-            canvas.Cb.fill(e.parameters.ACHROMATIC);
-            bandsNearBlack(canvas, e.parameters.YMIN, canvas.Cr);
-            e.render(DURATION, () -> canvas);
-        });
+    public void quantsNearBlack() throws Exception {
+        quants("NearBlack", 64, 96); // 32
     }
 
     @Test
-    public void bandsY064CbNearBlack() throws Exception {
-        EncoderHDR10.encode(PATH + "/Bands-Y064Cb-NearBlack", e -> {
-            CanvasYCbCr canvas = e.newCanvas();
-            canvas.Cr.fill(e.parameters.ACHROMATIC);
-            bandsNearBlack(canvas, e.parameters.YMIN, canvas.Cb);
-            e.render(DURATION, () -> canvas);
-        });
+    public void quantsDarkGray() throws Exception {
+        quants("DarkGray", 128, 160); // 32
     }
 
     @Test
-    public void bandsY096CrNearBlack() throws Exception {
-        EncoderHDR10.encode(PATH + "/Bands-Y096Cr-NearBlack", e -> {
-            CanvasYCbCr canvas = e.newCanvas();
-            canvas.Cb.fill(e.parameters.ACHROMATIC);
-            bandsNearBlack(canvas, e.parameters.YMIN + COLS, canvas.Cr);
-            e.render(DURATION, () -> canvas);
-        });
+    public void quantsGray() throws Exception {
+        quants("Gray", 192, 256); // 64
     }
 
     @Test
-    public void bandsY096CbNearBlack() throws Exception {
-        EncoderHDR10.encode(PATH + "/Bands-Y096Cb-NearBlack", e -> {
-            CanvasYCbCr canvas = e.newCanvas();
-            canvas.Cr.fill(e.parameters.ACHROMATIC);
-            bandsNearBlack(canvas, e.parameters.YMIN + COLS, canvas.Cb);
-            e.render(DURATION, () -> canvas);
-        });
+    public void quantsLightGray() throws Exception {
+        quants("LightGray", 320, 384); // 64
     }
 
     @Test
-    public void bandsY128CrDark() throws Exception {
-        EncoderHDR10.encode(PATH + "/Bands-Y128Cr-DarkGray", e -> {
-            CanvasYCbCr canvas = e.newCanvas();
-            canvas.Cb.fill(e.parameters.ACHROMATIC);
-            bandsNearBlack(canvas, e.parameters.YMIN + 2 * COLS, canvas.Cr);
-            e.render(DURATION, () -> canvas);
-        });
+    public void quantsNearWhite() throws Exception {
+        quants("NearWhite", 448, 512); // 64
     }
 
     @Test
-    public void bandsY128CbDark() throws Exception {
-        EncoderHDR10.encode(PATH + "/Bands-Y128Cb-DarkGray", e -> {
-            CanvasYCbCr canvas = e.newCanvas();
-            canvas.Cr.fill(e.parameters.ACHROMATIC);
-            bandsNearBlack(canvas, e.parameters.YMIN + 2 * COLS, canvas.Cb);
-            e.render(DURATION, () -> canvas);
-        });
+    public void quantsBright() throws Exception {
+        quants("Bright", 576, 640); // 64
     }
 
-    public void bandsNearBlack(CanvasYCbCr canvas, int ybase, Plane chroma) {
-        bandsY(canvas.Y, ybase);
+    @Test
+    public void quantsBrighter() throws Exception {
+        quants("Brighter", 704, 768); // 64
+    }
+
+    @Test
+    public void quantsBrightest() throws Exception {
+        quants("Brightest", 832, 876); // 44
+    }
+
+    private void quants(String name, int... yCodes) {
+        for (int yCode : yCodes) {
+            String prefix = PATH + "/QuantsHDR10-Y"
+                    + format("%03d", yCode);
+
+            EncoderHDR10.encode(prefix + "Cb-" + name, e -> {
+                CanvasYCbCr canvas = e.newCanvas();
+                canvas.Cr.fill(e.parameters.ACHROMATIC);
+                quants(canvas, e.parameters.YMIN, canvas.Cb);
+                e.render(DURATION, () -> canvas);
+            });
+
+            EncoderHDR10.encode(prefix + "Cr-" + name, e -> {
+                CanvasYCbCr canvas = e.newCanvas();
+                canvas.Cb.fill(e.parameters.ACHROMATIC);
+                quants(canvas, e.parameters.YMIN, canvas.Cr);
+                e.render(DURATION, () -> canvas);
+            });
+        }
+    }
+
+    public void quants(CanvasYCbCr canvas, int yMin, Plane chroma) {
+        bandsY(canvas.Y, yMin);
         bandsC(chroma, canvas.parameters.ACHROMATIC - (ROWS / 2));
-        marks(canvas, 256, ybase); // ~ ?? nit
+        marks(canvas, yMin, chroma == canvas.Cr); // ~ ?? nit
     }
 
     /**
@@ -129,10 +131,10 @@ public class Bands2160pHDR10 {
      * chroma code value centered around <code>ACHROMATIC</code> code point and
      * increment of 1 for every next row.
      */
-    private void bandsC(Plane plane, int cbase) {
+    private void bandsC(Plane plane, int cMin) {
         range(0, ROWS).forEach(i -> {
             plane.fillRect(0, getY(plane.height, i),
-                    plane.width, getH(plane.height, i), cbase + i);
+                    plane.width, getH(plane.height, i), cMin + i);
         });
     }
 
@@ -141,9 +143,11 @@ public class Bands2160pHDR10 {
      * the observer where bands separation is to be expected in case they are
      * displayed without a loss of resolution.
      */
-    private void marks(CanvasYCbCr canvas, int markY, int ybase) {
+    private void marks(CanvasYCbCr canvas, int yMin, boolean redChroma) {
         int c0 = canvas.parameters.ACHROMATIC;
         Plane Y = canvas.Y;
+
+        int markY = yMin + 192;
 
         // luma marks: top / bottom
         rangeClosed(0, COLS).forEach(i -> {
@@ -159,40 +163,42 @@ public class Bands2160pHDR10 {
             canvas.fillRect(Y.width - 8, y, 8, 2, markY, c0, c0);
         });
 
-        canvas.overlay(overlay(ybase));
+        canvas.overlay(overlay(yMin, c0, redChroma));
     }
 
     // arrows: https://www.w3schools.com/charsets/ref_utf_arrows.asp
-    private static Parent overlay(int yMin) {
+    private static Parent overlay(int yMin, int cMid, boolean redChroma) {
         int yMax = yMin + COLS - 1;
         int midRow = ROWS / 2;
         int midCol = COLS / 2;
 
-        int cMin = 512 - midRow;
-        int cMax = 512 + midRow;
+        int cMin = cMid - midRow;
+        int cMax = cMid + midRow;
 
         Color color = yMin > 192 ? Color.BLACK
                 : gray(BT2020_10bit.fromLumaCode(yMin + 192));
+
+        String cName = redChroma ? "C'r" : "C'b";
 
         Pane grid = new Pane(
                 text("Y'\nC" + yMin, color, 0, midRow),
                 text("→", color, 1, midRow),
                 text("→", color, COLS - 2, midRow),
                 text("Y'\nC" + yMax, color, COLS - 1, midRow),
-                text("C'b\nC" + cMin, color, midCol, 0),
+                text(cName + "\nC" + cMin, color, midCol, 0),
                 text("↓", color, midCol, 1),
                 text("↓", color, midCol, ROWS - 2),
-                text("C'b\nC" + cMax, color, midCol, ROWS - 1));
+                text(cName + "\nC" + cMax, color, midCol, ROWS - 1));
 
-        color = color(0.1, 0.0, 0.0);
+        color = color(0.125, 0.0, 0.0);
 
         for (int yCode = yMin; yCode <= yMax; yCode++) {
             for (int cCode = cMin; cCode <= cMax; cCode++) {
                 double y = BT2020_10bit.fromLumaCode(yCode);
                 double c = BT2020_10bit.fromChromaCode(cCode);
 
-                double r = BT2020_10bit.getR(y, c);
-                double b = BT2020_10bit.getB(y, 0);
+                double r = BT2020_10bit.getR(y, redChroma ? c : 0);
+                double b = BT2020_10bit.getB(y, redChroma ? 0 : c);
                 double g = BT2020_10bit.getG(y, b, r);
 
                 if (r < 0 || g < 0 || b < 0) {
@@ -242,6 +248,6 @@ public class Bands2160pHDR10 {
     }
 
     public static void main(String[] args) {
-        FxDisplay.show(HDR10.resolution, () -> overlay(64));
+        FxDisplay.show(HDR10.resolution, () -> overlay(64, 512, false));
     }
 }

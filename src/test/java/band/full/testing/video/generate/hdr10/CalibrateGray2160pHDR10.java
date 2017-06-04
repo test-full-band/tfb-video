@@ -47,7 +47,7 @@ import javafx.scene.layout.BorderPane;
 @Category(GenerateVideo.class)
 @UseParametersRunnerFactory
 public class CalibrateGray2160pHDR10 {
-    private static final String PATH = "HEVC/UHD4K/HDR10/calibrate/gray";
+    private static final String PATH = "HEVC/UHD4K/HDR10/Calibrate/Gray";
     private static final Duration DURATION = ofMinutes(1);
 
     private final int WIDTH = 910;
@@ -69,8 +69,8 @@ public class CalibrateGray2160pHDR10 {
     private void gray10(double ye) {
         int yCode = round(BT2020_10bit.toLumaCode(ye));
 
-        String name = PATH + "10pc/Gray10-"
-                + format("%02.1d", min(99.9, ye * 100.0))
+        String name = PATH + "10pc/GrayHDR10-"
+                + format("%03.0f", min(999, ye * 1000.0))
                 + "-Y" + format("%03d", yCode);
 
         EncoderHDR10.encode(name, e -> {

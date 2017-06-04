@@ -39,7 +39,7 @@ public class ChromaSubsampling2160pHDR10 {
      */
     @Test
     public void concentricBlackWhiteSine() throws Exception {
-        EncoderHDR10.encode(PATH + "Chroma-BlackWhiteReference", e -> {
+        EncoderHDR10.encode(PATH + "/ChromaHDR10-BlackWhiteReference", e -> {
             CanvasYCbCr c = e.newCanvas();
 
             int black = c.parameters.YMIN;
@@ -63,7 +63,7 @@ public class ChromaSubsampling2160pHDR10 {
      */
     @Test
     public void concentricRedBlueSine() throws Exception {
-        EncoderHDR10.encode("HDR10/Chroma-RedBlueSine", e -> {
+        EncoderHDR10.encode(PATH + "/ChromaHDR10-RedBlueSine", e -> {
             CanvasYCbCr c = e.newCanvas();
 
             int black = c.parameters.YMIN;
