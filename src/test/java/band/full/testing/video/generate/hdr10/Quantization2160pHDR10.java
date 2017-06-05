@@ -95,14 +95,14 @@ public class Quantization2160pHDR10 {
             EncoderHDR10.encode(prefix + "Cb-" + name, e -> {
                 CanvasYCbCr canvas = e.newCanvas();
                 canvas.Cr.fill(e.parameters.ACHROMATIC);
-                quants(canvas, e.parameters.YMIN, canvas.Cb);
+                quants(canvas, yCode, canvas.Cb);
                 e.render(DURATION, () -> canvas);
             });
 
             EncoderHDR10.encode(prefix + "Cr-" + name, e -> {
                 CanvasYCbCr canvas = e.newCanvas();
                 canvas.Cb.fill(e.parameters.ACHROMATIC);
-                quants(canvas, e.parameters.YMIN, canvas.Cr);
+                quants(canvas, yCode, canvas.Cr);
                 e.render(DURATION, () -> canvas);
             });
         }
