@@ -2,9 +2,10 @@ package band.full.testing.video.encoder;
 
 import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_2160p;
-import static band.full.testing.video.encoder.Preset.PLACEBO;
+import static band.full.testing.video.encoder.Preset.SLOW;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
 import static band.full.testing.video.itu.BT709.BT709;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import band.full.testing.video.core.Framerate;
@@ -29,7 +30,7 @@ public class EncoderParameters {
 
     public EncoderParameters(Resolution resolution, YCbCr parameters,
             Framerate framerate) {
-        this(resolution, parameters, framerate, PLACEBO);
+        this(resolution, parameters, framerate, SLOW);
     }
 
     public EncoderParameters(Resolution resolution, YCbCr parameters,
@@ -59,13 +60,21 @@ public class EncoderParameters {
                 framerate, preset, encoderOptions, ffmpegOptions);
     }
 
-    public EncoderParameters withEncoderOptions(List<String> encoderOptions) {
-        return new EncoderParameters(resolution, parameters,
-                framerate, preset, encoderOptions, ffmpegOptions);
+    public EncoderParameters withEncoderOptions(String... options) {
+        return withEncoderOptions(asList(options));
     }
 
-    public EncoderParameters withFfmpegOptions(List<String> ffmpegOptions) {
+    public EncoderParameters withEncoderOptions(List<String> options) {
         return new EncoderParameters(resolution, parameters,
-                framerate, preset, encoderOptions, ffmpegOptions);
+                framerate, preset, options, ffmpegOptions);
+    }
+
+    public EncoderParameters withFfmpegOptions(String... ptions) {
+        return withFfmpegOptions(asList(ptions));
+    }
+
+    public EncoderParameters withFfmpegOptions(List<String> options) {
+        return new EncoderParameters(resolution, parameters,
+                framerate, preset, encoderOptions, options);
     }
 }

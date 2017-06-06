@@ -21,6 +21,10 @@ public class Framerate {
 
     public static final Framerate FPS_60 = new Framerate("60:1", 60f);
 
+    public static int toFrames(float rate, Duration duration) {
+        return (int) (rate * duration.toNanos() / 1_000_000_000);
+    }
+
     private final String str;
     public final float rate;
 
@@ -30,7 +34,7 @@ public class Framerate {
     }
 
     public int toFrames(Duration duration) {
-        return (int) (rate * duration.toNanos() / 1_000_000_000);
+        return toFrames(rate, duration);
     }
 
     @Override

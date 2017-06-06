@@ -20,12 +20,11 @@ import java.util.Random;
  * @author Igor Malinin
  */
 @Category(GenerateVideo.class)
+@Ignore("Requires lossless encode and  reducing bitrate to at least 100Mb/s")
 public class Gradients2160pHEVC {
-    @Ignore("Requires lossless encode and"
-            + " reducing bitrate to at least 100Mb/s")
     @Test
     public void gradients() {
-        gradients("HEVC/Gradients-06");
+        gradients("HEVC/Gradients-06"); // 6 bit demo
     }
 
     public void gradients(String name) {
@@ -33,7 +32,7 @@ public class Gradients2160pHEVC {
             CanvasYCbCr c = e.newCanvas();
             c.Cb.fill(c.parameters.ACHROMATIC);
             c.Cr.fill(c.parameters.ACHROMATIC);
-            e.render(ofSeconds(10), () -> gradients(c));
+            e.render(ofSeconds(30), () -> gradients(c));
         });
     }
 

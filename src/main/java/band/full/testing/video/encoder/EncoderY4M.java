@@ -1,14 +1,15 @@
 package band.full.testing.video.encoder;
 
+import static band.full.testing.video.core.Framerate.toFrames;
 import static java.lang.Boolean.getBoolean;
+import static java.lang.Math.min;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static java.time.Duration.ofSeconds;
+import static java.util.Collections.addAll;
 
 import band.full.testing.video.core.CanvasYCbCr;
-import band.full.testing.video.core.Framerate;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.itu.YCbCr;
 
@@ -58,11 +59,13 @@ public abstract class EncoderY4M implements AutoCloseable {
      * usable!
      */
     protected static final boolean QUICK = getBoolean("encoder.quick");
-    protected static final Duration QDURATION = ofSeconds(1);
+    protected static final String QRATE = "1:1";
+    protected static final int QFRAMES = 15;
 
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
 
     private static final Field FILTER_OUT_FIELD;
+
     static {
         try {
             FILTER_OUT_FIELD = FilterOutputStream.class.getDeclaredField("out");
@@ -94,9 +97,8 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     public final String name;
-    public final Resolution resolution;
-    public final Framerate fps;
     public final YCbCr parameters;
+    public final EncoderParameters encoderParameters;
 
     public final File dir;
     public final File y4m;
@@ -108,12 +110,11 @@ public abstract class EncoderY4M implements AutoCloseable {
     private Process process;
     private final OutputStream yuv4mpegOut;
 
-    protected EncoderY4M(String name, Resolution resolution, Framerate fps,
-            YCbCr parameters) throws IOException {
+    protected EncoderY4M(String name, EncoderParameters encoderParameters)
+            throws IOException {
         this.name = name;
-        this.resolution = resolution;
-        this.fps = fps;
-        this.parameters = parameters;
+        this.encoderParameters = encoderParameters;
+        parameters = encoderParameters.parameters;
 
         String root = "target/testing-video"
                 + (LOSSLESS ? "-lossless" : "");
@@ -131,6 +132,8 @@ public abstract class EncoderY4M implements AutoCloseable {
                     "Cannot create directory: " + dir);
         }
 
+        Resolution resolution = encoderParameters.resolution;
+
         int frameLength = resolution.width * resolution.height * 3
                 / 2 * y4mBytesPerSample();
         frameBuffer = new byte[FRAME_HEADER.length + frameLength];
@@ -140,7 +143,8 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         String header = "YUV4MPEG2"
                 + " W" + resolution.width + " H" + resolution.height
-                + " F" + fps + " Ip A1:1 C420p" + parameters.bitdepth + "\n";
+                + " F" + (QUICK ? QRATE : encoderParameters.framerate)
+                + " Ip A1:1 C420p" + parameters.bitdepth + "\n";
 
         yuv4mpegOut.write(header.getBytes(US_ASCII));
     }
@@ -181,12 +185,25 @@ public abstract class EncoderY4M implements AutoCloseable {
     public abstract String getFFMpegFormat();
 
     protected void addEncoderParams(List<String> command) {
-        command.add("--y4m");
+        addAll(command, "--y4m", getProfileParam());
+        command.addAll(encoderParameters.encoderOptions);
+    }
 
-        if (QUICK) { // quickly test build
-            command.add("--preset=ultrafast");
-        } else { // production release mode
-            command.add("--preset=veryslow");
+    private String getProfileParam() {
+        if (QUICK) return "--preset=ultrafast";
+
+        switch (encoderParameters.preset) {
+            case FAST:
+                return "--preset=fast";
+            case SLOW:
+                return "--preset=slow";
+            case VERYSLOW:
+                return "--preset=veryslow";
+            case PLACEBO:
+                return "--preset=placebo";
+
+            default:
+                return "--preset=slow";
         }
     }
 
@@ -221,6 +238,8 @@ public abstract class EncoderY4M implements AutoCloseable {
                 mp4.getPath())
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
+
+        builder.command().addAll(encoderParameters.ffmpegOptions);
 
         builder.start().waitFor();
 
@@ -267,8 +286,9 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     public void render(Duration duration, Supplier<CanvasYCbCr> supplier) {
-        boolean useQuick = QUICK || duration.compareTo(QDURATION) < 0;
-        render(fps.toFrames(useQuick ? QDURATION : duration), supplier);
+        float rate = QUICK ? 1f : encoderParameters.framerate.rate;
+        int frames = toFrames(rate, duration);
+        render(QUICK ? min(QFRAMES, frames) : frames, supplier);
     }
 
     private int y4mBytesPerSample() {
@@ -276,6 +296,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     public CanvasYCbCr newCanvas() {
-        return new CanvasYCbCr(resolution, parameters);
+        return new CanvasYCbCr(encoderParameters.resolution,
+                encoderParameters.parameters);
     }
 }

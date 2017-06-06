@@ -3,10 +3,6 @@ package band.full.testing.video.encoder;
 import static band.full.testing.video.encoder.EncoderParameters.MAIN8;
 import static java.util.Collections.addAll;
 
-import band.full.testing.video.core.Framerate;
-import band.full.testing.video.core.Resolution;
-import band.full.testing.video.itu.YCbCr;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -15,9 +11,9 @@ import java.util.function.Consumer;
  * @author Igor Malinin
  */
 public class EncoderHEVC extends EncoderY4M {
-    protected EncoderHEVC(String name, Resolution resolution, Framerate fps,
-            YCbCr parameters) throws IOException {
-        super(name, resolution, fps, parameters);
+    protected EncoderHEVC(String name, EncoderParameters parameters)
+            throws IOException {
+        super(name, parameters);
     }
 
     @Override
@@ -55,9 +51,7 @@ public class EncoderHEVC extends EncoderY4M {
 
     public static void encode(String name, EncoderParameters parameters,
             Consumer<EncoderY4M> consumer) {
-        try (EncoderHEVC encoder = new EncoderHEVC(name,
-                parameters.resolution, parameters.framerate,
-                parameters.parameters)) {
+        try (EncoderHEVC encoder = new EncoderHEVC(name, parameters)) {
             consumer.accept(encoder);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
