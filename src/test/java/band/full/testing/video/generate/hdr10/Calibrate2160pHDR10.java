@@ -90,8 +90,8 @@ public class Calibrate2160pHDR10 {
         CIEXYZ xyz = new CIEXYZ(RGB2XYZ.multiply(rgb));
         CIExy xy = xyz.CIExy();
 
-        String text = format("HDR10 grayscale CIE(x=%.4f, y=%.4f) C%d %.1f%%"
-                + " %.1fnit, ", xy.x, xy.y, yCode, ye * 100.0, yo * 10000.0);
+        String text = format("HDR10 grayscale CIE(x=%.4f, y=%.4f) %.1f%% C%d,"
+                + " %.1f nit", xy.x, xy.y, ye * 100.0, yCode, yo * 10000.0);
 
         Label label = new Label(text);
         label.setFont(font(40));
