@@ -9,6 +9,7 @@ import static java.lang.Math.exp;
 import static java.lang.Math.log;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
+import static java.time.Duration.ofMinutes;
 import static java.util.Arrays.fill;
 
 import band.full.testing.video.core.CanvasYCbCr;
@@ -29,7 +30,7 @@ import java.time.Duration;
 @Category(GenerateVideo.class)
 public class ChromaSubsampling2160pHDR10 {
     private static final String PATH = "HEVC/UHD4K/HDR10/Chroma";
-    private static final Duration DURATION = Duration.ofSeconds(1);
+    private static final Duration DURATION = ofMinutes(1);
 
     private static final int CENTER_X = STD_2160p.width / 2;
     private static final int CENTER_Y = STD_2160p.height / 2;
