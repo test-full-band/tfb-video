@@ -1,4 +1,4 @@
-package band.full.testing.video.generate;
+package band.full.testing.video.executor;
 
 import static javafx.scene.layout.Priority.ALWAYS;
 import static javafx.scene.paint.Color.BLACK;

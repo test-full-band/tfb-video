@@ -22,9 +22,9 @@ import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.EncoderHDR10;
-import band.full.testing.video.generate.FxDisplay;
-import band.full.testing.video.generate.GenerateVideo;
-import band.full.testing.video.generate.GenerateVideoRunner;
+import band.full.testing.video.executor.FxDisplay;
+import band.full.testing.video.executor.GenerateVideo;
+import band.full.testing.video.executor.GenerateVideoRunner;
 
 import org.junit.Ignore;
 import org.junit.Test;

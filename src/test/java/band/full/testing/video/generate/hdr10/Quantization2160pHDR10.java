@@ -15,9 +15,9 @@ import static javafx.scene.text.Font.font;
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.core.Plane;
 import band.full.testing.video.encoder.EncoderHDR10;
-import band.full.testing.video.generate.FxDisplay;
-import band.full.testing.video.generate.GenerateVideo;
-import band.full.testing.video.generate.GenerateVideoRunner;
+import band.full.testing.video.executor.FxDisplay;
+import band.full.testing.video.executor.GenerateVideo;
+import band.full.testing.video.executor.GenerateVideoRunner;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

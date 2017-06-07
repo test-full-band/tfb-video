@@ -5,7 +5,7 @@ import static java.time.Duration.ofSeconds;
 
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.encoder.EncoderHEVC;
-import band.full.testing.video.generate.GenerateVideo;
+import band.full.testing.video.executor.GenerateVideo;
 
 import org.junit.Ignore;
 import org.junit.Test;

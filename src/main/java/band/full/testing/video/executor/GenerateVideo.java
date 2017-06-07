@@ -1,4 +1,4 @@
-package band.full.testing.video.generate;
+package band.full.testing.video.executor;
 
 /**
  * Marker interface for use with JUnit Category annotation on test classes
