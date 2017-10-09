@@ -18,7 +18,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -138,7 +137,7 @@
               <includes>
                 <include>band/full/testing/video/generate/**/*.java</include>
               </includes>
-              <groups>band.full.testing.video.generate.GenerateVideo</groups>
+              <groups>band.full.testing.video.executor.GenerateVideo</groups>
               <useFile>false</useFile>
               <systemPropertyVariables>
                 <encoder.quick>${encoder.quick}</encoder.quick>
@@ -159,7 +158,7 @@
               <includes>
                 <include>band/full/testing/video/generate/**/*.java</include>
               </includes>
-              <groups>band.full.testing.video.generate.GenerateVideo</groups>
+              <groups>band.full.testing.video.executor.GenerateVideo</groups>
               <useFile>false</useFile>
               <systemPropertyVariables>
                 <encoder.quick>${encoder.quick}</encoder.quick>
