@@ -14,9 +14,9 @@ The test generator is written in Java 8 and you need Java Development Kit
 (JDK) installed to build the project. You can get Java for your platform
 from [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html).
 
-Also you will need Apache Maven to build the project. x264, x265 and ffmpeg
-executables need to be installed and available in the system PATH to encode
-videos.
+Also you will need Apache Maven to build the project. x264, x265,
+MP4Box and ffmpeg executables need to be installed and available in the
+system PATH to encode videos.
 
 We use Eclipse as an IDE. If you are using some other IDE and want to
 contribute you are welcome to do it but the job to get preferences for
@@ -31,7 +31,8 @@ Required executables can be installed with [Homebrew](https://brew.sh/):
 ```sh
 brew install maven
 brew install x264
-brew install ffmpeg --with-x265
+brew install mp4box
+brew install ffmpeg
 ```
 
 Homebrew doesn't allow you to install _multilib_ x265 executable that
@@ -57,7 +58,7 @@ Although we do not plan to use anything but 8 bit with x264.
 You need to start Eclipse from terminal window for it to get the same
 PATH environment variable. If started from Dock the PATH will be from
 the Dock process and will not contain /usr/local/bin that contains
-x265 and ffmpeg executables. You can do it with the command:
+x264, x265, MP4Box and ffmpeg executables. You can do it with the command:
 
 ```sh
 open -a Eclipse

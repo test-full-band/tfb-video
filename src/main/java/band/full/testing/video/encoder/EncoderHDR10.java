@@ -1,5 +1,6 @@
 package band.full.testing.video.encoder;
 
+import static band.full.testing.video.encoder.DecoderY4M.decode;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static java.util.Collections.addAll;
 
@@ -28,8 +29,9 @@ public class EncoderHDR10 extends EncoderHEVC {
     }
 
     @Override
-    protected void addEncoderParams(List<String> command) {
-        super.addEncoderParams(command);
+    protected ProcessBuilder createProcessBuilder() {
+        ProcessBuilder builder = super.createProcessBuilder();
+        List<String> command = builder.command();
 
         addAll(command, "--profile=main10",
                 "--colorprim=bt2020", "--colormatrix=bt2020nc",
@@ -44,10 +46,17 @@ public class EncoderHDR10 extends EncoderHEVC {
         if (!command.contains("--master-display")) {
             addAll(command, "--master-display", MASTER_DISPLAY);
         }
+
+        return builder;
     }
 
     public static void encode(String name, Consumer<EncoderY4M> consumer) {
         encode(name, HDR10, consumer);
+    }
+
+    public static void encode(String name,
+            Consumer<EncoderY4M> ec, Consumer<DecoderY4M> dc) {
+        encode(name, HDR10, ec, dc);
     }
 
     public static void encode(String name, EncoderParameters parameters,
@@ -57,6 +66,12 @@ public class EncoderHDR10 extends EncoderHEVC {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void encode(String name, EncoderParameters parameters,
+            Consumer<EncoderY4M> ec, Consumer<DecoderY4M> dc) {
+        encode(name, parameters, ec);
+        decode(name, parameters, dc);
     }
 }
 

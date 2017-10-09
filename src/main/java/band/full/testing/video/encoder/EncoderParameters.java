@@ -1,6 +1,7 @@
 package band.full.testing.video.encoder;
 
 import static band.full.testing.video.core.Framerate.FPS_23_976;
+import static band.full.testing.video.core.Resolution.STD_1080p;
 import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.encoder.Preset.SLOW;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
@@ -15,18 +16,21 @@ import band.full.testing.video.itu.YCbCr;
 import java.util.List;
 
 public class EncoderParameters {
+    public static final EncoderParameters FULLHD_MAIN8 =
+            new EncoderParameters(STD_1080p, BT709, FPS_23_976);
+
+    public static final EncoderParameters UHD4K_MAIN8 =
+            new EncoderParameters(STD_2160p, BT709, FPS_23_976);
+
     public static final EncoderParameters HDR10 =
             new EncoderParameters(STD_2160p, BT2020_10bit, FPS_23_976);
-
-    public static final EncoderParameters MAIN8 =
-            new EncoderParameters(STD_2160p, BT709, FPS_23_976);
 
     public final Resolution resolution;
     public final YCbCr parameters;
     public final Framerate framerate;
     public final Preset preset;
     public final List<String> encoderOptions;
-    public final List<String> ffmpegOptions;
+    public final List<String> muxerOptions;
 
     public EncoderParameters(Resolution resolution, YCbCr parameters,
             Framerate framerate) {
@@ -41,23 +45,23 @@ public class EncoderParameters {
 
     public EncoderParameters(Resolution resolution, YCbCr parameters,
             Framerate framerate, Preset preset,
-            List<String> encoderOptions, List<String> ffmpegOptions) {
+            List<String> encoderOptions, List<String> muxerOptions) {
         this.resolution = resolution;
         this.parameters = parameters;
         this.framerate = framerate;
         this.preset = preset;
         this.encoderOptions = encoderOptions;
-        this.ffmpegOptions = ffmpegOptions;
+        this.muxerOptions = muxerOptions;
     }
 
     public EncoderParameters withFramerate(Framerate framerate) {
         return new EncoderParameters(resolution, parameters,
-                framerate, preset, encoderOptions, ffmpegOptions);
+                framerate, preset, encoderOptions, muxerOptions);
     }
 
     public EncoderParameters withPreset(Preset preset) {
         return new EncoderParameters(resolution, parameters,
-                framerate, preset, encoderOptions, ffmpegOptions);
+                framerate, preset, encoderOptions, muxerOptions);
     }
 
     public EncoderParameters withEncoderOptions(String... options) {
@@ -66,7 +70,7 @@ public class EncoderParameters {
 
     public EncoderParameters withEncoderOptions(List<String> options) {
         return new EncoderParameters(resolution, parameters,
-                framerate, preset, options, ffmpegOptions);
+                framerate, preset, options, muxerOptions);
     }
 
     public EncoderParameters withFfmpegOptions(String... ptions) {

@@ -1,6 +1,8 @@
 package band.full.testing.video.encoder;
 
-import static band.full.testing.video.encoder.EncoderParameters.MAIN8;
+import static band.full.testing.video.encoder.DecoderY4M.decode;
+import static band.full.testing.video.encoder.EncoderParameters.UHD4K_MAIN8;
+import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
 
 import java.io.IOException;
@@ -22,8 +24,18 @@ public class EncoderHEVC extends EncoderY4M {
     }
 
     @Override
-    protected void addEncoderParams(List<String> command) {
-        super.addEncoderParams(command);
+    protected ProcessBuilder createProcessBuilder() {
+        ProcessBuilder builder = new ProcessBuilder(getExecutable(),
+                IO.Y4M.isPipe() ? "-" : y4m.getPath(),
+                out.getPath())
+                        .redirectOutput(INHERIT)
+                        .redirectError(INHERIT);
+
+        List<String> command = builder.command();
+
+        addAll(command, "--y4m", "--preset", getProfileParam());
+
+        command.addAll(encoderParameters.encoderOptions);
 
         if (LOSSLESS) {
             command.add("--lossless");
@@ -33,6 +45,8 @@ public class EncoderHEVC extends EncoderY4M {
 
         addAll(command, "--repeat-headers", "--range=limited",
                 "--output-depth=" + parameters.bitdepth);
+
+        return builder;
     }
 
     @Override
@@ -41,12 +55,17 @@ public class EncoderHEVC extends EncoderY4M {
     }
 
     @Override
-    public String getFFMpegFormat() {
+    public String getFormat() {
         return "hevc";
     }
 
     public static void encode(String name, Consumer<EncoderY4M> consumer) {
-        encode(name, MAIN8, consumer);
+        encode(name, UHD4K_MAIN8, consumer);
+    }
+
+    public static void encode(String name,
+            Consumer<EncoderY4M> ec, Consumer<DecoderY4M> dc) {
+        encode(name, UHD4K_MAIN8, ec, dc);
     }
 
     public static void encode(String name, EncoderParameters parameters,
@@ -56,6 +75,12 @@ public class EncoderHEVC extends EncoderY4M {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void encode(String name, EncoderParameters parameters,
+            Consumer<EncoderY4M> ec, Consumer<DecoderY4M> dc) {
+        encode(name, parameters, ec);
+        decode(name, parameters, dc);
     }
 }
 

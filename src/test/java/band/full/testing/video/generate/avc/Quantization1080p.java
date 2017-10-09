@@ -1,11 +1,11 @@
-package band.full.testing.video.generate.hdr10;
+package band.full.testing.video.generate.avc;
 
-import static band.full.testing.video.core.Resolution.STD_2160p;
-import static band.full.testing.video.itu.BT2020.BT2020_10bit;
+import static band.full.testing.video.core.Resolution.STD_1080p;
+import static band.full.testing.video.itu.BT709.BT709;
 import static java.lang.String.format;
 
 import band.full.testing.video.core.Resolution;
-import band.full.testing.video.encoder.EncoderHDR10;
+import band.full.testing.video.encoder.EncoderAVC;
 import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.executor.GenerateVideoRunner;
@@ -23,28 +23,26 @@ import org.junit.runner.RunWith;
  */
 @RunWith(GenerateVideoRunner.class)
 @Category(GenerateVideo.class)
-public class Quantization2160pHDR10 extends QuantizationBase {
+public class Quantization1080p extends QuantizationBase {
     @Test
     public void quants() {
-        quants("NearBlack", 64, 96); // 32
-        quants("DarkGray", 128, 160); // 32
-        quants("Gray", 192, 256); // 64
-        quants("LightGray", 320, 384); // 64
-        quants("NearWhite", 448, 512); // 64
-        quants("Bright", 576, 640); // 64
-        quants("Brighter", 704, 768); // 64
-        quants("Brightest", 832, 876); // 44
+        quants("NearBlack", 16, 32); // 16
+        quants("DarkGray", 48, 64); // 16
+        quants("Gray", 96, 128); // 32
+        quants("LightGray", 160, 192); // 32
+        quants("NearWhite", 204); // 20
+        quants("Bright", 224); // 20
     }
 
     private void quants(String name, int... yCodes) {
         for (int yCode : yCodes) {
-            String prefix = getFilePath() + format("/QuantsHDR10-Y%03d", yCode);
+            String prefix = getFilePath() + format("/Quants1080p-Y%03d", yCode);
 
-            EncoderHDR10.encode(prefix + "Cb-" + name,
+            EncoderAVC.encode(prefix + "Cb-" + name,
                     e -> quants(e, yCode, false),
                     d -> verify(d, yCode, false));
 
-            EncoderHDR10.encode(prefix + "Cr-" + name,
+            EncoderAVC.encode(prefix + "Cr-" + name,
                     e -> quants(e, yCode, true),
                     d -> verify(d, yCode, true));
         }
@@ -52,23 +50,23 @@ public class Quantization2160pHDR10 extends QuantizationBase {
 
     @Override
     protected String getFilePath() {
-        return "HEVC/UHD4K/HDR10/Quantization";
+        return "AVC/FullHD/Quantization";
     }
 
     @Override
     protected Resolution getResolution() {
-        return STD_2160p;
+        return STD_1080p;
     }
 
     @Override
     protected YCbCr getVideoParameters() {
-        return BT2020_10bit;
+        return BT709;
     }
 
     public static void main(String[] args) {
-        Quantization2160pHDR10 instance = new Quantization2160pHDR10();
+        Quantization1080p instance = new Quantization1080p();
 
         FxDisplay.show(instance.getResolution(),
-                () -> instance.overlay(64, 512, false));
+                () -> instance.overlay(16, 128, false));
     }
 }

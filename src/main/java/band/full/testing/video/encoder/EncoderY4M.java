@@ -7,7 +7,6 @@ import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static java.util.Collections.addAll;
 
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.core.Resolution;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -54,9 +52,9 @@ public abstract class EncoderY4M implements AutoCloseable {
     protected static final boolean LOSSLESS = getBoolean("encoder.lossless");
 
     /**
-     * Quick mode limits duration of render calls to 2 seconds. This is useful
-     * for quick testing the build procedures. Produced videos will not be fully
-     * usable!
+     * Quick mode limits duration of render calls to 15 frames and frame rate to
+     * one frame per second. This is useful for quick testing the build
+     * procedures. Produced videos will not be fully usable!
      */
     protected static final boolean QUICK = getBoolean("encoder.quick");
     protected static final String QRATE = "1:1";
@@ -122,7 +120,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         String prefix = root + "/" + name;
 
         y4m = new File(prefix + ".y4m");
-        out = new File(prefix + ".out");
+        out = new File(prefix + "." + getFormat());
         mp4 = new File(prefix + ".mp4");
 
         dir = mp4.getParentFile();
@@ -164,12 +162,7 @@ public abstract class EncoderY4M implements AutoCloseable {
             System.out.println("Generating normal encode...");
         }
 
-        ProcessBuilder builder = new ProcessBuilder(getExecutable(),
-                "-", out.getPath())
-                        .redirectOutput(INHERIT)
-                        .redirectError(INHERIT);
-
-        addEncoderParams(builder.command());
+        ProcessBuilder builder = createProcessBuilder();
 
         System.out.println(builder.command());
 
@@ -182,28 +175,25 @@ public abstract class EncoderY4M implements AutoCloseable {
 
     public abstract String getExecutable();
 
-    public abstract String getFFMpegFormat();
+    public abstract String getFormat();
 
-    protected void addEncoderParams(List<String> command) {
-        addAll(command, "--y4m", getProfileParam());
-        command.addAll(encoderParameters.encoderOptions);
-    }
+    protected abstract ProcessBuilder createProcessBuilder();
 
-    private String getProfileParam() {
-        if (QUICK) return "--preset=ultrafast";
+    protected String getProfileParam() {
+        if (QUICK) return "ultrafast";
 
         switch (encoderParameters.preset) {
             case FAST:
-                return "--preset=fast";
+                return "fast";
             case SLOW:
-                return "--preset=slow";
+                return "slow";
             case VERYSLOW:
-                return "--preset=veryslow";
+                return "veryslow";
             case PLACEBO:
-                return "--preset=placebo";
+                return "placebo";
 
             default:
-                return "--preset=slow";
+                return "slow";
         }
     }
 
@@ -212,34 +202,32 @@ public abstract class EncoderY4M implements AutoCloseable {
         yuv4mpegOut.close();
 
         if (!IO.Y4M.isPipe()) {
-            ProcessBuilder builder = new ProcessBuilder(getExecutable(),
-                    y4m.getPath(), out.getPath())
-                            .redirectOutput(INHERIT)
-                            .redirectError(INHERIT);
-
-            addEncoderParams(builder.command());
+            ProcessBuilder builder = createProcessBuilder();
 
             System.out.println(builder.command());
 
             process = builder.start();
-            process.waitFor();
         }
 
         int result = process.waitFor();
-        if (result != 0) throw new IOException("x265 failed: " + result);
+        if (result != 0)
+            throw new IOException(getExecutable() + " failed: " + result);
 
         if (IO.Y4M.isTempFile()) {
             y4m.delete();
         }
 
-        ProcessBuilder builder = new ProcessBuilder("ffmpeg",
-                "-f", getFFMpegFormat(), "-i", out.getPath(), "-c", "copy",
-                "-y", // force overwrite
-                mp4.getPath())
+        mp4.delete(); // force overwrite
+
+        ProcessBuilder builder = new ProcessBuilder("MP4Box",
+                "-add", out.getPath(), mp4.getPath())
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
 
-        builder.command().addAll(encoderParameters.ffmpegOptions);
+        builder.command().addAll(encoderParameters.muxerOptions);
+
+        System.out.println();
+        System.out.println(builder.command());
 
         builder.start().waitFor();
 

@@ -1,6 +1,7 @@
 package band.full.testing.video.core;
 
-import static java.util.stream.IntStream.range;
+import static java.lang.Math.abs;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
@@ -34,10 +35,62 @@ public class Plane {
         int x2 = limit(x + w, width);
         int y2 = limit(y + h, height);
 
-        range(y1, y2).forEach(iy -> {
+        for (int iy = y1; iy < y2; iy++) {
             int base = iy * width;
             Arrays.fill(pixels, base + x1, base + x2, (short) value);
-        });
+        }
+    }
+
+    /** Lossless target, verify 100% matching with intent. */
+    public void verifyRect(int x, int y, int w, int h, int expected) {
+        verifyRect(expected, y, w, h, expected, 0, 0);
+    }
+
+    public void verifyRect(int x, int y, int w, int h, int expected,
+            int deviation, double maxMisses) {
+        int x1 = limit(x, width);
+        int y1 = limit(y, height);
+        int x2 = limit(x + w, width);
+        int y2 = limit(y + h, height);
+
+        int intMisses = (int) ((x2 - x1) * (y2 - y1) * maxMisses);
+
+        verifyRect(x, y, w, h, expected, deviation, intMisses);
+    }
+
+    public void verifyRect(int x, int y, int w, int h, int expected,
+            int deviation, int maxMisses) {
+        int x1 = limit(x, width);
+        int y1 = limit(y, height);
+        int x2 = limit(x + w, width);
+        int y2 = limit(y + h, height);
+
+        int count = 0, total = (y2 - y1) * (x2 - x1);
+
+        for (int iy = y1; iy < y2; iy++) {
+            int base = iy * width;
+            count += verify(base + x1, base + x2, expected, deviation);
+        }
+
+        if (count + maxMisses < total) {
+            fail(); // expect at least 80% of pixels to match exactly
+        }
+    }
+
+    private int verify(int from, int to, int expected, int deviation) {
+        int count = 0;
+
+        for (int i = from; i < to; i++) {
+            int delta = pixels[i] - expected;
+
+            if (delta == 0) {
+                ++count;
+            } else if (abs(delta) > deviation) {
+                fail();
+            }
+        }
+
+        return count;
     }
 
     public void calculate(PointToValue producer) {
