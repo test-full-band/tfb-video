@@ -1,5 +1,6 @@
 package band.full.testing.video.generate;
 
+import static java.time.Duration.ofSeconds;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 import static javafx.scene.layout.Background.EMPTY;
@@ -30,7 +31,7 @@ import javafx.scene.text.TextAlignment;
  * @author Igor Malinin
  */
 public abstract class QuantizationBase {
-    protected static final Duration DURATION = Duration.ofSeconds(25);
+    protected static final Duration DURATION = ofSeconds(30);
 
     /** Number of rows have to be an odd number - center row is neutral. */
     protected static final int ROWS = 17;
@@ -84,7 +85,7 @@ public abstract class QuantizationBase {
     }
 
     protected void verify(DecoderY4M d, int yMin, boolean redChroma) {
-        d.read(c -> verify(c, yMin, false));
+        d.read(c -> verify(c, yMin, redChroma));
     }
 
     protected void verify(CanvasYCbCr canvas, int yMin, boolean redChroma) {
