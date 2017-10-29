@@ -39,10 +39,6 @@ public class EncoderHDR10 extends EncoderHEVC {
 
         // Allow overriding MaxCLL/MaxFALL/MasterDisplay HDR10 metadata
 
-        if (!command.contains("--max-cll")) {
-            addAll(command, "--max-cll", "0,0"); // request no tone-mapping
-        }
-
         if (!command.contains("--master-display")) {
             addAll(command, "--master-display", MASTER_DISPLAY);
         }

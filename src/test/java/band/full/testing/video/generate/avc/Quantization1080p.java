@@ -1,6 +1,7 @@
 package band.full.testing.video.generate.avc;
 
 import static band.full.testing.video.core.Resolution.STD_1080p;
+import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
 import static band.full.testing.video.itu.BT709.BT709;
 import static java.lang.String.format;
 
@@ -8,21 +9,17 @@ import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.EncoderAVC;
 import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.executor.GenerateVideoRunner;
 import band.full.testing.video.generate.QuantizationBase;
 import band.full.testing.video.itu.YCbCr;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Testing color bands separation / quantization step uniformity.
  *
  * @author Igor Malinin
  */
-@RunWith(GenerateVideoRunner.class)
-@Category(GenerateVideo.class)
+@GenerateVideo(MAIN)
 public class Quantization1080p extends QuantizationBase {
     @Test
     public void quants() {

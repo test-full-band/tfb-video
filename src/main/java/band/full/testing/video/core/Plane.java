@@ -1,7 +1,7 @@
 package band.full.testing.video.core;
 
 import static java.lang.Math.abs;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
 
@@ -72,9 +72,7 @@ public class Plane {
             count += verify(base + x1, base + x2, expected, deviation);
         }
 
-        if (count + maxMisses < total) {
-            fail(); // expect at least 80% of pixels to match exactly
-        }
+        assertFalse(count + maxMisses < total);
     }
 
     private int verify(int from, int to, int expected, int deviation) {
@@ -85,8 +83,8 @@ public class Plane {
 
             if (delta == 0) {
                 ++count;
-            } else if (abs(delta) > deviation) {
-                fail();
+            } else {
+                assertFalse(abs(delta) > deviation);
             }
         }
 

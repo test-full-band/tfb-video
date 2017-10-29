@@ -1,6 +1,7 @@
 package band.full.testing.video.core;
 
 import static band.full.testing.video.core.Quantizer.round;
+import static band.full.testing.video.executor.FxDisplay.runAndWait;
 import static javafx.scene.paint.Color.TRANSPARENT;
 
 import band.full.testing.video.itu.YCbCr;
@@ -64,7 +65,7 @@ public class CanvasYCbCr {
 
     public void overlay(Consumer<WritableImage> consumer) {
         WritableImage image = new WritableImage(Y.width, Y.height);
-        consumer.accept(image);
+        runAndWait(() -> consumer.accept(image));
         overlay(image);
     }
 

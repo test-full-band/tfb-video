@@ -17,11 +17,8 @@ import band.full.testing.video.itu.YCbCr;
 
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -31,38 +28,6 @@ import java.util.function.Consumer;
  */
 public class DecoderY4M implements AutoCloseable {
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
-
-    private static final Field FILTER_IN_FIELD;
-
-    static {
-        try {
-            FILTER_IN_FIELD = FilterInputStream.class.getDeclaredField("in");
-            FILTER_IN_FIELD.setAccessible(true);
-        } catch (NoSuchFieldException | SecurityException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Assuming input stream is buffering FilterInputStream return the unwrapped
-     * instance.<br>
-     * We don't need the buffering as we already have large buffers and very
-     * efficient input. As raw video streams are extremely large we need every
-     * bit of throughput.
-     */
-    static InputStream unwrap(InputStream in)
-            throws IOException {
-        if (in instanceof FilterInputStream) {
-            try {
-                return (FileInputStream) FILTER_IN_FIELD.get(in);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                throw new IOException(e);
-            }
-        }
-
-        // Use the original one on platforms where we don't know how to unwrap
-        return in;
-    }
 
     public final String name;
     public final YCbCr parameters;
@@ -138,7 +103,7 @@ public class DecoderY4M implements AutoCloseable {
 
         process = builder.start();
 
-        return unwrap(process.getInputStream());
+        return process.getInputStream();
     }
 
     private Map<Character, String> readY4Mheader() throws IOException {

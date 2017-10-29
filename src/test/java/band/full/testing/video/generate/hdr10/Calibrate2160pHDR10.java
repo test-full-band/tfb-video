@@ -3,6 +3,7 @@ package band.full.testing.video.generate.hdr10;
 import static band.full.testing.video.core.Quantizer.round;
 import static band.full.testing.video.core.Window.square;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
+import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
 import static band.full.testing.video.smpte.ST2084.PQ;
@@ -22,12 +23,9 @@ import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.EncoderHDR10;
 import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.executor.GenerateVideoRunner;
 import band.full.testing.video.itu.YCbCr;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
@@ -41,8 +39,7 @@ import javafx.scene.layout.BorderPane;
  *
  * @author Igor Malinin
  */
-@RunWith(GenerateVideoRunner.class)
-@Category(GenerateVideo.class)
+@GenerateVideo(LOSSLESS)
 public class Calibrate2160pHDR10 {
     private static final String PATH = "HEVC/UHD4K/HDR10/Calibrate/Win";
     private static final Duration DURATION = ofMinutes(1);

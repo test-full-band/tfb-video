@@ -1,11 +1,11 @@
 package band.full.testing.video.color;
 
 import static band.full.testing.video.color.Primaries.sRGB;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import band.full.testing.video.itu.BT2020;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Igor Malinin

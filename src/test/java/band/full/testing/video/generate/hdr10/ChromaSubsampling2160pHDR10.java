@@ -2,6 +2,7 @@ package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.core.Quantizer.round;
 import static band.full.testing.video.core.Resolution.STD_2160p;
+import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.smpte.ST2084.PQ;
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
@@ -17,8 +18,7 @@ import band.full.testing.video.encoder.EncoderHDR10;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.itu.YCbCr;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
@@ -27,7 +27,7 @@ import java.time.Duration;
  *
  * @author Igor Malinin
  */
-@Category(GenerateVideo.class)
+@GenerateVideo(LOSSLESS)
 public class ChromaSubsampling2160pHDR10 {
     private static final String PATH = "HEVC/UHD4K/HDR10/Chroma";
     private static final Duration DURATION = ofMinutes(1);
@@ -51,8 +51,9 @@ public class ChromaSubsampling2160pHDR10 {
             c.Y.calculate((x, y) -> {
                 double radius = r(x, y);
 
-                return (radius > MAX_DISTANCE) ? grayY : round(
-                        params.toLumaCode(0.25 * (1.0 - cosineSweep(radius))));
+                return (radius > MAX_DISTANCE) ? grayY
+                        : round(params.toLumaCode(
+                                0.25 * (1.0 - cosineSweep(radius))));
             });
 
             short achromatic = (short) c.parameters.ACHROMATIC;
@@ -77,8 +78,8 @@ public class ChromaSubsampling2160pHDR10 {
             c.Y.calculate((x, y) -> {
                 double radius = r(x, y);
 
-                return (radius > MAX_DISTANCE) ? grayY : round(
-                        params.toLumaCode(
+                return (radius > MAX_DISTANCE) ? grayY
+                        : round(params.toLumaCode(
                                 PQ.oetf(amp * (1.0 - cosineSweep(radius)))));
             });
 

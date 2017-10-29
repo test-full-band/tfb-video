@@ -11,14 +11,28 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <surefire.version>2.19.1</surefire.version>
+    <junit.jupiter.version>5.0.1</junit.jupiter.version>
+    <junit.platform.version>1.0.1</junit.platform.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>${junit.jupiter.version}</version>
     </dependency>
+    <!-- TODO Only required to run tests from Eclipse! -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>${junit.platform.version}</version>
+    </dependency> 
   </dependencies>
 
   <build>
@@ -34,19 +48,33 @@
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.1</version>
+          <version>3.7.0</version>
           <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
+            <source>9</source>
+            <target>9</target>
           </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.20</version>
+          <version>${surefire.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.junit.platform</groupId>
+              <artifactId>junit-platform-surefire-provider</artifactId>
+              <version>${junit.platform.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.20</version>
+          <version>${surefire.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.junit.platform</groupId>
+              <artifactId>junit-platform-surefire-provider</artifactId>
+              <version>${junit.platform.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
@@ -112,7 +140,7 @@
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>[3.0,)</version>
+                  <version>[3.5,)</version>
                 </requireMavenVersion>
               </rules>
             </configuration>
@@ -137,8 +165,13 @@
               <includes>
                 <include>band/full/testing/video/generate/**/*.java</include>
               </includes>
-              <groups>band.full.testing.video.executor.GenerateVideo</groups>
+              <!--groups>GenerateVideo</groups>
+              <excludedGroups>SkipMain</excludedGroups-->
               <useFile>false</useFile>
+              <properties>
+                <includeTags>GenerateVideo</includeTags>
+                <excludeTags>SkipMain</excludeTags>
+              </properties>
               <systemPropertyVariables>
                 <encoder.quick>${encoder.quick}</encoder.quick>
                 <encoder.main>true</encoder.main>
@@ -158,8 +191,13 @@
               <includes>
                 <include>band/full/testing/video/generate/**/*.java</include>
               </includes>
-              <groups>band.full.testing.video.executor.GenerateVideo</groups>
+              <!--groups>GenerateVideo</groups>
+              <excludedGroups>SkipLossless</excludedGroups-->
               <useFile>false</useFile>
+              <properties>
+                <includeTags>GenerateVideo</includeTags>
+                <excludeTags>SkipLossless</excludeTags>
+              </properties>
               <systemPropertyVariables>
                 <encoder.quick>${encoder.quick}</encoder.quick>
                 <encoder.lossless>true</encoder.lossless>

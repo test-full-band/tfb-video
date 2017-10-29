@@ -14,10 +14,8 @@ import band.full.testing.video.itu.YCbCr;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.function.Supplier;
 
@@ -49,7 +47,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         }
     }
 
-    protected static final boolean LOSSLESS = getBoolean("encoder.lossless");
+    public static final boolean LOSSLESS = getBoolean("encoder.lossless");
 
     /**
      * Quick mode limits duration of render calls to 15 frames and frame rate to
@@ -61,38 +59,6 @@ public abstract class EncoderY4M implements AutoCloseable {
     protected static final int QFRAMES = 15;
 
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
-
-    private static final Field FILTER_OUT_FIELD;
-
-    static {
-        try {
-            FILTER_OUT_FIELD = FilterOutputStream.class.getDeclaredField("out");
-            FILTER_OUT_FIELD.setAccessible(true);
-        } catch (NoSuchFieldException | SecurityException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Assuming output stream is buffering FilterOutputStream return the
-     * unwrapped instance.<br>
-     * We don't need the buffering as we already have large buffers and very
-     * efficient output. As raw video streams are extremely large we need every
-     * bit of throughput.
-     */
-    static OutputStream unwrap(OutputStream out)
-            throws IOException {
-        if (out instanceof FilterOutputStream) {
-            try {
-                return (FileOutputStream) FILTER_OUT_FIELD.get(out);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                throw new IOException(e);
-            }
-        }
-
-        // Use the original one on platforms where we don't know how to unwrap
-        return out;
-    }
 
     public final String name;
     public final YCbCr parameters;
@@ -168,7 +134,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         process = builder.start();
 
-        return unwrap(process.getOutputStream());
+        return process.getOutputStream();
     }
 
     protected abstract boolean checkBitdepth(int depth);

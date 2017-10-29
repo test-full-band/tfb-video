@@ -1,5 +1,6 @@
 package band.full.testing.video.generate.hdr10;
 
+import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
 import static band.full.testing.video.itu.BT709.BT709;
 import static java.lang.String.format;
@@ -8,21 +9,17 @@ import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExyY;
 import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.executor.GenerateVideoRunner;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
- * TODO Find the right YCbCr code points to fullfill the expectations
+ * TODO Find the right YCbCr code points to fulfill the expectations
  *
  * @author Igor Malinin
  */
-@RunWith(GenerateVideoRunner.class)
-@Category(GenerateVideo.class)
-@Ignore("Investigate chromacity percentage")
+@GenerateVideo(LOSSLESS)
+@Disabled("Investigate chromacity percentage")
 public class Calibrate2160pHDR10_CalMAN {
     private static final Matrix3x3 RGB2XYZ = PRIMARIES.getRGBtoXYZ();
 

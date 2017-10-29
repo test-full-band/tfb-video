@@ -10,11 +10,11 @@ see our [Wiki](https://github.com/testing-av/testing-video/wiki).
 
 ## Development environment
 
-The test generator is written in Java 8 and you need Java Development Kit
+The test generator is written in Java 9 and you need Java Development Kit
 (JDK) installed to build the project. You can get Java for your platform
-from [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html).
+from [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk9-downloads-3848520.html).
 
-Also you will need Apache Maven to build the project. x264, x265,
+Also you will need Apache Maven 3.5+ to build the project. x264, x265,
 MP4Box and ffmpeg executables need to be installed and available in the
 system PATH to encode videos.
 

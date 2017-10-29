@@ -5,9 +5,12 @@ import static javafx.scene.paint.Color.BLACK;
 
 import band.full.testing.video.core.Resolution;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -55,5 +58,26 @@ public class FxDisplay extends Application {
         fill = background;
 
         launch();
+    }
+
+    public static void runAndWait(Runnable runnable) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        Platform.runLater(() -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                future.completeExceptionally(t);
+                return;
+            }
+
+            future.complete(null);
+        });
+
+        try {
+            future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

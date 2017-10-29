@@ -1,8 +1,9 @@
 package band.full.testing.video.color;
 
-import static org.junit.Assert.assertArrayEquals;
+import static java.lang.Double.MIN_VALUE;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Igor Malinin
@@ -22,15 +23,15 @@ public class TestMatrix3x3 {
                 13.0, -5.0, -3.0,
                 5.0, -2.0, -1.0);
 
-        assertArrayEquals(expected.values[0], b.values[0], 0.0);
-        assertArrayEquals(expected.values[1], b.values[1], 0.0);
-        assertArrayEquals(expected.values[2], b.values[2], 0.0);
+        assertArrayEquals(expected.values[0], b.values[0], MIN_VALUE);
+        assertArrayEquals(expected.values[1], b.values[1], MIN_VALUE);
+        assertArrayEquals(expected.values[2], b.values[2], MIN_VALUE);
 
         Matrix3x3 c = b.invert();
 
-        assertArrayEquals(a.values[0], c.values[0], 0.0);
-        assertArrayEquals(a.values[1], c.values[1], 0.0);
-        assertArrayEquals(a.values[2], c.values[2], 0.0);
+        assertArrayEquals(a.values[0], c.values[0], MIN_VALUE);
+        assertArrayEquals(a.values[1], c.values[1], MIN_VALUE);
+        assertArrayEquals(a.values[2], c.values[2], MIN_VALUE);
     }
 
     @Test
@@ -47,9 +48,9 @@ public class TestMatrix3x3 {
                 66.0, 81.0, 96.0,
                 102.0, 126.0, 150.0);
 
-        assertArrayEquals(expected.values[0], b.values[0], 0.0);
-        assertArrayEquals(expected.values[1], b.values[1], 0.0);
-        assertArrayEquals(expected.values[2], b.values[2], 0.0);
+        assertArrayEquals(expected.values[0], b.values[0]);
+        assertArrayEquals(expected.values[1], b.values[1]);
+        assertArrayEquals(expected.values[2], b.values[2]);
     }
 
     @Test
@@ -68,8 +69,8 @@ public class TestMatrix3x3 {
                 0.0, 1.0, 0.0,
                 0.0, 0.0, 1.0);
 
-        assertArrayEquals(identity.values[0], mult.values[0], 0.0);
-        assertArrayEquals(identity.values[1], mult.values[1], 0.0);
-        assertArrayEquals(identity.values[2], mult.values[2], 0.0);
+        assertArrayEquals(identity.values[0], mult.values[0]);
+        assertArrayEquals(identity.values[1], mult.values[1]);
+        assertArrayEquals(identity.values[2], mult.values[2]);
     }
 }

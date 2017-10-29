@@ -1,15 +1,15 @@
 package band.full.testing.video.generate.hevc;
 
 import static band.full.testing.video.core.Resolution.STD_2160p;
+import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static java.time.Duration.ofSeconds;
 
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Random;
 
@@ -19,8 +19,8 @@ import java.util.Random;
  *
  * @author Igor Malinin
  */
-@Category(GenerateVideo.class)
-@Ignore("Requires lossless encode and  reducing bitrate to at least 100Mb/s")
+@GenerateVideo(LOSSLESS)
+@Disabled("Requires lossless encode and  reducing bitrate to at least 100Mb/s")
 public class Gradients2160pHEVC {
     @Test
     public void gradients() {

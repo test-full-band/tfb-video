@@ -3,6 +3,7 @@ package band.full.testing.video.generate.hdr10;
 import static band.full.testing.video.core.Window.square;
 import static band.full.testing.video.encoder.EncoderHDR10.MASTER_DISPLAY_PRIMARIES;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
+import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
 import static band.full.testing.video.smpte.ST2084.PQ;
@@ -23,12 +24,9 @@ import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.EncoderHDR10;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.executor.GenerateVideoRunner;
 import band.full.testing.video.itu.YCbCr;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
@@ -42,8 +40,7 @@ import javafx.scene.layout.BorderPane;
  *
  * @author Igor Malinin
  */
-@RunWith(GenerateVideoRunner.class)
-@Category(GenerateVideo.class)
+@GenerateVideo(LOSSLESS)
 public class Calibrate2160pHDR10_LGOLED {
     private static final String PATH =
             "HEVC/UHD4K/HDR10/Calibrate/Win10_LGOLED";
@@ -81,7 +78,7 @@ public class Calibrate2160pHDR10_LGOLED {
      */
     @Test
     public void oled6win10grayscale() {
-        win10grayscale(6, 540, OLED6_CODES);
+        win10grayscale(6, 540, 0, OLED6_CODES);
     }
 
     /**
@@ -93,26 +90,29 @@ public class Calibrate2160pHDR10_LGOLED {
      */
     @Test
     public void oled7win10grayscale() {
-        win10grayscale(7, 540, OLED7_MAXCLL540_CODES);
-        win10grayscale(7, 1000, OLED7_MAXCLL1000_CODES);
-        win10grayscale(7, 4000, OLED7_MAXCLL4000_CODES);
+        win10grayscale(7, 540, 540, OLED7_MAXCLL540_CODES);
+        win10grayscale(7, 1000, 1000, OLED7_MAXCLL1000_CODES);
+        win10grayscale(7, 4000, 4000, OLED7_MAXCLL4000_CODES);
     }
 
-    public void win10grayscale(int version, int maxcll, int[] codes) {
+    public void win10grayscale(int version, int masterDisplay, int maxcll,
+            int[] codes) {
         // show brightest and darkest patterns in the beginning
-        win10gray(-1, version, maxcll, codes[codes.length - 1]);
-        win10gray(0, version, maxcll, 64); // pure black
+        win10gray(-1, version, masterDisplay, maxcll, codes[codes.length - 1]);
+        win10gray(0, version, masterDisplay, maxcll, 64); // pure black
 
         for (int i = 0; i < codes.length; i++) {
-            win10gray(i + 1, version, maxcll, codes[i]);
+            win10gray(i + 1, version, masterDisplay, maxcll, codes[i]);
         }
 
         // test clipping of 10000 nit
-        win10gray(codes.length + 1, version, maxcll, 940);
+        win10gray(codes.length + 1, version, masterDisplay, maxcll, 940);
     }
 
-    private void win10gray(int sequence, int version, int maxcll, int yCode) {
-        String name = getFileName(sequence, version, maxcll, yCode);
+    private void win10gray(int sequence, int version, int masterDisplay,
+            int maxcll, int yCode) {
+        String name =
+                getFileName(sequence, version, masterDisplay, maxcll, yCode);
 
         EncoderParameters options = HDR10.withEncoderOptions(
                 "--max-cll", format("%d,%d", maxcll, maxcll / 10),
@@ -135,8 +135,8 @@ public class Calibrate2160pHDR10_LGOLED {
         });
     }
 
-    private static String getFileName(int seq, int version, int maxcll,
-            int yCode) {
+    private static String getFileName(int seq, int version,
+            int masterDisplay, int maxcll, int yCode) {
         String dirSuffix = version < 7 ? "" : format("_MaxCLL%04d", maxcll);
         String fileSuffix = version < 7 ? "" : format("_%d", maxcll);
         String fileSeq = seq < 0 ? "$$" : seq == 0 ? "00" : format("%02d", seq);

@@ -1,6 +1,7 @@
 package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.core.Resolution.STD_2160p;
+import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
 import static java.lang.String.format;
 
@@ -8,21 +9,17 @@ import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.EncoderHDR10;
 import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.executor.GenerateVideoRunner;
 import band.full.testing.video.generate.QuantizationBase;
 import band.full.testing.video.itu.YCbCr;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 /**
  * Testing color bands separation / quantization step uniformity.
  *
  * @author Igor Malinin
  */
-@RunWith(GenerateVideoRunner.class)
-@Category(GenerateVideo.class)
+@GenerateVideo(LOSSLESS)
 public class Quantization2160pHDR10 extends QuantizationBase {
     @Test
     public void quants() {
