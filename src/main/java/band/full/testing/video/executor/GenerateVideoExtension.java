@@ -4,6 +4,7 @@ import static band.full.testing.video.executor.GenerateVideo.Type.ALL;
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
 import static java.lang.System.out;
+import static org.junit.jupiter.api.extension.ConditionEvaluationResult.disabled;
 import static org.junit.jupiter.api.extension.ConditionEvaluationResult.enabled;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
@@ -31,7 +32,7 @@ public class GenerateVideoExtension
             enabled("@GenerateVideo enables current encode type");
 
     private static final ConditionEvaluationResult DISABLED_TYPE =
-            enabled("@GenerateVideo disables current encode type");
+            disabled("@GenerateVideo disables current encode type");
 
     /** Guarantee that only one JavaFX thread will be started */
     private static boolean STARTED;
