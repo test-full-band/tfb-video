@@ -1,16 +1,17 @@
 package band.full.testing.video.generate.hdr10;
 
+import static band.full.testing.video.core.Framerate.FPS_23_976;
+import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.core.Window.square;
 import static band.full.testing.video.encoder.EncoderHDR10.MASTER_DISPLAY_PRIMARIES;
-import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
-import static band.full.testing.video.itu.BT2020.BT2020_10bit;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
+import static band.full.testing.video.itu.ColorRange.FULL;
+import static band.full.testing.video.itu.ColorRange.LIMITED;
 import static band.full.testing.video.smpte.ST2084.PQ;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.String.format;
-import static java.lang.System.out;
 import static java.time.Duration.ofMinutes;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.paint.Color.gray;
@@ -24,6 +25,7 @@ import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.EncoderHDR10;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
+import band.full.testing.video.itu.ColorRange;
 import band.full.testing.video.itu.YCbCr;
 
 import org.junit.jupiter.api.Test;
@@ -43,7 +45,7 @@ import javafx.scene.layout.BorderPane;
 @GenerateVideo(LOSSLESS)
 public class Calibrate2160pHDR10_LGOLED {
     private static final String PATH =
-            "HEVC/UHD4K/HDR10/Calibrate/Win10_LGOLED";
+            "HEVC/UHD4K/HDR10/Calibrate/LG/OLED";
 
     private static final Duration DURATION = ofMinutes(1);
     private static final Matrix3x3 RGB2XYZ = PRIMARIES.getRGBtoXYZ();
@@ -53,19 +55,34 @@ public class Calibrate2160pHDR10_LGOLED {
         529, 544, 560, 575, 591, 606, 622, 637, 653, 668,
     };
 
-    private static final int[] OLED7_MAXCLL540_CODES = {
+    private static final int[] OLED7_CODES_FR540 = {
+        240, 314, 388, 419, 453, 468, 481, 498, 515, 529,
+        545, 561, 575, 591, 608, 623, 637, 653, 669,
+    };
+
+    private static final int[] OLED7_CODES_LR540 = {
         269, 332, 396, 422, 451, 464, 475, 490, 504, 516,
         530, 544, 556, 570, 584, 597, 609, 623, 636, // 401.45 nit
     };
 
-    private static final int[] OLED7_MAXCLL1000_CODES = {
+    private static final int[] OLED7_CODES_FR1000 = {
+        277, 345, 412, 446, 480, 498, 513, 530, 544, 561,
+        574, 589, 604, 617, 632, 647, 663, 678, 693,
+    };
+
+    private static final int[] OLED7_CODES_LR1000 = {
         301, 359, 416, 445, 475, 490, 503, 517, 529, 544,
         555, 568, 581, 592, 605, 618, 631, 644, 657, // 501.65 nit
     };
 
-    private static final int[] OLED7_MAXCLL4000_CODES = {
+    private static final int[] OLED7_CODES_FR4000 = {
         320, 382, 443, 475, 502, 516, 530, 545, 557, 572,
-        584, 599, 612, 627, 640, 654, 666, 678, 705, // 831.56 nit
+        584, 599, 612, 627, 640, 654, 666, 678, 705,
+    };
+
+    private static final int[] OLED7_CODES_LR4000 = {
+        299, 372, 443, 480, 512, 528, 545, 562, 576, 594,
+        608, 625, 640, 658, 673, 690, 704, 718, 749, // 831.56 nit
     };
 
     /**
@@ -77,8 +94,8 @@ public class Calibrate2160pHDR10_LGOLED {
      *      Tracking Requirements</a>
      */
     @Test
-    public void oled6win10grayscale() {
-        win10grayscale(6, 540, 0, OLED6_CODES);
+    public void oled6grayscale() {
+        grayscale(6, 540, LIMITED, OLED6_CODES);
     }
 
     /**
@@ -89,66 +106,83 @@ public class Calibrate2160pHDR10_LGOLED {
      *      Calibration Notes for 2017 LG OLED TVs</a>
      */
     @Test
-    public void oled7win10grayscale() {
-        win10grayscale(7, 540, 540, OLED7_MAXCLL540_CODES);
-        win10grayscale(7, 1000, 1000, OLED7_MAXCLL1000_CODES);
-        win10grayscale(7, 4000, 4000, OLED7_MAXCLL4000_CODES);
+    public void oled7grayscale() {
+        grayscale(7, 540, FULL, OLED7_CODES_FR540);
+        grayscale(7, 540, LIMITED, OLED7_CODES_LR540);
+        grayscale(7, 1000, FULL, OLED7_CODES_FR1000);
+        grayscale(7, 1000, LIMITED, OLED7_CODES_LR1000);
+        grayscale(7, 4000, FULL, OLED7_CODES_FR4000);
+        grayscale(7, 4000, LIMITED, OLED7_CODES_LR4000);
     }
 
-    public void win10grayscale(int version, int masterDisplay, int maxcll,
-            int[] codes) {
+    public void grayscale(int version, int display,
+            ColorRange range, int[] codes) {
+        YCbCr params = new YCbCr(10, range, PRIMARIES);
+
         // show brightest and darkest patterns in the beginning
-        win10gray(-1, version, masterDisplay, maxcll, codes[codes.length - 1]);
-        win10gray(0, version, masterDisplay, maxcll, 64); // pure black
+        if (version == 6) {
+            grayscale(-1, version, display, params, codes[codes.length - 1],
+                    "; set TV to max of 540 nit!");
+        } else {
+            grayscale(-1, version, display, params, codes[codes.length - 1]);
+        }
+
+        grayscale(0, version, display, params, params.YMIN); // pure black
 
         for (int i = 0; i < codes.length; i++) {
-            win10gray(i + 1, version, masterDisplay, maxcll, codes[i]);
+            grayscale(i + 1, version, display, params, codes[i]);
         }
 
         // test clipping of 10000 nit
-        win10gray(codes.length + 1, version, masterDisplay, maxcll, 940);
+        grayscale(codes.length + 1, version, display, params, params.YMAX);
     }
 
-    private void win10gray(int sequence, int version, int masterDisplay,
-            int maxcll, int yCode) {
-        String name =
-                getFileName(sequence, version, masterDisplay, maxcll, yCode);
+    private void grayscale(int sequence, int version, int display,
+            YCbCr params, int yCode) {
+        grayscale(sequence, version, display, params, yCode, "");
+    }
 
-        EncoderParameters options = HDR10.withEncoderOptions(
-                "--max-cll", format("%d,%d", maxcll, maxcll / 10),
-                "--master-display",
-                MASTER_DISPLAY_PRIMARIES + "L(" + maxcll + "0000,0)");
+    private void grayscale(int sequence, int version, int display,
+            YCbCr params, int yCode, String suffix) {
+        String name = getFileName(sequence, version, display, params, yCode);
+
+        EncoderParameters options =
+                new EncoderParameters(STD_2160p, params, FPS_23_976)
+                        .withEncoderOptions(
+                                "--master-display", MASTER_DISPLAY_PRIMARIES
+                                        + "L(" + display + "0000,0)");
 
         EncoderHDR10.encode(name, options, e -> {
             Window win = square(e.encoderParameters.resolution, 0.1);
-            YCbCr params = e.parameters;
 
             CanvasYCbCr canvas = e.newCanvas();
-            canvas.Y.fill(params.YMIN);
-            canvas.Y.fillRect(win.x, win.y, win.width, win.height,
-                    yCode);
-            canvas.Cb.fill(params.ACHROMATIC);
-            canvas.Cr.fill(params.ACHROMATIC);
-            canvas.overlay(overlay(version, maxcll, yCode));
+            canvas.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
+            canvas.overlay(overlay(version, display, params, yCode, suffix));
 
             e.render(DURATION, () -> canvas);
         });
     }
 
-    private static String getFileName(int seq, int version,
-            int masterDisplay, int maxcll, int yCode) {
-        String dirSuffix = version < 7 ? "" : format("_MaxCLL%04d", maxcll);
-        String fileSuffix = version < 7 ? "" : format("_%d", maxcll);
-        String fileSeq = seq < 0 ? "$$" : seq == 0 ? "00" : format("%02d", seq);
+    private static String getFileName(int seq, int version, int display,
+            YCbCr params, int yCode) {
+        boolean v2016 = version == 6;
 
-        return PATH + format("%d%s/GrayHDR10_LGOLED%d%s-%s-Y%03d",
-                version, dirSuffix, version, fileSuffix, fileSeq, yCode);
+        String dirRange = params.range == FULL ? "FR" : "LR";
+        String dirSuffix = v2016 ? "" : format("%s_%04d", dirRange, display);
+        String fileRange = params.range == FULL ? "FR" : "10"; // std HDR10
+        String fileSuffix = v2016 ? "" : format("_%d", display);
+        String fileSeq = seq < 0 ? "$$" : format("%02d", seq);
+
+        return PATH + format("%d%s/GrayHDR%s_LGOLED%d%s-%s-Y%03d", version,
+                dirSuffix, fileRange, version, fileSuffix, fileSeq, yCode);
     }
 
-    private static Parent overlay(int version, int maxcll, int yCode) {
-        double ye = BT2020_10bit.fromLumaCode(yCode);
+    private static Parent overlay(int version, int display,
+            YCbCr params, int yCode, String suffix) {
+        double ye = params.fromLumaCode(yCode);
 
-        Label label = new Label(getLabel(version, maxcll, yCode));
+        Label label = new Label(getLabel(version, display, params, yCode,
+                suffix));
         label.setFont(font(40));
         label.setTextFill(gray(max(0.25, min(0.5, ye))));
 
@@ -159,34 +193,22 @@ public class Calibrate2160pHDR10_LGOLED {
         return layout;
     }
 
-    private static String getLabel(int version, int maxcll, int yCode) {
-        double ye = BT2020_10bit.fromLumaCode(yCode);
+    private static String getLabel(int version, int display,
+            YCbCr params, int yCode, String suffix) {
+        double ye = params.fromLumaCode(yCode);
         double yo = PQ.eotf(ye);
         CIExy xy = getColor(yo);
 
-        String text = format("LG OLED%d HDR10 MaxCLL %d grayscale"
-                + " CIE(x=%.4f, y=%.4f) C%d, %.2f nit",
-                version, maxcll, xy.x, xy.y, yCode, yo * 10000.0);
+        String text = format("LG OLED%d HDR10 %d grayscale"
+                + " CIE(x=%.4f, y=%.4f) Y%d, %.2f nit",
+                version, display, xy.x, xy.y, yCode, yo * 10000.0);
 
-        if (yCode == 668) {
-            text += "; set TV to max of 540 nit!";
-        }
-
-        return text;
+        return text + suffix;
     }
 
     private static CIExy getColor(double yo) {
         double w = yo <= 0 ? 1 : yo; // fake color for pure black
         double[] rgb = {w, w, w};
         return new CIEXYZ(RGB2XYZ.multiply(rgb)).CIExy();
-    }
-
-    public static void main(String[] args) {
-        out.println("OLED 2016");
-        out.println(getLabel(6, 540, 64));
-        for (int element : OLED6_CODES) {
-            out.println(getLabel(6, 540, element));
-        }
-        out.println();
     }
 }

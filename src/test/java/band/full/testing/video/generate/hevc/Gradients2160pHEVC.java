@@ -30,8 +30,6 @@ public class Gradients2160pHEVC {
     public void gradients(String name) {
         EncoderHEVC.encode(name, e -> {
             CanvasYCbCr c = e.newCanvas();
-            c.Cb.fill(c.parameters.ACHROMATIC);
-            c.Cr.fill(c.parameters.ACHROMATIC);
             e.render(ofSeconds(30), () -> gradients(c));
         });
     }

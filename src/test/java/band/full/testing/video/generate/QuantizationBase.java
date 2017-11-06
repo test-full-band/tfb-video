@@ -47,11 +47,9 @@ public abstract class QuantizationBase {
         CanvasYCbCr canvas = e.newCanvas();
 
         Plane chroma = redChroma ? canvas.Cr : canvas.Cb;
-        Plane achromatic = redChroma ? canvas.Cb : canvas.Cr;
 
         bandsY(canvas.Y, yMin);
         bandsC(chroma, canvas.parameters.ACHROMATIC - ROWS / 2);
-        achromatic.fill(canvas.parameters.ACHROMATIC);
 
         marks(canvas, yMin, redChroma);
 

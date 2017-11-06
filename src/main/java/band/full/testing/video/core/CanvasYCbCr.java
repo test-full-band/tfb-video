@@ -26,18 +26,18 @@ public class CanvasYCbCr {
     public final YCbCr parameters;
 
     public CanvasYCbCr(Resolution r, YCbCr parameters) {
-        Y = new Plane(r.width, r.height);
+        Y = new Plane(r.width, r.height, parameters.YMIN);
 
         int wChroma = r.width / 2;
         int hChroma = r.height / 2;
 
-        Cb = new Plane(wChroma, hChroma);
-        Cr = new Plane(wChroma, hChroma);
+        Cb = new Plane(wChroma, hChroma, parameters.ACHROMATIC);
+        Cr = new Plane(wChroma, hChroma, parameters.ACHROMATIC);
 
         this.parameters = parameters;
     }
 
-    public void fill(short yValue, short cbValue, int crValue) {
+    public void fill(int yValue, int cbValue, int crValue) {
         Y.fill(yValue);
         Cb.fill(cbValue);
         Cr.fill(crValue);

@@ -9,6 +9,7 @@ import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
@@ -20,7 +21,7 @@ import java.util.Random;
  * @author Igor Malinin
  */
 @GenerateVideo(LOSSLESS)
-// @Ignore("Requires lossless encode and reducing bitrate to at least 100Mb/s")
+@Disabled("Requires lossless encode and reducing bitrate to at least 100Mb/s")
 public class Gradients1080pHEVC {
     @Test
     public void gradients() {
@@ -30,8 +31,6 @@ public class Gradients1080pHEVC {
     public void gradients(String name) {
         EncoderHEVC.encode(name, FULLHD_MAIN8, e -> {
             CanvasYCbCr c = e.newCanvas();
-            c.Cb.fill(c.parameters.ACHROMATIC);
-            c.Cr.fill(c.parameters.ACHROMATIC);
             e.render(ofSeconds(30), () -> gradients(c));
         });
     }

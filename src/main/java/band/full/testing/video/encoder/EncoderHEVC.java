@@ -43,7 +43,8 @@ public class EncoderHEVC extends EncoderY4M {
             addAll(command, "--cu-lossless");
         }
 
-        addAll(command, "--repeat-headers", "--range=limited",
+        addAll(command, "--repeat-headers",
+                "--range=" + parameters.range,
                 "--output-depth=" + parameters.bitdepth);
 
         return builder;

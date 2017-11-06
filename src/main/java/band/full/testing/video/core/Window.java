@@ -25,4 +25,15 @@ public class Window {
         return new Window((resolution.width - side) >> 1,
                 (resolution.height - side) >> 1, side, side);
     }
+
+    public static Window proportional(Resolution resolution, double area) {
+        if (area < 0.0 || area > 1.0) throw new IllegalArgumentException();
+
+        double mult = sqrt(area);
+        int width = ((int) (resolution.width * mult)) & ~0x1; // even number
+        int height = ((int) (resolution.height * mult)) & ~0x1; // even number
+
+        return new Window((resolution.width - width) >> 1,
+                (resolution.height - height) >> 1, width, height);
+    }
 }

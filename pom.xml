@@ -165,8 +165,6 @@
               <includes>
                 <include>band/full/testing/video/generate/**/*.java</include>
               </includes>
-              <!--groups>GenerateVideo</groups>
-              <excludedGroups>SkipMain</excludedGroups-->
               <useFile>false</useFile>
               <properties>
                 <includeTags>GenerateVideo</includeTags>
@@ -191,8 +189,6 @@
               <includes>
                 <include>band/full/testing/video/generate/**/*.java</include>
               </includes>
-              <!--groups>GenerateVideo</groups>
-              <excludedGroups>SkipLossless</excludedGroups-->
               <useFile>false</useFile>
               <properties>
                 <includeTags>GenerateVideo</includeTags>

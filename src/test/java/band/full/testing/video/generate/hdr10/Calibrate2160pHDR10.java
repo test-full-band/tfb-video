@@ -1,6 +1,7 @@
 package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.core.Quantizer.round;
+import static band.full.testing.video.core.Window.proportional;
 import static band.full.testing.video.core.Window.square;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
@@ -19,11 +20,11 @@ import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExy;
 import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.core.Resolution;
 import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.EncoderHDR10;
 import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.itu.YCbCr;
 
 import org.junit.jupiter.api.Test;
 
@@ -46,51 +47,72 @@ public class Calibrate2160pHDR10 {
     private static final Matrix3x3 RGB2XYZ = PRIMARIES.getRGBtoXYZ();
 
     @Test
-    public void win10gray() {
+    public void win5grayscale() {
+        grayscale(5);
+    }
+
+    @Test
+    public void win10grayscale() {
+        grayscale(10);
+    }
+
+    @Test
+    public void win20grayscale() {
+        grayscale(20);
+    }
+
+    @Test
+    public void win50grayscale() {
+        grayscale(50);
+    }
+
+    public void grayscale(int window) {
         // show brightest and darkest patterns in the beginning
-        win10gray(-1, 940);
-        win10gray(0, 64);
+        grayscale(window, -1, 940);
+        grayscale(window, 0, 64);
 
         int gradations = 20;
         double amp = 1.0 / gradations;
         for (int i = 1; i <= gradations; i++) {
-            win10gray(i, round(BT2020_10bit.toLumaCode(amp * i)));
+            grayscale(window, i, round(BT2020_10bit.toLumaCode(amp * i)));
         }
     }
 
-    private void win10gray(int sequence, int yCode) {
-        String name = getFileName(sequence, yCode);
+    private void grayscale(int window, int sequence, int yCode) {
+        String name = getFileName(window, sequence, yCode);
 
         EncoderHDR10.encode(name, e -> {
-            Window win = square(e.encoderParameters.resolution, 0.1);
-            YCbCr params = e.parameters;
+            Resolution resolution = e.encoderParameters.resolution;
+            double area = window / 100.0;
+
+            Window win = window < 50
+                    ? square(resolution, area)
+                    : proportional(resolution, area);
 
             CanvasYCbCr canvas = e.newCanvas();
-            canvas.Y.fill(params.YMIN);
             canvas.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
-            canvas.Cb.fill(params.ACHROMATIC);
-            canvas.Cr.fill(params.ACHROMATIC);
-            canvas.overlay(overlay(yCode));
+            canvas.overlay(overlay(window, yCode));
 
             e.render(DURATION, () -> canvas);
         });
     }
 
-    private static String getFileName(int sequence, int yCode) {
+    private static String getFileName(int window, int sequence, int yCode) {
         double ye = BT2020_10bit.fromLumaCode(yCode);
 
         String seq = sequence < 0 ? "$$"
                 : ye < 0.995 ? format("%02.0f", ye * 100.0) : "X0";
 
-        return PATH + format("10/GrayHDR10-%s-Y%03d", seq, yCode);
+        return PATH + format("%02d/Gray%d-HDR10-%s-Y%03d", window, window,
+                seq, yCode);
     }
 
-    private static Parent overlay(int yCode) {
+    private static Parent overlay(int window, int yCode) {
         double ye = BT2020_10bit.fromLumaCode(yCode);
         double yo = PQ.eotf(ye);
         CIExy xy = getColor(yo);
 
-        String text = format("HDR10 grayscale CIE(x=%.4f, y=%.4f) %.1f%% C%d,"
+        String text = format("HDR10 grayscale CIE(x=%.4f, y=%.4f) %.1f%% Y%d,"
                 + " %.1f nit", xy.x, xy.y, ye * 100.0, yCode, yo * 10000.0);
 
         Label label = new Label(text);
@@ -111,6 +133,6 @@ public class Calibrate2160pHDR10 {
     }
 
     public static void main(String[] args) {
-        FxDisplay.show(HDR10.resolution, () -> overlay(512));
+        FxDisplay.show(HDR10.resolution, () -> overlay(10, 512));
     }
 }

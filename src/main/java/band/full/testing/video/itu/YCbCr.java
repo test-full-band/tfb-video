@@ -1,5 +1,8 @@
 package band.full.testing.video.itu;
 
+import static band.full.testing.video.itu.ColorRange.FULL;
+import static band.full.testing.video.itu.ColorRange.LIMITED;
+
 import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.color.Primaries;
 
@@ -11,6 +14,7 @@ import band.full.testing.video.color.Primaries;
  */
 public class YCbCr {
     public final int bitdepth;
+    public final ColorRange range;
 
     public final int YMIN, YMAX;
     public final int CMIN, CMAX;
@@ -23,18 +27,23 @@ public class YCbCr {
     public final double BCD, RCD;
 
     public YCbCr(int bitdepth, Primaries primaries) {
+        this(bitdepth, LIMITED, primaries);
+    }
+
+    public YCbCr(int bitdepth, ColorRange range, Primaries primaries) {
         if (bitdepth < 8) throw new IllegalArgumentException(
                 "bitdepth should be at least 8 but was " + bitdepth);
 
         this.bitdepth = bitdepth;
+        this.range = range;
 
         int shift = bitdepth - 8;
 
-        YMIN = 16 << shift;
-        YMAX = 235 << shift;
+        YMIN = range == FULL ? 0 : 16 << shift;
+        YMAX = range == FULL ? (256 << shift) - 1 : 235 << shift;
 
-        CMIN = 16 << shift;
-        CMAX = 240 << shift;
+        CMIN = range == FULL ? 0 : 16 << shift;
+        CMAX = range == FULL ? (256 << shift) - 1 : 240 << shift;
 
         ACHROMATIC = 128 << shift;
 

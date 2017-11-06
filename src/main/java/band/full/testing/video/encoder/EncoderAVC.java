@@ -2,6 +2,7 @@ package band.full.testing.video.encoder;
 
 import static band.full.testing.video.encoder.DecoderY4M.decode;
 import static band.full.testing.video.encoder.EncoderParameters.FULLHD_MAIN8;
+import static band.full.testing.video.itu.ColorRange.FULL;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
 
@@ -51,6 +52,7 @@ public class EncoderAVC extends EncoderY4M {
         }
 
         addAll(command, "--preset", getProfileParam(),
+                parameters.range == FULL ? "--range=pc" : "--range=tv",
                 "--colorprim", "bt709",
                 "--transfer", "bt709",
                 "--colormatrix", "bt709");

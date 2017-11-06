@@ -21,6 +21,11 @@ public class Plane {
         pixels = new short[width * height];
     }
 
+    public Plane(int width, int height, int fill) {
+        this(width, height);
+        Arrays.fill(pixels, (short) fill);
+    }
+
     public int get(int x, int y) {
         return pixels[y * width + x];
     }
