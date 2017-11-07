@@ -1,9 +1,11 @@
 package band.full.testing.video.core;
 
 import static java.lang.Math.abs;
+import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 /**
  * @author Igor Malinin
@@ -70,14 +72,17 @@ public class Plane {
         int x2 = limit(x + w, width);
         int y2 = limit(y + h, height);
 
-        int count = 0, total = (y2 - y1) * (x2 - x1);
-
-        for (int iy = y1; iy < y2; iy++) {
-            int base = iy * width;
-            count += verify(base + x1, base + x2, expected, deviation);
+        IntStream range = range(y1, y2);
+        if (x2 - x1 > 64) { // TODO measure when to switch
+            range = range.parallel();
         }
 
-        assertFalse(count + maxMisses < total);
+        int count = range.map(iy -> {
+            int base = iy * width;
+            return verify(base + x1, base + x2, expected, deviation);
+        }).sum();
+
+        assertFalse(count + maxMisses < (y2 - y1) * (x2 - x1));
     }
 
     private int verify(int from, int to, int expected, int deviation) {

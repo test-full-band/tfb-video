@@ -88,7 +88,7 @@ public abstract class QuantizationBase {
 
     protected void verify(CanvasYCbCr canvas, int yMin, boolean redChroma) {
         range(0, ROWS).forEach(row -> {
-            range(0, COLS).forEach(col -> {
+            range(0, COLS).parallel().forEach(col -> {
                 int yCode = yMin + col;
                 int cCode = canvas.parameters.ACHROMATIC - ROWS / 2 + row;
 
