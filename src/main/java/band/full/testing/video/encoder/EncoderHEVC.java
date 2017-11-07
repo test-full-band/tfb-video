@@ -44,6 +44,7 @@ public class EncoderHEVC extends EncoderY4M {
         }
 
         addAll(command, "--repeat-headers",
+                "--no-opt-qp-pps", "--no-opt-ref-list-length-pps", // [ref.1]
                 "--range=" + parameters.range,
                 "--output-depth=" + parameters.bitdepth);
 
@@ -84,6 +85,9 @@ public class EncoderHEVC extends EncoderY4M {
         decode(name, parameters, dc);
     }
 }
+
+// References:
+// 1. https://bitbucket.org/multicoreware/x265/issues/309/mp4box-incompatibility
 
 // "--level-idc=51",
 // "--ref=5",
