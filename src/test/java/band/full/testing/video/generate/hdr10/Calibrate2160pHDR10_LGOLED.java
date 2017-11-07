@@ -12,7 +12,7 @@ import static band.full.testing.video.smpte.ST2084.PQ;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.String.format;
-import static java.time.Duration.ofMinutes;
+import static java.time.Duration.ofSeconds;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
@@ -44,10 +44,11 @@ import javafx.scene.layout.BorderPane;
  */
 @GenerateVideo(LOSSLESS)
 public class Calibrate2160pHDR10_LGOLED {
+    // TODO extends CalibrationBase
     private static final String PATH =
             "HEVC/UHD4K/HDR10/Calibrate/LG/OLED";
 
-    private static final Duration DURATION = ofMinutes(1);
+    private static final Duration DURATION = ofSeconds(30);
     private static final Matrix3x3 RGB2XYZ = PRIMARIES.getRGBtoXYZ();
 
     private static final int[] OLED6_CODES = {

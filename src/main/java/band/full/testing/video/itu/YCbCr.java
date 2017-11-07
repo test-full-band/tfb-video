@@ -15,6 +15,7 @@ import band.full.testing.video.color.Primaries;
 public class YCbCr {
     public final int bitdepth;
     public final ColorRange range;
+    public final Primaries primaries;
 
     public final int YMIN, YMAX;
     public final int CMIN, CMAX;
@@ -36,6 +37,7 @@ public class YCbCr {
 
         this.bitdepth = bitdepth;
         this.range = range;
+        this.primaries = primaries;
 
         int shift = bitdepth - 8;
 

@@ -1,39 +1,19 @@
 package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.core.Quantizer.round;
-import static band.full.testing.video.core.Window.proportional;
-import static band.full.testing.video.core.Window.square;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
-import static band.full.testing.video.itu.BT2020.PRIMARIES;
 import static band.full.testing.video.smpte.ST2084.PQ;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static java.lang.String.format;
-import static java.time.Duration.ofMinutes;
-import static javafx.scene.layout.Background.EMPTY;
-import static javafx.scene.paint.Color.gray;
-import static javafx.scene.text.Font.font;
 
-import band.full.testing.video.color.CIEXYZ;
-import band.full.testing.video.color.CIExy;
-import band.full.testing.video.color.Matrix3x3;
-import band.full.testing.video.core.CanvasYCbCr;
-import band.full.testing.video.core.Resolution;
-import band.full.testing.video.core.Window;
+import band.full.testing.video.color.TransferFunctions;
 import band.full.testing.video.encoder.EncoderHDR10;
+import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
+import band.full.testing.video.generate.CalibrationBase;
 
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-
-import javafx.geometry.Insets;
-import javafx.scene.Parent;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
 
 /**
  * Calibration box fills.
@@ -41,10 +21,21 @@ import javafx.scene.layout.BorderPane;
  * @author Igor Malinin
  */
 @GenerateVideo(LOSSLESS)
-public class Calibrate2160pHDR10 {
-    private static final String PATH = "HEVC/UHD4K/HDR10/Calibrate/Win";
-    private static final Duration DURATION = ofMinutes(1);
-    private static final Matrix3x3 RGB2XYZ = PRIMARIES.getRGBtoXYZ();
+public class Calibrate2160pHDR10 extends CalibrationBase {
+    @Override
+    protected String getFilePath() {
+        return "HEVC/UHD4K/HDR10/Calibrate/Win";
+    }
+
+    @Override
+    protected EncoderParameters getEncoderParameters() {
+        return HDR10;
+    }
+
+    @Override
+    protected TransferFunctions getTransferFunctions() {
+        return PQ;
+    }
 
     @Test
     public void win5grayscale() {
@@ -81,58 +72,15 @@ public class Calibrate2160pHDR10 {
     private void grayscale(int window, int sequence, int yCode) {
         String name = getFileName(window, sequence, yCode);
 
-        EncoderHDR10.encode(name, e -> {
-            Resolution resolution = e.encoderParameters.resolution;
-            double area = window / 100.0;
-
-            Window win = window < 50
-                    ? square(resolution, area)
-                    : proportional(resolution, area);
-
-            CanvasYCbCr canvas = e.newCanvas();
-            canvas.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
-            canvas.overlay(overlay(window, yCode));
-
-            e.render(DURATION, () -> canvas);
-        });
-    }
-
-    private static String getFileName(int window, int sequence, int yCode) {
-        double ye = BT2020_10bit.fromLumaCode(yCode);
-
-        String seq = sequence < 0 ? "$$"
-                : ye < 0.995 ? format("%02.0f", ye * 100.0) : "X0";
-
-        return PATH + format("%02d/Gray%d-HDR10-%s-Y%03d", window, window,
-                seq, yCode);
-    }
-
-    private static Parent overlay(int window, int yCode) {
-        double ye = BT2020_10bit.fromLumaCode(yCode);
-        double yo = PQ.eotf(ye);
-        CIExy xy = getColor(yo);
-
-        String text = format("HDR10 grayscale CIE(x=%.4f, y=%.4f) %.1f%% Y%d,"
-                + " %.1f nit", xy.x, xy.y, ye * 100.0, yCode, yo * 10000.0);
-
-        Label label = new Label(text);
-        label.setFont(font(40));
-        label.setTextFill(gray(max(0.25, min(0.5, ye))));
-
-        BorderPane.setMargin(label, new Insets(20));
-        BorderPane layout = new BorderPane();
-        layout.setBackground(EMPTY);
-        layout.setBottom(label);
-        return layout;
-    }
-
-    private static CIExy getColor(double yo) {
-        double w = yo <= 0 ? 1 : yo; // fake color for pure black
-        double[] rgb = {w, w, w};
-        return new CIEXYZ(RGB2XYZ.multiply(rgb)).CIExy();
+        EncoderHDR10.encode(name,
+                e -> encode(e, window, yCode),
+                d -> verify(d, window, yCode));
     }
 
     public static void main(String[] args) {
-        FxDisplay.show(HDR10.resolution, () -> overlay(10, 512));
+        Calibrate2160pHDR10 instance = new Calibrate2160pHDR10();
+
+        FxDisplay.show(instance.getEncoderParameters().resolution,
+                () -> instance.overlay(10, 512));
     }
 }

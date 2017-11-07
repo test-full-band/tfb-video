@@ -22,8 +22,7 @@ public class Window {
         double windowPixels = totalPixels * area;
         int side = ((int) sqrt(windowPixels)) & ~0x1; // even number
 
-        return new Window((resolution.width - side) >> 1,
-                (resolution.height - side) >> 1, side, side);
+        return center(resolution, side, side);
     }
 
     public static Window proportional(Resolution resolution, double area) {
@@ -33,7 +32,12 @@ public class Window {
         int width = ((int) (resolution.width * mult)) & ~0x1; // even number
         int height = ((int) (resolution.height * mult)) & ~0x1; // even number
 
-        return new Window((resolution.width - width) >> 1,
-                (resolution.height - height) >> 1, width, height);
+        return center(resolution, width, height);
+    }
+
+    public static Window center(Resolution resolution, int width, int height) {
+        int x = (resolution.width - width) >> 1;
+        int y = (resolution.height - height) >> 1;
+        return new Window(x, y, width, height);
     }
 }

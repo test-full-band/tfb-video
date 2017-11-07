@@ -24,15 +24,11 @@ public class EncoderHDR10 extends EncoderHEVC {
     }
 
     @Override
-    public boolean checkBitdepth(int depth) {
-        return depth == 8 || depth == 10 || depth == 12;
-    }
-
-    @Override
     protected ProcessBuilder createProcessBuilder() {
         ProcessBuilder builder = super.createProcessBuilder();
         List<String> command = builder.command();
 
+        // TODO move to HEVC generic code, use EncoderParameters
         addAll(command, "--profile=main10",
                 "--colorprim=bt2020", "--colormatrix=bt2020nc",
                 "--chromaloc=2", "--transfer=smpte-st-2084");
