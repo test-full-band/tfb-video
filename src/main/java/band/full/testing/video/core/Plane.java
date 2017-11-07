@@ -48,7 +48,7 @@ public class Plane {
 
     /** Lossless target, verify 100% matching with intent. */
     public void verifyRect(int x, int y, int w, int h, int expected) {
-        verifyRect(expected, y, w, h, expected, 0, 0);
+        verifyRect(x, y, w, h, expected, 0, 0);
     }
 
     public void verifyRect(int x, int y, int w, int h, int expected,

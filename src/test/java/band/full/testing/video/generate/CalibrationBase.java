@@ -1,5 +1,6 @@
 package band.full.testing.video.generate;
 
+import static band.full.testing.video.core.Quantizer.round;
 import static band.full.testing.video.core.Window.proportional;
 import static band.full.testing.video.core.Window.square;
 import static java.lang.Math.max;
@@ -20,6 +21,9 @@ import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
+import band.full.testing.video.itu.YCbCr;
+
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
@@ -43,6 +47,42 @@ public abstract class CalibrationBase {
     // TODO Combine to be part of EncoderParameters
     protected abstract TransferFunctions getTransferFunctions();
 
+    protected abstract void grayscale(int window, int sequence, int yCode);
+
+    @Test
+    public void win5grayscale() {
+        grayscale(5);
+    }
+
+    @Test
+    public void win10grayscale() {
+        grayscale(10);
+    }
+
+    @Test
+    public void win20grayscale() {
+        grayscale(20);
+    }
+
+    @Test
+    public void win50grayscale() {
+        grayscale(50);
+    }
+
+    public void grayscale(int window) {
+        YCbCr params = getEncoderParameters().parameters;
+
+        // show brightest and darkest patterns in the beginning
+        grayscale(window, -1, params.YMAX);
+        grayscale(window, 0, params.YMIN);
+
+        int gradations = 20;
+        double amp = 1.0 / gradations;
+        for (int i = 1; i <= gradations; i++) {
+            grayscale(window, i, round(params.toLumaCode(amp * i)));
+        }
+    }
+
     // TODO Allow also color box patterns
     protected void encode(EncoderY4M e, int window, int yCode) {
         Window win = getWindow(window);
@@ -61,9 +101,11 @@ public abstract class CalibrationBase {
     protected void verify(CanvasYCbCr canvas, int window, int yCode) {
         Window win = getWindow(window);
 
-        // TODO
-        canvas.Y.verifyRect(win.x, win.y, win.width, win.height, yCode);
-        // near-lossless target, allow up to 1% tiny single-step misses
+        int achromatic = getEncoderParameters().parameters.ACHROMATIC;
+
+        // TODO near-lossless target, allow up to 1% tiny single-step misses
+        canvas.verifyRect(win.x, win.y, win.width, win.height,
+                yCode, achromatic, achromatic);
     }
 
     private Window getWindow(int window) {

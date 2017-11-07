@@ -54,6 +54,17 @@ public class CanvasYCbCr {
         Cr.fillRect(cx, cy, cw, ch, crValue);
     }
 
+    public void verifyRect(int x, int y, int w, int h,
+            int yValue, int cbValue, int crValue) {
+        Y.verifyRect(x, y, w, h, yValue);
+
+        // FIXME: precise cw, ch
+        int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+
+        Cb.verifyRect(cx, cy, cw, ch, cbValue);
+        Cr.verifyRect(cx, cy, cw, ch, crValue);
+    }
+
     public void overlay(Parent parent) {
         overlay(image -> {
             new Scene(parent, image.getWidth(), image.getHeight());
