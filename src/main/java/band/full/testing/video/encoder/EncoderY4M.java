@@ -186,7 +186,8 @@ public abstract class EncoderY4M implements AutoCloseable {
         mp4.delete(); // force overwrite
 
         ProcessBuilder builder = new ProcessBuilder("MP4Box",
-                "-add", out.getPath(), mp4.getPath())
+                "-add", out.getPath(),
+                "-brand", "hvc1", mp4.getPath())
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
 

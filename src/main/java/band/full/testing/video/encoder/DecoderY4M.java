@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -108,17 +109,14 @@ public class DecoderY4M implements AutoCloseable {
 
     private Map<Character, String> readY4Mheader() throws IOException {
         byte[] YUV4MPEG2 = "YUV4MPEG2 ".getBytes(US_ASCII);
+        int length = YUV4MPEG2.length;
 
-        for (int i = 0, length = YUV4MPEG2.length, n; i < length; i += n) {
-            n = yuv4mpegIn.read(frameBuffer, i, length - i);
-            if (n == -1)
-                throw new EOFException("Expecting YUV4MPEG2 header");
-        }
+        int n = yuv4mpegIn.readNBytes(frameBuffer, 0, length);
+        if (n == 0)
+            throw new EOFException("Expecting YUV4MPEG2 header");
 
-        for (int i = 0, length = YUV4MPEG2.length; i < length; i++) {
-            if (frameBuffer[i] != YUV4MPEG2[i])
-                throw new IOException("Expecting YUV4MPEG2 header");
-        }
+        if (!Arrays.equals(frameBuffer, 0, length, YUV4MPEG2, 0, length))
+            throw new IOException("Expecting YUV4MPEG2 header");
 
         StringBuffer buf = new StringBuffer();
         while (true) {
@@ -176,36 +174,19 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     public boolean read(CanvasYCbCr canvas) {
-        try {
-            int n;
-            try {
-                n = yuv4mpegIn.read(frameBuffer);
-                if (n == -1) return false;
-            } catch (IOException e) {
-                // Unfortunately Process API doesn't behave well and an
-                // IOException is thrown instead of -1 returned by read()
-                // with 'Stream closed' message in the underlying process
-                // is finished already (happens all the time)!
-                return false;
-            }
+        int n = readFrameBuffer();
 
-            for (int i = n, length = frameBuffer.length; i < length; i += n) {
-                n = yuv4mpegIn.read(frameBuffer, i, length - i);
-                if (n == -1)
-                    throw new EOFException("EOF in the middle of a FRAME");
-            }
+        if (n == 0) return false; // EOF
 
-            for (int i = 0, length = FRAME_HEADER.length; i < length; i++) {
-                if (frameBuffer[i] != FRAME_HEADER[i])
-                    throw new IOException("Expecting FRAME header");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        int bps = y4mBytesPerSample();
+        if (n < frameBuffer.length)
+            throw new RuntimeException("EOF in the middle of a FRAME");
 
         int offsetY = FRAME_HEADER.length;
+
+        if (!Arrays.equals(frameBuffer, 0, offsetY, FRAME_HEADER, 0, offsetY))
+            throw new RuntimeException("Expecting FRAME header");
+
+        int bps = y4mBytesPerSample();
         int offsetCb = offsetY + canvas.Y.pixels.length * bps;
         int offsetCr = offsetCb + canvas.Cb.pixels.length * bps;
 
@@ -216,6 +197,31 @@ public class DecoderY4M implements AutoCloseable {
         ++framesRead;
 
         return true;
+    }
+
+    private int readFrameBuffer() {
+        int pos = 0;
+
+        try {
+            for (int end = frameBuffer.length; pos < end;) {
+                // performance optimization; otherwise extremely slow
+                int block = min(end - pos, 16384);
+
+                int r = yuv4mpegIn.read(frameBuffer, pos, block);
+                if (r < 0) {
+                    break; // 'Normal' EOF
+                }
+
+                pos += r;
+            }
+        } catch (IOException e) {
+            // Unfortunately Process API doesn't behave well and an
+            // IOException is thrown instead of -1 returned by read()
+            // with 'Stream closed' message in the underlying process
+            // is finished already (happens all the time)!
+        }
+
+        return pos;
     }
 
     public void read(Consumer<CanvasYCbCr> consumer) {
@@ -248,7 +254,8 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     private String y4mPixelFormat() {
-        return parameters.bitdepth > 8 ? "420p" + parameters.bitdepth
+        return parameters.bitdepth > 8
+                ? "420p" + parameters.bitdepth
                 : "420mpeg2";
     }
 
