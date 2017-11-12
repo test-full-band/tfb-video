@@ -51,8 +51,8 @@ public class EncoderAVC extends EncoderY4M {
             }
         }
 
-        addAll(command, "--preset", getProfileParam(),
-                parameters.range == FULL ? "--range=pc" : "--range=tv",
+        addAll(command, "--preset", getPresetParam(),
+                "--range", parameters.range == FULL ? "pc" : "tv",
                 "--colorprim", "bt709",
                 "--transfer", "bt709",
                 "--colormatrix", "bt709");

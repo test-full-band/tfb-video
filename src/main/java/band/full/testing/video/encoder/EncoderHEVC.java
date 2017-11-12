@@ -31,9 +31,15 @@ public class EncoderHEVC extends EncoderY4M {
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
 
+        int bitdepth = parameters.bitdepth;
+
         List<String> command = builder.command();
 
-        addAll(command, "--y4m", "--preset", getProfileParam());
+        addAll(command, "--y4m", "--preset", getPresetParam(),
+                "--profile", bitdepth == 8 ? "main" : "main" + bitdepth);
+
+        encoderParameters.masterDisplay.ifPresent(
+                md -> addAll(command, "--master-display", md));
 
         command.addAll(encoderParameters.encoderOptions);
 
@@ -45,8 +51,8 @@ public class EncoderHEVC extends EncoderY4M {
 
         addAll(command, "--repeat-headers",
                 "--no-opt-qp-pps", "--no-opt-ref-list-length-pps", // [ref.1]
-                "--range=" + parameters.range,
-                "--output-depth=" + parameters.bitdepth);
+                "--range", parameters.range.toString(),
+                "--output-depth", Integer.toString(bitdepth));
 
         return builder;
     }
@@ -88,6 +94,7 @@ public class EncoderHEVC extends EncoderY4M {
 
 // References:
 // 1. https://bitbucket.org/multicoreware/x265/issues/309/mp4box-incompatibility
+// 2. https://forum.doom9.org/showthread.php?p=1803907#post1803907
 
 // "--level-idc=51",
 // "--ref=5",

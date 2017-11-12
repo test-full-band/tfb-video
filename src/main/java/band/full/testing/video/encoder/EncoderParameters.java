@@ -14,8 +14,15 @@ import band.full.testing.video.core.Resolution;
 import band.full.testing.video.itu.YCbCr;
 
 import java.util.List;
+import java.util.Optional;
 
 public class EncoderParameters {
+    public static final String MASTER_DISPLAY_PRIMARIES =
+            "G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)";
+
+    public static final String MASTER_DISPLAY =
+            MASTER_DISPLAY_PRIMARIES + "L(10000000,5)";
+
     public static final EncoderParameters FULLHD_MAIN8 =
             new EncoderParameters(STD_1080p, BT709, FPS_23_976);
 
@@ -23,12 +30,14 @@ public class EncoderParameters {
             new EncoderParameters(STD_2160p, BT709, FPS_23_976);
 
     public static final EncoderParameters HDR10 =
-            new EncoderParameters(STD_2160p, BT2020_10bit, FPS_23_976);
+            new EncoderParameters(STD_2160p, BT2020_10bit, FPS_23_976)
+                    .withMasterDisplay(MASTER_DISPLAY);
 
     public final Resolution resolution;
     public final YCbCr parameters;
     public final Framerate framerate;
     public final Preset preset;
+    public final Optional<String> masterDisplay; // HEVC HDR only
     public final List<String> encoderOptions;
     public final List<String> muxerOptions;
 
@@ -39,29 +48,36 @@ public class EncoderParameters {
 
     public EncoderParameters(Resolution resolution, YCbCr parameters,
             Framerate framerate, Preset preset) {
-        this(resolution, parameters, framerate, preset,
+        this(resolution, parameters, framerate, preset, null,
                 emptyList(), emptyList());
     }
 
     public EncoderParameters(Resolution resolution, YCbCr parameters,
-            Framerate framerate, Preset preset,
+            Framerate framerate, Preset preset, Optional<String> masterDisplay,
             List<String> encoderOptions, List<String> muxerOptions) {
         this.resolution = resolution;
         this.parameters = parameters;
         this.framerate = framerate;
         this.preset = preset;
+        this.masterDisplay = masterDisplay;
         this.encoderOptions = encoderOptions;
         this.muxerOptions = muxerOptions;
     }
 
     public EncoderParameters withFramerate(Framerate framerate) {
-        return new EncoderParameters(resolution, parameters,
-                framerate, preset, encoderOptions, muxerOptions);
+        return new EncoderParameters(resolution, parameters, framerate,
+                preset, masterDisplay, encoderOptions, muxerOptions);
     }
 
     public EncoderParameters withPreset(Preset preset) {
-        return new EncoderParameters(resolution, parameters,
-                framerate, preset, encoderOptions, muxerOptions);
+        return new EncoderParameters(resolution, parameters, framerate,
+                preset, masterDisplay, encoderOptions, muxerOptions);
+    }
+
+    public EncoderParameters withMasterDisplay(String masterDisplay) {
+        return new EncoderParameters(resolution, parameters, framerate,
+                preset, Optional.ofNullable(masterDisplay),
+                encoderOptions, muxerOptions);
     }
 
     public EncoderParameters withEncoderOptions(String... options) {
@@ -69,16 +85,16 @@ public class EncoderParameters {
     }
 
     public EncoderParameters withEncoderOptions(List<String> options) {
-        return new EncoderParameters(resolution, parameters,
-                framerate, preset, options, muxerOptions);
+        return new EncoderParameters(resolution, parameters, framerate,
+                preset, masterDisplay, options, muxerOptions);
     }
 
-    public EncoderParameters withFfmpegOptions(String... ptions) {
-        return withFfmpegOptions(asList(ptions));
+    public EncoderParameters withFfmpegOptions(String... options) {
+        return withFfmpegOptions(asList(options));
     }
 
     public EncoderParameters withFfmpegOptions(List<String> options) {
-        return new EncoderParameters(resolution, parameters,
-                framerate, preset, encoderOptions, options);
+        return new EncoderParameters(resolution, parameters, framerate,
+                preset, masterDisplay, encoderOptions, options);
     }
 }

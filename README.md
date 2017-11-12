@@ -24,6 +24,15 @@ code style, formatting etc. is on you. The checked in eclipse preference
 is the single source of truth about code style and formatting and you
 have to follow it when sending pull requests.
 
+### Windows
+
+Required executables can be installed from following sources: 
+
+ * [x264](http://download.videolan.org/pub/x264/binaries/)
+ * [x265 multilib](http://wp.xin.at/x265-for-winxp-and-winxp-x64)
+ * [MP4Box](https://www.videohelp.com/software/MP4Box)
+ * [ffmpeg](http://ffmpeg.zeranoe.com/builds/)
+
 ### macOS
 
 Required executables can be installed with [Homebrew](https://brew.sh/): 

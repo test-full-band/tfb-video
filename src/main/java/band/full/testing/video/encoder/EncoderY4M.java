@@ -137,6 +137,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         return process.getOutputStream();
     }
 
+    // TODO lost a call
     protected abstract boolean checkBitdepth(int depth);
 
     public abstract String getExecutable();
@@ -145,7 +146,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
     protected abstract ProcessBuilder createProcessBuilder();
 
-    protected String getProfileParam() {
+    protected String getPresetParam() {
         if (QUICK) return "ultrafast";
 
         switch (encoderParameters.preset) {

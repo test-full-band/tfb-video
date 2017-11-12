@@ -3,7 +3,7 @@ package band.full.testing.video.generate.hdr10;
 import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.core.Window.square;
-import static band.full.testing.video.encoder.EncoderHDR10.MASTER_DISPLAY_PRIMARIES;
+import static band.full.testing.video.encoder.EncoderParameters.MASTER_DISPLAY_PRIMARIES;
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
 import static band.full.testing.video.itu.ColorRange.FULL;
