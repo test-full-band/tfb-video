@@ -14,7 +14,6 @@ import static javafx.scene.text.Font.font;
 import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExy;
 import band.full.testing.video.color.Primaries;
-import band.full.testing.video.color.TransferFunctions;
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.core.Window;
@@ -44,9 +43,6 @@ public abstract class CalibrationBase {
 
     protected abstract EncoderParameters getEncoderParameters();
 
-    // TODO Combine to be part of EncoderParameters
-    protected abstract TransferFunctions getTransferFunctions();
-
     protected abstract void grayscale(int window, int sequence, int yCode);
 
     @Test
@@ -70,16 +66,16 @@ public abstract class CalibrationBase {
     }
 
     public void grayscale(int window) {
-        YCbCr params = getEncoderParameters().parameters;
+        YCbCr matrix = getEncoderParameters().matrix;
 
         // show brightest and darkest patterns in the beginning
-        grayscale(window, -1, params.YMAX);
-        grayscale(window, 0, params.YMIN);
+        grayscale(window, -1, matrix.YMAX);
+        grayscale(window, 0, matrix.YMIN);
 
         int gradations = 20;
         double amp = 1.0 / gradations;
         for (int i = 1; i <= gradations; i++) {
-            grayscale(window, i, round(params.toLumaCode(amp * i)));
+            grayscale(window, i, round(matrix.toLumaCode(amp * i)));
         }
     }
 
@@ -101,7 +97,7 @@ public abstract class CalibrationBase {
     protected void verify(CanvasYCbCr canvas, int window, int yCode) {
         Window win = getWindow(window);
 
-        int achromatic = getEncoderParameters().parameters.ACHROMATIC;
+        int achromatic = getEncoderParameters().matrix.ACHROMATIC;
 
         // TODO near-lossless target, allow up to 1% tiny single-step misses
         canvas.verifyRect(win.x, win.y, win.width, win.height,
@@ -116,7 +112,7 @@ public abstract class CalibrationBase {
     }
 
     protected String getFileName(int window, int sequence, int yCode) {
-        double ye = getEncoderParameters().parameters.fromLumaCode(yCode);
+        double ye = getEncoderParameters().matrix.fromLumaCode(yCode);
 
         String seq = sequence < 0 ? "$$"
                 : ye < 0.995 ? format("%02.0f", ye * 100.0) : "X0";
@@ -126,8 +122,9 @@ public abstract class CalibrationBase {
     }
 
     protected Parent overlay(int window, int yCode) {
-        double ye = getEncoderParameters().parameters.fromLumaCode(yCode);
-        double yo = getTransferFunctions().eotf(ye);
+        EncoderParameters params = getEncoderParameters();
+        double ye = params.matrix.fromLumaCode(yCode);
+        double yo = params.transfer.eotf(ye);
         CIExy xy = getColor(yo);
 
         String text = format("HDR10 grayscale CIE(x=%.4f, y=%.4f) %.1f%% Y%d,"
@@ -147,7 +144,7 @@ public abstract class CalibrationBase {
     private CIExy getColor(double yo) {
         double w = yo <= 0 ? 1 : yo; // fake color for pure black
         double[] rgb = {w, w, w};
-        Primaries primaries = getEncoderParameters().parameters.primaries;
+        Primaries primaries = getEncoderParameters().matrix.primaries;
         return new CIEXYZ(primaries.getRGBtoXYZ().multiply(rgb)).CIExy();
     }
 }

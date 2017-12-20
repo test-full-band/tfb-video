@@ -1,6 +1,8 @@
 package band.full.testing.video.color;
 
 /**
+ * Color Primaries
+ *
  * @author Igor Malinin
  * @see <a href=
  *      "http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html">
@@ -10,14 +12,24 @@ package band.full.testing.video.color;
  */
 public class Primaries {
     /**
+     * <ul>
+     * ITU-T colour_primaries = 1
+     * <li>Rec. ITU-R BT.709-6
+     * <li>Rec. ITU-R BT.1361-0 conventional colour gamut system <br>
+     * and extended colour gamut system (historical)
+     * <li><strong>IEC 61966-2-1 sRGB</strong> or sYCC IEC 61966-2-4
+     * <li>Annex B of SMPTE RP 177 (1993)
+     * </ul>
+     *
      * @see <a href="https://www.w3.org/Graphics/Color/srgb">W3C sRGB</a>
      */
-    public static final Primaries sRGB = new Primaries(
+    public static final Primaries sRGB = new Primaries(1,
             new CIExy(0.640, 0.330),
             new CIExy(0.300, 0.600),
             new CIExy(0.150, 0.060),
             new CIExy(0.3127, 0.3290));
 
+    public final int code;
     public final CIExy red;
     public final CIExy green;
     public final CIExy blue;
@@ -26,7 +38,9 @@ public class Primaries {
     public final Matrix3x3 rgb2xyz;
     public final Matrix3x3 xyz2rgb;
 
-    public Primaries(CIExy red, CIExy green, CIExy blue, CIExy white) {
+    public Primaries(int code, CIExy red, CIExy green, CIExy blue,
+            CIExy white) {
+        this.code = code;
         this.red = red;
         this.green = green;
         this.blue = blue;

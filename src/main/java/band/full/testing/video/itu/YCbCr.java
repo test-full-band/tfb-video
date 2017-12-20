@@ -12,10 +12,9 @@ import band.full.testing.video.color.Primaries;
  *
  * @author Igor Malinin
  */
-public class YCbCr {
+public final class YCbCr extends ColorMatrix {
     public final int bitdepth;
     public final ColorRange range;
-    public final Primaries primaries;
 
     public final int YMIN, YMAX;
     public final int CMIN, CMAX;
@@ -27,17 +26,19 @@ public class YCbCr {
     public final double RY, GY, BY;
     public final double BCD, RCD;
 
-    public YCbCr(int bitdepth, Primaries primaries) {
-        this(bitdepth, LIMITED, primaries);
+    public YCbCr(int code, Primaries primaries, int bitdepth) {
+        this(code, primaries, bitdepth, LIMITED);
     }
 
-    public YCbCr(int bitdepth, ColorRange range, Primaries primaries) {
+    public YCbCr(int code, Primaries primaries, int bitdepth,
+            ColorRange range) {
+        super(code, primaries);
+
         if (bitdepth < 8) throw new IllegalArgumentException(
                 "bitdepth should be at least 8 but was " + bitdepth);
 
         this.bitdepth = bitdepth;
         this.range = range;
-        this.primaries = primaries;
 
         int shift = bitdepth - 8;
 
@@ -58,6 +59,28 @@ public class YCbCr {
 
         BCD = (RY + GY) * 2.0;
         RCD = (GY + BY) * 2.0;
+    }
+
+    @Override
+    public void fromRGB(double[] rgb, double[] dst) {
+        double r = rgb[0];
+        double b = rgb[2];
+        double y = getY(r, rgb[1], b);
+
+        dst[0] = y;
+        dst[1] = getCb(y, b);
+        dst[2] = getCr(y, r);
+    }
+
+    @Override
+    public void toRGB(double[] src, double[] rgb) {
+        double y = src[0];
+        double b = getB(y, src[1]);
+        double r = getB(y, src[2]);
+
+        rgb[0] = r;
+        rgb[1] = getG(y, b, r);
+        rgb[2] = b;
     }
 
     /** Values are in 0..1 range */

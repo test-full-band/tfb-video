@@ -2,7 +2,8 @@ package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
-import static band.full.testing.video.itu.BT709.BT709;
+import static band.full.testing.video.itu.BT709.BT709_8bit;
+import static band.full.testing.video.smpte.ST2084.PQ;
 import static java.lang.String.format;
 
 import band.full.testing.video.color.CIEXYZ;
@@ -49,20 +50,19 @@ public class Calibrate2160pHDR10_CalMAN {
             System.out.print(format("R%.4f G%6.4f B%.4f | ",
                     rgb[0], rgb[1], rgb[2]));
 
-            // TODO: PQ
-            double r = BT709.oetf(rgb[0]);
-            double g = BT709.oetf(rgb[1]);
-            double b = BT709.oetf(rgb[2]);
+            double r = PQ.oetf(rgb[0]);
+            double g = PQ.oetf(rgb[1]);
+            double b = PQ.oetf(rgb[2]);
 
             // RGB Codes (video std)
             System.out.print(format("R%05.1f G%05.1f B%05.1f | ",
-                    BT709.toLumaCode(r),
-                    BT709.toLumaCode(g),
-                    BT709.toLumaCode(b)));
+                    BT709_8bit.toLumaCode(r),
+                    BT709_8bit.toLumaCode(g),
+                    BT709_8bit.toLumaCode(b)));
 
-            double y = BT709.getY(rgb[0], rgb[1], rgb[2]);
-            double cb = BT709.getCb(y, rgb[2]);
-            double cr = BT709.getCb(y, rgb[1]);
+            double y = BT709_8bit.getY(rgb[0], rgb[1], rgb[2]);
+            double cb = BT709_8bit.getCb(y, rgb[2]);
+            double cr = BT709_8bit.getCb(y, rgb[1]);
 
             // Electrical YCbCr (video std)
             System.out.print(format("Y%.4f Cb%.4f Cr%.4f | ",
@@ -70,9 +70,9 @@ public class Calibrate2160pHDR10_CalMAN {
 
             // YCbCr Codes (video std)
             System.out.print(format("Y%05.1f Cb%05.1f Cr%05.1f | ",
-                    BT709.toLumaCode(y),
-                    BT709.toChromaCode(cb),
-                    BT709.toChromaCode(cr)));
+                    BT709_8bit.toLumaCode(y),
+                    BT709_8bit.toChromaCode(cb),
+                    BT709_8bit.toChromaCode(cr)));
 
             CIEXYZ xyz = new CIEXYZ(RGB2XYZ.multiply(rgb));
             System.out.println(xyz.CIExyY());

@@ -31,8 +31,9 @@ public class DecoderY4M implements AutoCloseable {
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
 
     public final String name;
-    public final YCbCr parameters;
     public final EncoderParameters encoderParameters;
+
+    public final YCbCr matrix;
 
     public final File dir;
     public final File mp4;
@@ -47,7 +48,8 @@ public class DecoderY4M implements AutoCloseable {
             throws IOException {
         this.name = name;
         this.encoderParameters = encoderParameters;
-        parameters = encoderParameters.parameters;
+
+        matrix = encoderParameters.matrix;
 
         String root = "target/testing-video" + (LOSSLESS ? "-lossless" : "");
         String prefix = root + "/" + name;
@@ -250,24 +252,23 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     private int y4mBytesPerSample() {
-        return parameters.bitdepth > 8 ? 2 : 1;
+        return matrix.bitdepth > 8 ? 2 : 1;
     }
 
     private String y4mPixelFormat() {
-        return parameters.bitdepth > 8
-                ? "420p" + parameters.bitdepth
+        return matrix.bitdepth > 8
+                ? "420p" + matrix.bitdepth
                 : "420mpeg2";
     }
 
     private String ffmpegPixelFormat() {
-        return parameters.bitdepth > 8
-                ? "yuv420p" + parameters.bitdepth + "le"
+        return matrix.bitdepth > 8
+                ? "yuv420p" + matrix.bitdepth + "le"
                 : "yuv420p";
     }
 
     public CanvasYCbCr newCanvas() {
-        return new CanvasYCbCr(encoderParameters.resolution,
-                encoderParameters.parameters);
+        return new CanvasYCbCr(encoderParameters.resolution, matrix);
     }
 
     public static void decode(String name, EncoderParameters parameters,

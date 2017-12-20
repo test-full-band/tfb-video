@@ -61,8 +61,9 @@ public abstract class EncoderY4M implements AutoCloseable {
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
 
     public final String name;
-    public final YCbCr parameters;
     public final EncoderParameters encoderParameters;
+
+    public final YCbCr matrix;
 
     public final File dir;
     public final File y4m;
@@ -78,7 +79,7 @@ public abstract class EncoderY4M implements AutoCloseable {
             throws IOException {
         this.name = name;
         this.encoderParameters = encoderParameters;
-        parameters = encoderParameters.parameters;
+        matrix = encoderParameters.matrix;
 
         String root = "target/testing-video"
                 + (LOSSLESS ? "-lossless" : "");
@@ -108,7 +109,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         String header = "YUV4MPEG2"
                 + " W" + resolution.width + " H" + resolution.height
                 + " F" + (QUICK ? QRATE : encoderParameters.framerate)
-                + " Ip A1:1 C420p" + parameters.bitdepth + "\n";
+                + " Ip A1:1 C420p" + matrix.bitdepth + "\n";
 
         yuv4mpegOut.write(header.getBytes(US_ASCII));
     }
@@ -203,7 +204,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     private void fillFrame(int offset, short[] pixels) {
-        boolean extended = parameters.bitdepth > 8;
+        boolean extended = matrix.bitdepth > 8;
         byte[] buf = frameBuffer;
 
         for (int i = 0, j = offset; i < pixels.length; i++) {
@@ -248,11 +249,10 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     private int y4mBytesPerSample() {
-        return parameters.bitdepth > 8 ? 2 : 1;
+        return matrix.bitdepth > 8 ? 2 : 1;
     }
 
     public CanvasYCbCr newCanvas() {
-        return new CanvasYCbCr(encoderParameters.resolution,
-                encoderParameters.parameters);
+        return new CanvasYCbCr(encoderParameters.resolution, matrix);
     }
 }

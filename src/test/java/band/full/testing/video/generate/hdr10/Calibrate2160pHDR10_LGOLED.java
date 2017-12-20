@@ -4,7 +4,7 @@ import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.core.Window.square;
 import static band.full.testing.video.encoder.EncoderParameters.MASTER_DISPLAY_PRIMARIES;
-import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
+import static band.full.testing.video.itu.BT2020.BT2020_10bit;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
 import static band.full.testing.video.itu.ColorRange.FULL;
 import static band.full.testing.video.itu.ColorRange.LIMITED;
@@ -42,7 +42,7 @@ import javafx.scene.layout.BorderPane;
  *
  * @author Igor Malinin
  */
-@GenerateVideo(LOSSLESS)
+@GenerateVideo
 public class Calibrate2160pHDR10_LGOLED {
     // TODO extends CalibrationBase
     private static final String PATH =
@@ -118,7 +118,7 @@ public class Calibrate2160pHDR10_LGOLED {
 
     public void grayscale(int version, int display,
             ColorRange range, int[] codes) {
-        YCbCr params = new YCbCr(10, range, PRIMARIES);
+        YCbCr params = new YCbCr(BT2020_10bit.code, PRIMARIES, 10, range);
 
         // show brightest and darkest patterns in the beginning
         if (version == 6) {
@@ -148,7 +148,7 @@ public class Calibrate2160pHDR10_LGOLED {
         String name = getFileName(sequence, version, display, params, yCode);
 
         EncoderParameters options =
-                new EncoderParameters(STD_2160p, params, FPS_23_976)
+                new EncoderParameters(STD_2160p, PQ, params, FPS_23_976)
                         .withEncoderOptions(
                                 "--master-display", MASTER_DISPLAY_PRIMARIES
                                         + "L(" + display + "0000,0)");

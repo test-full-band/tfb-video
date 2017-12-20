@@ -4,13 +4,17 @@ import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_1080p;
 import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.encoder.Preset.SLOW;
-import static band.full.testing.video.itu.BT2020.BT2020_10bit;
-import static band.full.testing.video.itu.BT709.BT709;
+import static band.full.testing.video.smpte.ST2084.PQ;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 
 import band.full.testing.video.core.Framerate;
 import band.full.testing.video.core.Resolution;
+import band.full.testing.video.itu.BT2020;
+import band.full.testing.video.itu.BT709;
+import band.full.testing.video.itu.TransferCharacteristics;
 import band.full.testing.video.itu.YCbCr;
 
 import java.util.List;
@@ -24,39 +28,47 @@ public class EncoderParameters {
             MASTER_DISPLAY_PRIMARIES + "L(10000000,5)";
 
     public static final EncoderParameters FULLHD_MAIN8 =
-            new EncoderParameters(STD_1080p, BT709, FPS_23_976);
+            new EncoderParameters(STD_1080p, BT709.TRANSFER, BT709.BT709_8bit,
+                    FPS_23_976);
 
     public static final EncoderParameters UHD4K_MAIN8 =
-            new EncoderParameters(STD_2160p, BT709, FPS_23_976);
+            new EncoderParameters(STD_2160p, BT709.TRANSFER, BT709.BT709_8bit,
+                    FPS_23_976);
 
     public static final EncoderParameters HDR10 =
-            new EncoderParameters(STD_2160p, BT2020_10bit, FPS_23_976)
-                    .withMasterDisplay(MASTER_DISPLAY);
+            new EncoderParameters(STD_2160p, PQ, BT2020.BT2020_10bit,
+                    FPS_23_976).withMasterDisplay(MASTER_DISPLAY);
 
     public final Resolution resolution;
-    public final YCbCr parameters;
+    public final TransferCharacteristics transfer;
+    public final YCbCr matrix;
     public final Framerate framerate;
     public final Preset preset;
     public final Optional<String> masterDisplay; // HEVC HDR only
     public final List<String> encoderOptions;
     public final List<String> muxerOptions;
 
-    public EncoderParameters(Resolution resolution, YCbCr parameters,
+    public EncoderParameters(Resolution resolution,
+            TransferCharacteristics transfer, YCbCr matrix,
             Framerate framerate) {
-        this(resolution, parameters, framerate, SLOW);
+        this(resolution, transfer, matrix, framerate, SLOW);
     }
 
-    public EncoderParameters(Resolution resolution, YCbCr parameters,
+    public EncoderParameters(Resolution resolution,
+            TransferCharacteristics transfer, YCbCr matrix,
             Framerate framerate, Preset preset) {
-        this(resolution, parameters, framerate, preset, null,
+        this(resolution, transfer, matrix, framerate, preset, empty(),
                 emptyList(), emptyList());
     }
 
-    public EncoderParameters(Resolution resolution, YCbCr parameters,
-            Framerate framerate, Preset preset, Optional<String> masterDisplay,
+    private EncoderParameters(Resolution resolution,
+            TransferCharacteristics transfer, YCbCr matrix,
+            Framerate framerate, Preset preset,
+            Optional<String> masterDisplay,
             List<String> encoderOptions, List<String> muxerOptions) {
         this.resolution = resolution;
-        this.parameters = parameters;
+        this.transfer = transfer;
+        this.matrix = matrix;
         this.framerate = framerate;
         this.preset = preset;
         this.masterDisplay = masterDisplay;
@@ -65,18 +77,18 @@ public class EncoderParameters {
     }
 
     public EncoderParameters withFramerate(Framerate framerate) {
-        return new EncoderParameters(resolution, parameters, framerate,
-                preset, masterDisplay, encoderOptions, muxerOptions);
+        return new EncoderParameters(resolution, transfer, matrix,
+                framerate, preset, masterDisplay, encoderOptions, muxerOptions);
     }
 
     public EncoderParameters withPreset(Preset preset) {
-        return new EncoderParameters(resolution, parameters, framerate,
-                preset, masterDisplay, encoderOptions, muxerOptions);
+        return new EncoderParameters(resolution, transfer, matrix,
+                framerate, preset, masterDisplay, encoderOptions, muxerOptions);
     }
 
     public EncoderParameters withMasterDisplay(String masterDisplay) {
-        return new EncoderParameters(resolution, parameters, framerate,
-                preset, Optional.ofNullable(masterDisplay),
+        return new EncoderParameters(resolution, transfer, matrix,
+                framerate, preset, ofNullable(masterDisplay),
                 encoderOptions, muxerOptions);
     }
 
@@ -85,8 +97,8 @@ public class EncoderParameters {
     }
 
     public EncoderParameters withEncoderOptions(List<String> options) {
-        return new EncoderParameters(resolution, parameters, framerate,
-                preset, masterDisplay, options, muxerOptions);
+        return new EncoderParameters(resolution, transfer, matrix,
+                framerate, preset, masterDisplay, options, muxerOptions);
     }
 
     public EncoderParameters withFfmpegOptions(String... options) {
@@ -94,7 +106,7 @@ public class EncoderParameters {
     }
 
     public EncoderParameters withFfmpegOptions(List<String> options) {
-        return new EncoderParameters(resolution, parameters, framerate,
-                preset, masterDisplay, encoderOptions, options);
+        return new EncoderParameters(resolution, transfer, matrix,
+                framerate, preset, masterDisplay, encoderOptions, options);
     }
 }

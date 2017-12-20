@@ -2,7 +2,7 @@ package band.full.testing.video.generate.avc;
 
 import static band.full.testing.video.core.Resolution.STD_1080p;
 import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
-import static band.full.testing.video.itu.BT709.BT709;
+import static band.full.testing.video.itu.BT709.BT709_8bit;
 import static java.lang.String.format;
 
 import band.full.testing.video.core.Resolution;
@@ -57,7 +57,7 @@ public class Quantization1080p extends QuantizationBase {
 
     @Override
     protected YCbCr getVideoParameters() {
-        return BT709;
+        return BT709_8bit;
     }
 
     public static void main(String[] args) {

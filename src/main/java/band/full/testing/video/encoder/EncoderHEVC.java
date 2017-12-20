@@ -31,12 +31,22 @@ public class EncoderHEVC extends EncoderY4M {
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
 
-        int bitdepth = parameters.bitdepth;
+        int bitdepth = matrix.bitdepth;
+        int colorprim = matrix.primaries.code;
+        int transfer = encoderParameters.transfer.code();
+        int colormatrix = matrix.code;
 
         List<String> command = builder.command();
 
         addAll(command, "--y4m", "--preset", getPresetParam(),
                 "--profile", bitdepth == 8 ? "main" : "main" + bitdepth);
+
+        // TODO: passing/detecting chromaloc; avoid hardcoding
+        addAll(builder.command(),
+                "--colorprim", Integer.toString(colorprim),
+                "--transfer", Integer.toString(transfer),
+                "--colormatrix", Integer.toString(colormatrix),
+                "--chromaloc", "2");
 
         encoderParameters.masterDisplay.ifPresent(
                 md -> addAll(command, "--master-display", md));
@@ -51,7 +61,7 @@ public class EncoderHEVC extends EncoderY4M {
 
         addAll(command, "--repeat-headers",
                 "--no-opt-qp-pps", "--no-opt-ref-list-length-pps", // [ref.1]
-                "--range", parameters.range.toString(),
+                "--range", matrix.range.toString(),
                 "--output-depth", Integer.toString(bitdepth));
 
         return builder;

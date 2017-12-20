@@ -1,10 +1,7 @@
 package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
-import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
-import static band.full.testing.video.smpte.ST2084.PQ;
 
-import band.full.testing.video.color.TransferFunctions;
 import band.full.testing.video.encoder.EncoderHDR10;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.FxDisplay;
@@ -16,7 +13,7 @@ import band.full.testing.video.generate.CalibrationBase;
  *
  * @author Igor Malinin
  */
-@GenerateVideo(LOSSLESS)
+@GenerateVideo
 public class Calibrate2160pHDR10 extends CalibrationBase {
     @Override
     protected String getFilePath() {
@@ -26,11 +23,6 @@ public class Calibrate2160pHDR10 extends CalibrationBase {
     @Override
     protected EncoderParameters getEncoderParameters() {
         return HDR10;
-    }
-
-    @Override
-    protected TransferFunctions getTransferFunctions() {
-        return PQ;
     }
 
     @Override

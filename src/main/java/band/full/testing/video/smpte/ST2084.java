@@ -3,12 +3,17 @@ package band.full.testing.video.smpte;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Math.pow;
 
-import band.full.testing.video.color.TransferFunctions;
+import band.full.testing.video.itu.TransferCharacteristics;
 
 /**
- * <p>
  * High Dynamic Range Electro Optical Transfer Function of Mastering Reference
  * Displays.
+ * <p>
+ * transfer_characteristics = 16
+ * <ul>
+ * <li>SMPTE ST 2084 for 10, 12, 14 and 16-bit systems
+ * <li>Rec. ITU-R BT.2100-0 perceptual quantization (PQ) system
+ * </ul>
  *
  * @see SMPTE ST2084:2014 (CEA-861-3)
  * @see <a href=
@@ -20,7 +25,7 @@ import band.full.testing.video.color.TransferFunctions;
  *      Television</a>
  * @author Igor Malinin
  */
-public class ST2084 implements TransferFunctions {
+public class ST2084 implements TransferCharacteristics {
     public static ST2084 PQ = new ST2084();
 
     public static final double L_MAX = 10000.0;
@@ -64,5 +69,17 @@ public class ST2084 implements TransferFunctions {
         double b = 1 + C3 * ln;
 
         return pow(a / b, M);
+    }
+
+    /**
+     * transfer_characteristics = 16
+     * <ul>
+     * <li>SMPTE ST 2084 for 10, 12, 14 and 16-bit systems
+     * <li>Rec. ITU-R BT.2100-0 perceptual quantization (PQ) system
+     * </ul>
+     */
+    @Override
+    public int code() {
+        return 16;
     }
 }

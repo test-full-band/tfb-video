@@ -1,11 +1,11 @@
-package band.full.testing.video.generate.hdr10;
+package band.full.testing.video.generate.hevc;
 
 import static band.full.testing.video.core.Resolution.STD_2160p;
-import static band.full.testing.video.itu.BT2020.BT2020_10bit;
+import static band.full.testing.video.itu.BT709.BT709_8bit;
 import static java.lang.String.format;
 
 import band.full.testing.video.core.Resolution;
-import band.full.testing.video.encoder.EncoderHDR10;
+import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
@@ -19,28 +19,26 @@ import org.junit.jupiter.api.Test;
  * @author Igor Malinin
  */
 @GenerateVideo
-public class Quantization2160pHDR10 extends QuantizationBase {
+public class Quantization2160pBT709 extends QuantizationBase {
     @Test
     public void quants() {
-        quants("NearBlack", 64, 96); // 32
-        quants("DarkGray", 128, 160); // 32
-        quants("Gray", 192, 256); // 64
-        quants("LightGray", 320, 384); // 64
-        quants("NearWhite", 448, 512); // 64
-        quants("Bright", 576, 640); // 64
-        quants("Brighter", 704, 768); // 64
-        quants("Brightest", 832, 876); // 44
+        quants("NearBlack", 16, 32); // 16
+        quants("DarkGray", 48, 64); // 16
+        quants("Gray", 96, 128); // 32
+        quants("LightGray", 160, 192); // 32
+        quants("NearWhite", 204); // 20
+        quants("Bright", 224); // 20
     }
 
     private void quants(String name, int... yCodes) {
         for (int yCode : yCodes) {
-            String prefix = getFilePath() + format("/QuantsHDR10-Y%03d", yCode);
+            String prefix = getFilePath() + format("/QuantsBT709-Y%03d", yCode);
 
-            EncoderHDR10.encode(prefix + "Cb-" + name,
+            EncoderHEVC.encode(prefix + "Cb-" + name,
                     e -> quants(e, yCode, false),
                     d -> verify(d, yCode, false));
 
-            EncoderHDR10.encode(prefix + "Cr-" + name,
+            EncoderHEVC.encode(prefix + "Cr-" + name,
                     e -> quants(e, yCode, true),
                     d -> verify(d, yCode, true));
         }
@@ -48,7 +46,7 @@ public class Quantization2160pHDR10 extends QuantizationBase {
 
     @Override
     protected String getFilePath() {
-        return "HEVC/UHD4K/HDR10/Quantization";
+        return "HEVC/UHD4K/BT709/Quantization";
     }
 
     @Override
@@ -58,11 +56,11 @@ public class Quantization2160pHDR10 extends QuantizationBase {
 
     @Override
     protected YCbCr getVideoParameters() {
-        return BT2020_10bit;
+        return BT709_8bit;
     }
 
     public static void main(String[] args) {
-        Quantization2160pHDR10 instance = new Quantization2160pHDR10();
+        Quantization2160pBT709 instance = new Quantization2160pBT709();
 
         FxDisplay.show(instance.getResolution(),
                 () -> instance.overlay(64, 512, false));
