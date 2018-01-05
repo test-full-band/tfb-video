@@ -32,7 +32,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 
 /**
- * Testing color bands separation / quantization step uniformity.
+ * Base class for creating single-color patches in the middle of the screen with
+ * specified area percentage.
  *
  * @author Igor Malinin
  */

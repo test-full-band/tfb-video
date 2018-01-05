@@ -1,17 +1,14 @@
 package band.full.testing.video.generate.hevc;
 
-import static band.full.testing.video.core.Resolution.STD_2160p;
-import static band.full.testing.video.itu.BT2020.BT2020_10bit;
+import static band.full.testing.video.encoder.EncoderParameters.UHD4K_MAIN10;
 import static java.lang.String.format;
 
-import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.EncoderHEVC;
-import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
-import band.full.testing.video.itu.YCbCr;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Testing color bands separation / quantization step uniformity.
@@ -20,52 +17,64 @@ import org.junit.jupiter.api.Test;
  */
 @GenerateVideo
 public class Quantization2160pBT2020_10 extends QuantizationBase {
-    @Test
-    public void quants() {
-        quants("NearBlack", 64, 96); // 32
-        quants("DarkGray", 128, 160); // 32
-        quants("Gray", 192, 256); // 64
-        quants("LightGray", 320, 384); // 64
-        quants("NearWhite", 448, 512); // 64
-        quants("Bright", 576, 640); // 64
-        quants("Brighter", 704, 768); // 64
-        quants("Brightest", 832, 876); // 44
+    @ParameterizedTest
+    @ValueSource(ints = {64, 96})
+    public void quantsNearBlack(int yCode) {
+        quants("NearBlack", yCode); // 32
     }
 
-    private void quants(String name, int... yCodes) {
-        for (int yCode : yCodes) {
-            String prefix =
-                    getFilePath() + format("/QuantsBT709_10-Y%03d", yCode);
-
-            EncoderHEVC.encode(prefix + "Cb-" + name,
-                    e -> quants(e, yCode, false),
-                    d -> verify(d, yCode, false));
-
-            EncoderHEVC.encode(prefix + "Cr-" + name,
-                    e -> quants(e, yCode, true),
-                    d -> verify(d, yCode, true));
-        }
+    @ParameterizedTest
+    @ValueSource(ints = {128, 160})
+    public void quantsDarkGray(int yCode) {
+        quants("DarkGray", yCode); // 32
     }
 
-    @Override
-    protected String getFilePath() {
-        return "HEVC/UHD4K/BT709_10/Quantization";
+    @ParameterizedTest
+    @ValueSource(ints = {192, 256})
+    public void quantsGray(int yCode) {
+        quants("Gray", yCode); // 64
     }
 
-    @Override
-    protected Resolution getResolution() {
-        return STD_2160p;
+    @ParameterizedTest
+    @ValueSource(ints = {320, 384})
+    public void quantsLightGray(int yCode) {
+        quants("LightGray", yCode); // 64
     }
 
-    @Override
-    protected YCbCr getVideoParameters() {
-        return BT2020_10bit;
+    @ParameterizedTest
+    @ValueSource(ints = {448, 512})
+    public void quantsNearWhite(int yCode) {
+        quants("NearWhite", yCode); // 64
     }
 
-    public static void main(String[] args) {
-        Quantization2160pBT2020_10 instance = new Quantization2160pBT2020_10();
+    @ParameterizedTest
+    @ValueSource(ints = {576, 640})
+    public void quantsBright(int yCode) {
+        quants("Bright", yCode); // 64
+    }
 
-        FxDisplay.show(instance.getResolution(),
-                () -> instance.overlay(64, 512, false));
+    @ParameterizedTest
+    @ValueSource(ints = {704, 768})
+    public void quantsBrighter(int yCode) {
+        quants("Brighter", yCode); // 64
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {832, 876})
+    public void quantsBrightest(int yCode) {
+        quants("Brightest", yCode); // 44
+    }
+
+    private void quants(String name, int yCode) {
+        String prefix = format(
+                "HEVC/UHD4K/BT709_10/Quantization/QuantsBT709_10-Y%03d", yCode);
+
+        EncoderHEVC.encode(prefix + "Cb-" + name, UHD4K_MAIN10,
+                e -> quants(e, yCode, false),
+                d -> verify(d, yCode, false));
+
+        EncoderHEVC.encode(prefix + "Cr-" + name, UHD4K_MAIN10,
+                e -> quants(e, yCode, true),
+                d -> verify(d, yCode, true));
     }
 }

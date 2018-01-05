@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
  * @author Igor Malinin
  */
 public class TestYCbCr {
-    private static final YCbCr PARAMS = new YCbCr(2, sRGB, 8);
+    private static final YCbCr PARAMS = new YCbCr(1, sRGB, 8);
 
     @Test
     public void values() {

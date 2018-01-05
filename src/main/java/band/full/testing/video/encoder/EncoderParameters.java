@@ -3,7 +3,10 @@ package band.full.testing.video.encoder;
 import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_1080p;
 import static band.full.testing.video.core.Resolution.STD_2160p;
+import static band.full.testing.video.core.Resolution.STD_720p;
 import static band.full.testing.video.encoder.Preset.SLOW;
+import static band.full.testing.video.itu.BT2020.BT2020_10bit;
+import static band.full.testing.video.itu.BT709.BT709_8bit;
 import static band.full.testing.video.smpte.ST2084.PQ;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -27,17 +30,21 @@ public class EncoderParameters {
     public static final String MASTER_DISPLAY =
             MASTER_DISPLAY_PRIMARIES + "L(10000000,5)";
 
-    public static final EncoderParameters FULLHD_MAIN8 =
-            new EncoderParameters(STD_1080p, BT709.TRANSFER, BT709.BT709_8bit,
-                    FPS_23_976);
+    public static final EncoderParameters HD_MAIN = new EncoderParameters(
+            STD_720p, BT709.TRANSFER, BT709_8bit, FPS_23_976);
 
-    public static final EncoderParameters UHD4K_MAIN8 =
-            new EncoderParameters(STD_2160p, BT709.TRANSFER, BT709.BT709_8bit,
-                    FPS_23_976);
+    public static final EncoderParameters FULLHD_MAIN8 = new EncoderParameters(
+            STD_1080p, BT709.TRANSFER, BT709_8bit, FPS_23_976);
 
-    public static final EncoderParameters HDR10 =
-            new EncoderParameters(STD_2160p, PQ, BT2020.BT2020_10bit,
-                    FPS_23_976).withMasterDisplay(MASTER_DISPLAY);
+    public static final EncoderParameters UHD4K_MAIN8 = new EncoderParameters(
+            STD_2160p, BT709.TRANSFER, BT709_8bit, FPS_23_976);
+
+    public static final EncoderParameters UHD4K_MAIN10 = new EncoderParameters(
+            STD_2160p, BT2020.TRANSFER_10bit, BT2020_10bit, FPS_23_976);
+
+    public static final EncoderParameters HDR10 = new EncoderParameters(
+            STD_2160p, PQ, BT2020_10bit, FPS_23_976)
+                    .withMasterDisplay(MASTER_DISPLAY);
 
     public final Resolution resolution;
     public final TransferCharacteristics transfer;

@@ -13,7 +13,9 @@ import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.core.Plane;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.DecoderY4M;
+import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
+import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.itu.YCbCr;
 
 import java.time.Duration;
@@ -37,21 +39,15 @@ public abstract class QuantizationBase {
     protected static final int ROWS = 17;
     protected static final int COLS = 32;
 
-    protected abstract String getFilePath();
-
-    protected abstract Resolution getResolution();
-
-    protected abstract YCbCr getVideoParameters();
-
     protected void quants(EncoderY4M e, int yMin, boolean redChroma) {
         CanvasYCbCr canvas = e.newCanvas();
 
         Plane chroma = redChroma ? canvas.Cr : canvas.Cb;
 
         bandsY(canvas.Y, yMin);
-        bandsC(chroma, canvas.parameters.ACHROMATIC - ROWS / 2);
+        bandsC(chroma, canvas.matrix.ACHROMATIC - ROWS / 2);
 
-        marks(canvas, yMin, redChroma);
+        marks(e.parameters, canvas, yMin, redChroma);
 
         e.render(DURATION, () -> canvas);
     }
@@ -89,10 +85,12 @@ public abstract class QuantizationBase {
     protected void verify(CanvasYCbCr canvas, int yMin, boolean redChroma) {
         range(0, ROWS).forEach(row -> {
             range(0, COLS).parallel().forEach(col -> {
-                int yCode = yMin + col;
-                int cCode = canvas.parameters.ACHROMATIC - ROWS / 2 + row;
+                int c0 = canvas.matrix.ACHROMATIC;
 
-                if (isValidColor(yCode, cCode, redChroma)
+                int yCode = yMin + col;
+                int cCode = c0 - ROWS / 2 + row;
+
+                if (isValidColor(canvas.matrix, yCode, cCode, redChroma)
                         && !isMarked(col, row)) {
                     verify(canvas.Y, col, row, yCode);
 
@@ -100,7 +98,7 @@ public abstract class QuantizationBase {
                             col, row, cCode);
 
                     verify(redChroma ? canvas.Cb : canvas.Cr,
-                            col, row, canvas.parameters.ACHROMATIC);
+                            col, row, c0);
                 }
             });
         });
@@ -122,33 +120,36 @@ public abstract class QuantizationBase {
      * the observer where bands separation is to be expected in case they are
      * displayed without a loss of resolution.
      */
-    private void marks(CanvasYCbCr canvas, int yMin, boolean redChroma) {
-        int c0 = canvas.parameters.ACHROMATIC;
+    private void marks(EncoderParameters params, CanvasYCbCr canvas,
+            int yMin, boolean redChroma) {
+        int c0 = canvas.matrix.ACHROMATIC;
         Plane Y = canvas.Y;
 
-        int markY = yMin + canvas.parameters.YMIN * 3;
-
-        // TODO Mark length: change 8 to proportional to screen size
+        int markY = yMin + canvas.matrix.YMIN * 3;
+        int markLength = canvas.Y.width / 480;
 
         // luma marks: top / bottom
         rangeClosed(0, COLS).forEach(i -> {
             int x = getX(Y.width, i) - 1;
-            canvas.fillRect(x, 0, 2, 8, markY, c0, c0);
-            canvas.fillRect(x, Y.height - 8, 2, 8, markY, c0, c0);
+            int y = Y.height - markLength;
+            canvas.fillRect(x, 0, 2, markLength, markY, c0, c0);
+            canvas.fillRect(x, y, 2, markLength, markY, c0, c0);
         });
 
         // chroma marks: left / right
         rangeClosed(0, ROWS).forEach(i -> {
+            int x = Y.width - markLength;
             int y = getY(Y.height, i) - 1;
-            canvas.fillRect(0, y, 8, 2, markY, c0, c0);
-            canvas.fillRect(Y.width - 8, y, 8, 2, markY, c0, c0);
+            canvas.fillRect(0, y, markLength, 2, markY, c0, c0);
+            canvas.fillRect(x, y, markLength, 2, markY, c0, c0);
         });
 
-        canvas.overlay(overlay(yMin, c0, redChroma));
+        canvas.overlay(overlay(params, yMin, c0, redChroma));
     }
 
     // arrows: https://www.w3schools.com/charsets/ref_utf_arrows.asp
-    protected Parent overlay(int yMin, int cMid, boolean redChroma) {
+    protected static Parent overlay(EncoderParameters params,
+            int yMin, int cMid, boolean redChroma) {
         int yMax = yMin + COLS - 1;
         int midRow = ROWS / 2;
         int midCol = COLS / 2;
@@ -156,30 +157,32 @@ public abstract class QuantizationBase {
         int cMin = cMid - midRow;
         int cMax = cMid + midRow;
 
-        YCbCr params = getVideoParameters();
+        YCbCr matrix = params.matrix;
 
-        Color color = yMin > params.YMIN * 3 ? BLACK
-                : gray(params.fromLumaCode(yMin + params.YMIN * 6));
+        Color color = yMin > matrix.YMIN * 3 ? BLACK
+                : gray(matrix.fromLumaCode(yMin + matrix.YMIN * 6));
 
         String cName = redChroma ? "C'r" : "C'b";
 
+        Resolution res = params.resolution;
+
         Pane grid = new Pane(
-                text("Y'\nC" + yMin, color, 0, midRow),
-                text("→", color, 1, midRow),
-                text("→", color, COLS - 2, midRow),
-                text("Y'\nC" + yMax, color, COLS - 1, midRow),
-                text(cName + "\nC" + cMin, color, midCol, 0),
-                text("↓", color, midCol, 1),
-                text("↓", color, midCol, ROWS - 2),
-                text(cName + "\nC" + cMax, color, midCol, ROWS - 1));
+                text(res, "Y'\nC" + yMin, color, 0, midRow),
+                text(res, "→", color, 1, midRow),
+                text(res, "→", color, COLS - 2, midRow),
+                text(res, "Y'\nC" + yMax, color, COLS - 1, midRow),
+                text(res, cName + "\nC" + cMin, color, midCol, 0),
+                text(res, "↓", color, midCol, 1),
+                text(res, "↓", color, midCol, ROWS - 2),
+                text(res, cName + "\nC" + cMax, color, midCol, ROWS - 1));
 
         color = color(0.125, 0.0, 0.0);
 
         for (int yCode = yMin; yCode <= yMax; yCode++) {
             for (int cCode = cMin; cCode <= cMax; cCode++) {
-                if (!isValidColor(yCode, cCode, redChroma)) {
+                if (!isValidColor(matrix, yCode, cCode, redChroma)) {
                     grid.getChildren().add(
-                            text("X", color, yCode - yMin, cCode - cMin));
+                            text(res, "X", color, yCode - yMin, cCode - cMin));
                 }
             }
         }
@@ -195,35 +198,27 @@ public abstract class QuantizationBase {
         return false;
     }
 
-    protected boolean isValidColor(int yCode, int cCode, boolean redChroma) {
-        YCbCr params = getVideoParameters();
+    protected static boolean isValidColor(YCbCr matrix,
+            int yCode, int cCode, boolean redChroma) {
+        double y = matrix.fromLumaCode(yCode);
+        double c = matrix.fromChromaCode(cCode);
 
-        double y = params.fromLumaCode(yCode);
-        double c = params.fromChromaCode(cCode);
-
-        double r = params.getR(y, redChroma ? c : 0.0);
-        double b = params.getB(y, redChroma ? 0.0 : c);
-        double g = params.getG(y, b, r);
+        double r = matrix.getR(y, redChroma ? c : 0.0);
+        double b = matrix.getB(y, redChroma ? 0.0 : c);
+        double g = matrix.getG(y, b, r);
 
         return r >= 0.0 && g >= 0.0 && b >= 0.0;
     }
 
-    private Label text(String text, Color color, int col, int row) {
-        Resolution resolution = getResolution();
-
+    private static Label text(Resolution res, String text, Color color,
+            int col, int row) {
         Label l = new Label(text);
-        l.setFont(font(resolution.height / 54));
+        l.setFont(font(res.height / 54));
         l.setTextFill(color);
         l.setTextAlignment(TextAlignment.CENTER);
         l.setAlignment(Pos.CENTER);
-
-        l.relocate(
-                getX(resolution.width, col),
-                getY(resolution.height, row));
-
-        l.setPrefSize(
-                getW(resolution.width, col),
-                getH(resolution.height, row));
+        l.relocate(getX(res.width, col), getY(res.height, row));
+        l.setPrefSize(getW(res.width, col), getH(res.height, row));
 
         return l;
     }
@@ -242,5 +237,9 @@ public abstract class QuantizationBase {
 
     private static int getH(int height, int row) {
         return getY(height, row + 1) - getY(height, row);
+    }
+
+    public static void main(String[] args) {
+        FxDisplay.show(params -> overlay(params, 16, 128, false));
     }
 }

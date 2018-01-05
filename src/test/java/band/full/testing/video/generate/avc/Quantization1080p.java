@@ -1,18 +1,15 @@
 package band.full.testing.video.generate.avc;
 
-import static band.full.testing.video.core.Resolution.STD_1080p;
+import static band.full.testing.video.encoder.EncoderParameters.FULLHD_MAIN8;
 import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
-import static band.full.testing.video.itu.BT709.BT709_8bit;
 import static java.lang.String.format;
 
-import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.EncoderAVC;
-import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
-import band.full.testing.video.itu.YCbCr;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Testing color bands separation / quantization step uniformity.
@@ -21,49 +18,52 @@ import org.junit.jupiter.api.Test;
  */
 @GenerateVideo(MAIN)
 public class Quantization1080p extends QuantizationBase {
-    @Test
-    public void quants() {
-        quants("NearBlack", 16, 32); // 16
-        quants("DarkGray", 48, 64); // 16
-        quants("Gray", 96, 128); // 32
-        quants("LightGray", 160, 192); // 32
-        quants("NearWhite", 204); // 20
-        quants("Bright", 224); // 20
+    @ParameterizedTest
+    @ValueSource(ints = {16, 32})
+    public void quantsNearBlack(int yCode) {
+        quants("NearBlack", yCode); // 16
     }
 
-    private void quants(String name, int... yCodes) {
-        for (int yCode : yCodes) {
-            String prefix = getFilePath() + format("/Quants1080p-Y%03d", yCode);
-
-            EncoderAVC.encode(prefix + "Cb-" + name,
-                    e -> quants(e, yCode, false),
-                    d -> verify(d, yCode, false));
-
-            EncoderAVC.encode(prefix + "Cr-" + name,
-                    e -> quants(e, yCode, true),
-                    d -> verify(d, yCode, true));
-        }
+    @ParameterizedTest
+    @ValueSource(ints = {48, 64})
+    public void quantsDarkGray(int yCode) {
+        quants("DarkGray", yCode); // 16
     }
 
-    @Override
-    protected String getFilePath() {
-        return "AVC/FullHD/Quantization";
+    @ParameterizedTest
+    @ValueSource(ints = {96, 128})
+    public void quantsGray(int yCode) {
+        quants("Gray", yCode); // 32
     }
 
-    @Override
-    protected Resolution getResolution() {
-        return STD_1080p;
+    @ParameterizedTest
+    @ValueSource(ints = {160, 192})
+    public void quantsLightGray(int yCode) {
+        quants("LightGray", yCode); // 32
     }
 
-    @Override
-    protected YCbCr getVideoParameters() {
-        return BT709_8bit;
+    @ParameterizedTest
+    @ValueSource(ints = 204)
+    public void quantsNearWhite(int yCode) {
+        quants("NearWhite", yCode); // 20
     }
 
-    public static void main(String[] args) {
-        Quantization1080p instance = new Quantization1080p();
+    @ParameterizedTest
+    @ValueSource(ints = 224)
+    public void quantsBright(int yCode) {
+        quants("Bright", yCode); // 20
+    }
 
-        FxDisplay.show(instance.getResolution(),
-                () -> instance.overlay(16, 128, false));
+    private void quants(String name, int yCode) {
+        String prefix = format(
+                "AVC/FullHD/Quantization/Quants1080p-Y%03d", yCode);
+
+        EncoderAVC.encode(prefix + "Cb-" + name, FULLHD_MAIN8,
+                e -> quants(e, yCode, false),
+                d -> verify(d, yCode, false));
+
+        EncoderAVC.encode(prefix + "Cr-" + name, FULLHD_MAIN8,
+                e -> quants(e, yCode, true),
+                d -> verify(d, yCode, true));
     }
 }

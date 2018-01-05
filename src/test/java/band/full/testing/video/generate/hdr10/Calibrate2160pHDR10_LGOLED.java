@@ -22,7 +22,7 @@ import band.full.testing.video.color.CIExy;
 import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.core.CanvasYCbCr;
 import band.full.testing.video.core.Window;
-import band.full.testing.video.encoder.EncoderHDR10;
+import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.itu.ColorRange;
@@ -45,8 +45,7 @@ import javafx.scene.layout.BorderPane;
 @GenerateVideo
 public class Calibrate2160pHDR10_LGOLED {
     // TODO extends CalibrationBase
-    private static final String PATH =
-            "HEVC/UHD4K/HDR10/Calibrate/LG/OLED";
+    private static final String PATH = "HEVC/UHD4K/HDR10/Calibrate/LG/OLED";
 
     private static final Duration DURATION = ofSeconds(30);
     private static final Matrix3x3 RGB2XYZ = PRIMARIES.getRGBtoXYZ();
@@ -153,8 +152,8 @@ public class Calibrate2160pHDR10_LGOLED {
                                 "--master-display", MASTER_DISPLAY_PRIMARIES
                                         + "L(" + display + "0000,0)");
 
-        EncoderHDR10.encode(name, options, e -> {
-            Window win = square(e.encoderParameters.resolution, 0.1);
+        EncoderHEVC.encode(name, options, e -> {
+            Window win = square(e.parameters.resolution, 0.1);
 
             CanvasYCbCr canvas = e.newCanvas();
             canvas.Y.fillRect(win.x, win.y, win.width, win.height, yCode);

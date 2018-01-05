@@ -1,7 +1,6 @@
 package band.full.testing.video.encoder;
 
 import static band.full.testing.video.encoder.DecoderY4M.decode;
-import static band.full.testing.video.encoder.EncoderParameters.UHD4K_MAIN8;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
 
@@ -33,7 +32,7 @@ public class EncoderHEVC extends EncoderY4M {
 
         int bitdepth = matrix.bitdepth;
         int colorprim = matrix.primaries.code;
-        int transfer = encoderParameters.transfer.code();
+        int transfer = parameters.transfer.code();
         int colormatrix = matrix.code;
 
         List<String> command = builder.command();
@@ -48,10 +47,10 @@ public class EncoderHEVC extends EncoderY4M {
                 "--colormatrix", Integer.toString(colormatrix),
                 "--chromaloc", "2");
 
-        encoderParameters.masterDisplay.ifPresent(
+        parameters.masterDisplay.ifPresent(
                 md -> addAll(command, "--master-display", md));
 
-        command.addAll(encoderParameters.encoderOptions);
+        command.addAll(parameters.encoderOptions);
 
         if (LOSSLESS) {
             command.add("--lossless");
@@ -75,15 +74,6 @@ public class EncoderHEVC extends EncoderY4M {
     @Override
     public String getFormat() {
         return "hevc";
-    }
-
-    public static void encode(String name, Consumer<EncoderY4M> consumer) {
-        encode(name, UHD4K_MAIN8, consumer);
-    }
-
-    public static void encode(String name,
-            Consumer<EncoderY4M> ec, Consumer<DecoderY4M> dc) {
-        encode(name, UHD4K_MAIN8, ec, dc);
     }
 
     public static void encode(String name, EncoderParameters parameters,

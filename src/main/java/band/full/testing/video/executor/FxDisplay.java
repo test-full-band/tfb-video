@@ -1,12 +1,15 @@
 package band.full.testing.video.executor;
 
+import static band.full.testing.video.encoder.EncoderParameters.HD_MAIN;
 import static javafx.scene.layout.Priority.ALWAYS;
 import static javafx.scene.paint.Color.BLACK;
 
 import band.full.testing.video.core.Resolution;
+import band.full.testing.video.encoder.EncoderParameters;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javafx.application.Application;
@@ -47,14 +50,23 @@ public class FxDisplay extends Application {
         stage.show();
     }
 
-    public static void show(Resolution resolution, Supplier<Parent> parent) {
-        show(resolution, BLACK, parent);
+    public static void show(Function<EncoderParameters, Parent> overlay) {
+        show(HD_MAIN, overlay);
+    }
+
+    public static void show(EncoderParameters params,
+            Function<EncoderParameters, Parent> overlay) {
+        show(params.resolution, BLACK, () -> overlay.apply(params));
+    }
+
+    public static void show(Resolution resolution, Supplier<Parent> overlay) {
+        show(resolution, BLACK, overlay);
     }
 
     public static void show(Resolution resolution, Paint background,
-            Supplier<Parent> parent) {
+            Supplier<Parent> overlay) {
         size = resolution;
-        root = parent;
+        root = overlay;
         fill = background;
 
         launch();

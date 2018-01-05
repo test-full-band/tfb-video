@@ -1,7 +1,6 @@
 package band.full.testing.video.encoder;
 
 import static band.full.testing.video.encoder.DecoderY4M.decode;
-import static band.full.testing.video.encoder.EncoderParameters.FULLHD_MAIN8;
 import static band.full.testing.video.itu.ColorRange.FULL;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
@@ -38,7 +37,7 @@ public class EncoderAVC extends EncoderY4M {
         if (LOSSLESS) {
             addAll(command, "--qp", "0");
         } else {
-            int rate = (int) (encoderParameters.framerate.rate + 0.5f);
+            int rate = (int) (parameters.framerate.rate + 0.5f);
 
             addAll(command, "--tune", "film", "--slices", "4",
                     "--bluray-compat", "--level", "4.1",
@@ -51,7 +50,7 @@ public class EncoderAVC extends EncoderY4M {
         }
 
         int colorprim = matrix.primaries.code;
-        int transfer = encoderParameters.transfer.code();
+        int transfer = parameters.transfer.code();
         int colormatrix = matrix.code;
 
         addAll(command, "--preset", getPresetParam(),
@@ -179,15 +178,6 @@ public class EncoderAVC extends EncoderY4M {
     @Override
     public String getFormat() {
         return "h264";
-    }
-
-    public static void encode(String name, Consumer<EncoderY4M> consumer) {
-        encode(name, FULLHD_MAIN8, consumer);
-    }
-
-    public static void encode(String name,
-            Consumer<EncoderY4M> ec, Consumer<DecoderY4M> dc) {
-        encode(name, FULLHD_MAIN8, ec, dc);
     }
 
     public static void encode(String name, EncoderParameters parameters,

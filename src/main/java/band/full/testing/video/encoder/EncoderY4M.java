@@ -61,7 +61,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
 
     public final String name;
-    public final EncoderParameters encoderParameters;
+    public final EncoderParameters parameters;
 
     public final YCbCr matrix;
 
@@ -75,11 +75,12 @@ public abstract class EncoderY4M implements AutoCloseable {
     private Process process;
     private final OutputStream yuv4mpegOut;
 
-    protected EncoderY4M(String name, EncoderParameters encoderParameters)
+    protected EncoderY4M(String name, EncoderParameters parameters)
             throws IOException {
         this.name = name;
-        this.encoderParameters = encoderParameters;
-        matrix = encoderParameters.matrix;
+        this.parameters = parameters;
+
+        matrix = parameters.matrix;
 
         String root = "target/testing-video"
                 + (LOSSLESS ? "-lossless" : "");
@@ -97,7 +98,7 @@ public abstract class EncoderY4M implements AutoCloseable {
                     "Cannot create directory: " + dir);
         }
 
-        Resolution resolution = encoderParameters.resolution;
+        Resolution resolution = parameters.resolution;
 
         int frameLength = resolution.width * resolution.height * 3
                 / 2 * y4mBytesPerSample();
@@ -108,7 +109,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         String header = "YUV4MPEG2"
                 + " W" + resolution.width + " H" + resolution.height
-                + " F" + (QUICK ? QRATE : encoderParameters.framerate)
+                + " F" + (QUICK ? QRATE : parameters.framerate)
                 + " Ip A1:1 C420p" + matrix.bitdepth + "\n";
 
         yuv4mpegOut.write(header.getBytes(US_ASCII));
@@ -150,7 +151,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     protected String getPresetParam() {
         if (QUICK) return "ultrafast";
 
-        switch (encoderParameters.preset) {
+        switch (parameters.preset) {
             case FAST:
                 return "fast";
             case SLOW:
@@ -193,7 +194,7 @@ public abstract class EncoderY4M implements AutoCloseable {
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
 
-        builder.command().addAll(encoderParameters.muxerOptions);
+        builder.command().addAll(parameters.muxerOptions);
 
         System.out.println();
         System.out.println(builder.command());
@@ -243,7 +244,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     public void render(Duration duration, Supplier<CanvasYCbCr> supplier) {
-        float rate = QUICK ? 1f : encoderParameters.framerate.rate;
+        float rate = QUICK ? 1f : parameters.framerate.rate;
         int frames = toFrames(rate, duration);
         render(QUICK ? min(QFRAMES, frames) : frames, supplier);
     }
@@ -253,6 +254,6 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     public CanvasYCbCr newCanvas() {
-        return new CanvasYCbCr(encoderParameters.resolution, matrix);
+        return new CanvasYCbCr(parameters.resolution, matrix);
     }
 }

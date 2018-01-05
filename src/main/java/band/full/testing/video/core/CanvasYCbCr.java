@@ -23,18 +23,18 @@ public class CanvasYCbCr {
     public final Plane Cb;
     public final Plane Cr;
 
-    public final YCbCr parameters;
+    public final YCbCr matrix;
 
-    public CanvasYCbCr(Resolution r, YCbCr parameters) {
-        Y = new Plane(r.width, r.height, parameters.YMIN);
+    public CanvasYCbCr(Resolution r, YCbCr matrix) {
+        Y = new Plane(r.width, r.height, matrix.YMIN);
 
         int wChroma = r.width / 2;
         int hChroma = r.height / 2;
 
-        Cb = new Plane(wChroma, hChroma, parameters.ACHROMATIC);
-        Cr = new Plane(wChroma, hChroma, parameters.ACHROMATIC);
+        Cb = new Plane(wChroma, hChroma, matrix.ACHROMATIC);
+        Cr = new Plane(wChroma, hChroma, matrix.ACHROMATIC);
 
-        this.parameters = parameters;
+        this.matrix = matrix;
     }
 
     public void fill(int yValue, int cbValue, int crValue) {
@@ -112,7 +112,7 @@ public class CanvasYCbCr {
                 double overG = ((argb >> 8) & 0xff) / 255.0;
                 double overB = ((argb) & 0xff) / 255.0;
 
-                YCbCr params = parameters;
+                YCbCr params = matrix;
 
                 double overY = params.getY(overR, overG, overB);
                 double oldY = params.fromLumaCode(Y.get(x, y));

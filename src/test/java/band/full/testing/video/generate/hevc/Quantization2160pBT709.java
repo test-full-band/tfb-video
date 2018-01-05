@@ -1,17 +1,14 @@
 package band.full.testing.video.generate.hevc;
 
-import static band.full.testing.video.core.Resolution.STD_2160p;
-import static band.full.testing.video.itu.BT709.BT709_8bit;
+import static band.full.testing.video.encoder.EncoderParameters.UHD4K_MAIN8;
 import static java.lang.String.format;
 
-import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.EncoderHEVC;
-import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
-import band.full.testing.video.itu.YCbCr;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Testing color bands separation / quantization step uniformity.
@@ -20,49 +17,52 @@ import org.junit.jupiter.api.Test;
  */
 @GenerateVideo
 public class Quantization2160pBT709 extends QuantizationBase {
-    @Test
-    public void quants() {
-        quants("NearBlack", 16, 32); // 16
-        quants("DarkGray", 48, 64); // 16
-        quants("Gray", 96, 128); // 32
-        quants("LightGray", 160, 192); // 32
-        quants("NearWhite", 204); // 20
-        quants("Bright", 224); // 20
+    @ParameterizedTest
+    @ValueSource(ints = {16, 32})
+    public void quantsNearBlack(int yCode) {
+        quants("NearBlack", yCode); // 16
     }
 
-    private void quants(String name, int... yCodes) {
-        for (int yCode : yCodes) {
-            String prefix = getFilePath() + format("/QuantsBT709-Y%03d", yCode);
-
-            EncoderHEVC.encode(prefix + "Cb-" + name,
-                    e -> quants(e, yCode, false),
-                    d -> verify(d, yCode, false));
-
-            EncoderHEVC.encode(prefix + "Cr-" + name,
-                    e -> quants(e, yCode, true),
-                    d -> verify(d, yCode, true));
-        }
+    @ParameterizedTest
+    @ValueSource(ints = {48, 64})
+    public void quantsDarkGray(int yCode) {
+        quants("DarkGray", yCode); // 16
     }
 
-    @Override
-    protected String getFilePath() {
-        return "HEVC/UHD4K/BT709/Quantization";
+    @ParameterizedTest
+    @ValueSource(ints = {96, 128})
+    public void quantsGray(int yCode) {
+        quants("Gray", yCode); // 32
     }
 
-    @Override
-    protected Resolution getResolution() {
-        return STD_2160p;
+    @ParameterizedTest
+    @ValueSource(ints = {160, 192})
+    public void quantsLightGray(int yCode) {
+        quants("LightGray", yCode); // 32
     }
 
-    @Override
-    protected YCbCr getVideoParameters() {
-        return BT709_8bit;
+    @ParameterizedTest
+    @ValueSource(ints = 204)
+    public void quantsNearWhite(int yCode) {
+        quants("NearWhite", yCode); // 20
     }
 
-    public static void main(String[] args) {
-        Quantization2160pBT709 instance = new Quantization2160pBT709();
+    @ParameterizedTest
+    @ValueSource(ints = 224)
+    public void quantsBright(int yCode) {
+        quants("Bright", yCode); // 20
+    }
 
-        FxDisplay.show(instance.getResolution(),
-                () -> instance.overlay(64, 512, false));
+    private void quants(String name, int yCode) {
+        String prefix = format(
+                "HEVC/UHD4K/BT709/Quantization/QuantsBT709-Y%03d", yCode);
+
+        EncoderHEVC.encode(prefix + "Cb-" + name, UHD4K_MAIN8,
+                e -> quants(e, yCode, false),
+                d -> verify(d, yCode, false));
+
+        EncoderHEVC.encode(prefix + "Cr-" + name, UHD4K_MAIN8,
+                e -> quants(e, yCode, true),
+                d -> verify(d, yCode, true));
     }
 }

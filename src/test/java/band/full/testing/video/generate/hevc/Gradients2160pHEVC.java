@@ -1,6 +1,7 @@
 package band.full.testing.video.generate.hevc;
 
 import static band.full.testing.video.core.Resolution.STD_2160p;
+import static band.full.testing.video.encoder.EncoderParameters.UHD4K_MAIN8;
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static java.time.Duration.ofSeconds;
 
@@ -28,7 +29,7 @@ public class Gradients2160pHEVC {
     }
 
     public void gradients(String name) {
-        EncoderHEVC.encode(name, e -> {
+        EncoderHEVC.encode(name, UHD4K_MAIN8, e -> {
             CanvasYCbCr c = e.newCanvas();
             e.render(ofSeconds(30), () -> gradients(c));
         });

@@ -4,7 +4,7 @@
 
   <groupId>band.full.testing.video</groupId>
   <artifactId>testing-video</artifactId>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.0.4-SNAPSHOT</version>
 
   <name>TestingAV test-videos generator</name>
 
@@ -12,8 +12,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <surefire.version>2.19.1</surefire.version>
-    <junit.jupiter.version>5.0.1</junit.jupiter.version>
-    <junit.platform.version>1.0.1</junit.platform.version>
+    <junit.jupiter.version>5.0.2</junit.jupiter.version>
+    <junit.platform.version>1.0.2</junit.platform.version>
   </properties>
 
   <dependencies>
