@@ -1,9 +1,9 @@
 package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
+import static band.full.testing.video.generate.GeneratorFactory.HEVC;
 import static java.lang.String.format;
 
-import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
 
@@ -69,12 +69,6 @@ public class Quantization2160pHDR10 extends QuantizationBase {
         String prefix = format(
                 "HEVC/UHD4K/HDR10/Quantization/QuantsHDR10-Y%03d", yCode);
 
-        EncoderHEVC.encode(prefix + "Cb-" + name, HDR10,
-                e -> quants(e, yCode, false),
-                d -> verify(d, yCode, false));
-
-        EncoderHEVC.encode(prefix + "Cr-" + name, HDR10,
-                e -> quants(e, yCode, true),
-                d -> verify(d, yCode, true));
+        generate(prefix, name, yCode, HEVC, HDR10);
     }
 }

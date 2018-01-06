@@ -1,9 +1,9 @@
 package band.full.testing.video.generate.hevc;
 
 import static band.full.testing.video.encoder.EncoderParameters.UHD4K_MAIN8;
+import static band.full.testing.video.generate.GeneratorFactory.HEVC;
 import static java.lang.String.format;
 
-import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
 
@@ -57,12 +57,6 @@ public class Quantization2160pBT709 extends QuantizationBase {
         String prefix = format(
                 "HEVC/UHD4K/BT709/Quantization/QuantsBT709-Y%03d", yCode);
 
-        EncoderHEVC.encode(prefix + "Cb-" + name, UHD4K_MAIN8,
-                e -> quants(e, yCode, false),
-                d -> verify(d, yCode, false));
-
-        EncoderHEVC.encode(prefix + "Cr-" + name, UHD4K_MAIN8,
-                e -> quants(e, yCode, true),
-                d -> verify(d, yCode, true));
+        generate(prefix, name, yCode, HEVC, UHD4K_MAIN8);
     }
 }

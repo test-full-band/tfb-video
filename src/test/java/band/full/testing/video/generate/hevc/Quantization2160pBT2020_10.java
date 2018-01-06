@@ -1,9 +1,9 @@
 package band.full.testing.video.generate.hevc;
 
 import static band.full.testing.video.encoder.EncoderParameters.UHD4K_MAIN10;
+import static band.full.testing.video.generate.GeneratorFactory.HEVC;
 import static java.lang.String.format;
 
-import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
 
@@ -67,14 +67,9 @@ public class Quantization2160pBT2020_10 extends QuantizationBase {
 
     private void quants(String name, int yCode) {
         String prefix = format(
-                "HEVC/UHD4K/BT709_10/Quantization/QuantsBT709_10-Y%03d", yCode);
+                "HEVC/UHD4K/BT2020_10/Quantization/QuantsBT2020_10-Y%03d",
+                yCode);
 
-        EncoderHEVC.encode(prefix + "Cb-" + name, UHD4K_MAIN10,
-                e -> quants(e, yCode, false),
-                d -> verify(d, yCode, false));
-
-        EncoderHEVC.encode(prefix + "Cr-" + name, UHD4K_MAIN10,
-                e -> quants(e, yCode, true),
-                d -> verify(d, yCode, true));
+        generate(prefix, name, yCode, HEVC, UHD4K_MAIN10);
     }
 }

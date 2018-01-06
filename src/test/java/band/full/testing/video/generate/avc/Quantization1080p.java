@@ -2,9 +2,9 @@ package band.full.testing.video.generate.avc;
 
 import static band.full.testing.video.encoder.EncoderParameters.FULLHD_MAIN8;
 import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
+import static band.full.testing.video.generate.GeneratorFactory.AVC;
 import static java.lang.String.format;
 
-import band.full.testing.video.encoder.EncoderAVC;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
 
@@ -58,12 +58,6 @@ public class Quantization1080p extends QuantizationBase {
         String prefix = format(
                 "AVC/FullHD/Quantization/Quants1080p-Y%03d", yCode);
 
-        EncoderAVC.encode(prefix + "Cb-" + name, FULLHD_MAIN8,
-                e -> quants(e, yCode, false),
-                d -> verify(d, yCode, false));
-
-        EncoderAVC.encode(prefix + "Cr-" + name, FULLHD_MAIN8,
-                e -> quants(e, yCode, true),
-                d -> verify(d, yCode, true));
+        generate(prefix, name, yCode, AVC, FULLHD_MAIN8);
     }
 }

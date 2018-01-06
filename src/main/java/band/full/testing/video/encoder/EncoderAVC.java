@@ -1,6 +1,5 @@
 package band.full.testing.video.encoder;
 
-import static band.full.testing.video.encoder.DecoderY4M.decode;
 import static band.full.testing.video.itu.ColorRange.FULL;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
@@ -187,11 +186,5 @@ public class EncoderAVC extends EncoderY4M {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void encode(String name, EncoderParameters parameters,
-            Consumer<EncoderY4M> ec, Consumer<DecoderY4M> dc) {
-        encode(name, parameters, ec);
-        decode(name, parameters, dc);
     }
 }

@@ -2,11 +2,11 @@ package band.full.testing.video.generate.hevc;
 
 import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_2160p;
+import static band.full.testing.video.generate.GeneratorFactory.HEVC;
 import static band.full.testing.video.itu.BT709.BT709_10bit;
 import static band.full.testing.video.itu.BT709.TRANSFER;
 import static java.lang.String.format;
 
-import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.QuantizationBase;
@@ -76,12 +76,6 @@ public class Quantization2160pBT709_10 extends QuantizationBase {
         String prefix = format(
                 "HEVC/UHD4K/BT709_10/Quantization/QuantsBT709_10-Y%03d", yCode);
 
-        EncoderHEVC.encode(prefix + "Cb-" + name, UHD4K_BT709b10,
-                e -> quants(e, yCode, false),
-                d -> verify(d, yCode, false));
-
-        EncoderHEVC.encode(prefix + "Cr-" + name, UHD4K_BT709b10,
-                e -> quants(e, yCode, true),
-                d -> verify(d, yCode, true));
+        generate(prefix, name, yCode, HEVC, UHD4K_BT709b10);
     }
 }

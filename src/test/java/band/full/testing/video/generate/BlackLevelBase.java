@@ -29,10 +29,11 @@ import javafx.scene.text.TextAlignment;
  *
  * @author Igor Malinin
  */
-public class BlackLevelBase {
+public class BlackLevelBase extends GeneratorBase {
     protected static final Duration DURATION = ofSeconds(20);
     protected static final int COLS = 16;
 
+    @Override
     protected void encode(EncoderY4M e) {
         CanvasYCbCr canvas = e.newCanvas();
 
@@ -58,6 +59,7 @@ public class BlackLevelBase {
         });
     }
 
+    @Override
     protected void verify(DecoderY4M d) {
         d.read(c -> verify(c));
     }

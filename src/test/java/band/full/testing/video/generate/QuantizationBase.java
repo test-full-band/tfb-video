@@ -39,7 +39,18 @@ public abstract class QuantizationBase {
     protected static final int ROWS = 17;
     protected static final int COLS = 32;
 
-    protected void quants(EncoderY4M e, int yMin, boolean redChroma) {
+    protected void generate(String prefix, String name, int yCode,
+            GeneratorFactory factory, EncoderParameters parameters) {
+        factory.generate(prefix + "Cb-" + name, parameters,
+                e -> encode(e, yCode, false),
+                d -> verify(d, yCode, false));
+
+        factory.generate(prefix + "Cr-" + name, parameters,
+                e -> encode(e, yCode, true),
+                d -> verify(d, yCode, true));
+    }
+
+    protected void encode(EncoderY4M e, int yMin, boolean redChroma) {
         CanvasYCbCr canvas = e.newCanvas();
 
         Plane chroma = redChroma ? canvas.Cr : canvas.Cb;
