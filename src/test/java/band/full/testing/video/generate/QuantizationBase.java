@@ -32,33 +32,47 @@ import javafx.scene.text.TextAlignment;
  *
  * @author Igor Malinin
  */
-public abstract class QuantizationBase {
+public abstract class QuantizationBase
+        extends ParametrizedGeneratorBase<QuantizationBase.Args> {
     protected static final Duration DURATION = ofSeconds(30);
 
     /** Number of rows have to be an odd number - center row is neutral. */
-    protected static final int ROWS = 17;
-    protected static final int COLS = 32;
+    public static final int ROWS = 17;
+    public static final int COLS = 32;
 
-    protected void generate(String prefix, String name, int yCode,
-            GeneratorFactory factory, EncoderParameters parameters) {
-        factory.generate(prefix + "Cb-" + name, parameters,
-                e -> encode(e, yCode, false),
-                d -> verify(d, yCode, false));
+    public class Args {
+        public final String suffix;
+        public final int yMin;
+        public final boolean redChroma;
 
-        factory.generate(prefix + "Cr-" + name, parameters,
-                e -> encode(e, yCode, true),
-                d -> verify(d, yCode, true));
+        public Args(String suffix, int yMin, boolean redChroma) {
+            this.suffix = suffix;
+            this.yMin = yMin;
+            this.redChroma = redChroma;
+        }
     }
 
-    protected void encode(EncoderY4M e, int yMin, boolean redChroma) {
+    /** only package private direct children are allowed */
+    QuantizationBase() {}
+
+    protected abstract void quants(String suffix, int yCode);
+
+    protected void generate(String suffix, int yMin,
+            GeneratorFactory factory, EncoderParameters ep) {
+        generate(factory, ep, new Args(suffix, yMin, false));
+        generate(factory, ep, new Args(suffix, yMin, true));
+    }
+
+    @Override
+    protected void encode(EncoderY4M e, Args args) {
         CanvasYCbCr canvas = e.newCanvas();
 
-        Plane chroma = redChroma ? canvas.Cr : canvas.Cb;
+        Plane chroma = args.redChroma ? canvas.Cr : canvas.Cb;
 
-        bandsY(canvas.Y, yMin);
+        bandsY(canvas.Y, args.yMin);
         bandsC(chroma, canvas.matrix.ACHROMATIC - ROWS / 2);
 
-        marks(e.parameters, canvas, yMin, redChroma);
+        marks(e.parameters, canvas, args);
 
         e.render(DURATION, () -> canvas);
     }
@@ -89,30 +103,25 @@ public abstract class QuantizationBase {
         });
     }
 
-    protected void verify(DecoderY4M d, int yMin, boolean redChroma) {
-        d.read(c -> verify(c, yMin, redChroma));
+    @Override
+    protected void verify(DecoderY4M d, Args args) {
+        d.read(c -> range(0, ROWS).forEach(
+                row -> range(0, COLS).parallel().forEach(
+                        col -> verify(c, args, row, col))));
     }
 
-    protected void verify(CanvasYCbCr canvas, int yMin, boolean redChroma) {
-        range(0, ROWS).forEach(row -> {
-            range(0, COLS).parallel().forEach(col -> {
-                int c0 = canvas.matrix.ACHROMATIC;
+    protected void verify(CanvasYCbCr canvas, Args args, int row, int col) {
+        int c0 = canvas.matrix.ACHROMATIC;
 
-                int yCode = yMin + col;
-                int cCode = c0 - ROWS / 2 + row;
+        int yCode = args.yMin + col;
+        int cCode = c0 - ROWS / 2 + row;
 
-                if (isValidColor(canvas.matrix, yCode, cCode, redChroma)
-                        && !isMarked(col, row)) {
-                    verify(canvas.Y, col, row, yCode);
-
-                    verify(redChroma ? canvas.Cr : canvas.Cb,
-                            col, row, cCode);
-
-                    verify(redChroma ? canvas.Cb : canvas.Cr,
-                            col, row, c0);
-                }
-            });
-        });
+        if (isValidColor(canvas.matrix, yCode, cCode, args.redChroma)
+                && !isMarked(col, row)) {
+            verify(canvas.Y, col, row, yCode);
+            verify(args.redChroma ? canvas.Cr : canvas.Cb, col, row, cCode);
+            verify(args.redChroma ? canvas.Cb : canvas.Cr, col, row, c0);
+        }
     }
 
     // Cut 1 pixel around block to exclude markings from calculations
@@ -131,12 +140,11 @@ public abstract class QuantizationBase {
      * the observer where bands separation is to be expected in case they are
      * displayed without a loss of resolution.
      */
-    private void marks(EncoderParameters params, CanvasYCbCr canvas,
-            int yMin, boolean redChroma) {
+    private void marks(EncoderParameters ep, CanvasYCbCr canvas, Args args) {
         int c0 = canvas.matrix.ACHROMATIC;
         Plane Y = canvas.Y;
 
-        int markY = yMin + canvas.matrix.YMIN * 3;
+        int markY = args.yMin + canvas.matrix.YMIN * 3;
         int markLength = canvas.Y.width / 480;
 
         // luma marks: top / bottom
@@ -155,7 +163,7 @@ public abstract class QuantizationBase {
             canvas.fillRect(x, y, markLength, 2, markY, c0, c0);
         });
 
-        canvas.overlay(overlay(params, yMin, c0, redChroma));
+        canvas.overlay(overlay(ep, args.yMin, c0, args.redChroma));
     }
 
     // arrows: https://www.w3schools.com/charsets/ref_utf_arrows.asp

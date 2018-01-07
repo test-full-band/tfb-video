@@ -21,15 +21,33 @@ public enum GeneratorFactory {
         this.encoder = encoder;
     }
 
-    public void generate(String name, EncoderParameters parameters,
+    public void generate(String name, EncoderParameters ep,
             Consumer<EncoderY4M> ec, Consumer<DecoderY4M> dc) {
-        encoder.encode(name, parameters, ec);
-        DecoderY4M.decode(name, parameters, dc);
+        encoder.encode(name, ep, ec);
+        DecoderY4M.decode(name, ep, dc);
+    }
+
+    public <A> void generate(String name, EncoderParameters ep, A args,
+            ParametrizedConsumer<EncoderY4M, A> ec,
+            ParametrizedConsumer<DecoderY4M, A> dc) {
+        encoder.encode(name, ep, e -> ec.accept(e, args));
+        DecoderY4M.decode(name, ep, d -> dc.accept(d, args));
     }
 
     @FunctionalInterface
     interface Encoder {
-        void encode(String name, EncoderParameters parameters,
+        void encode(String name, EncoderParameters ep,
                 Consumer<EncoderY4M> consumer);
+    }
+
+    @FunctionalInterface
+    interface ParametrizedEncoder<A> {
+        void encode(String name, EncoderParameters ep, A args,
+                Consumer<EncoderY4M> consumer);
+    }
+
+    @FunctionalInterface
+    interface ParametrizedConsumer<T, A> {
+        void accept(T t, A args);
     }
 }
