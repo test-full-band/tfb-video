@@ -8,7 +8,7 @@ import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
-import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.itu.YCbCr;
 
@@ -219,16 +219,16 @@ public abstract class EncoderY4M implements AutoCloseable {
         }
     }
 
-    public void render(CanvasYCbCr canvas) {
+    public void render(CanvasYUV canvas) {
         int bps = y4mBytesPerSample();
 
         int offsetY = FRAME_HEADER.length;
         int offsetCb = offsetY + canvas.Y.pixels.length * bps;
-        int offsetCr = offsetCb + canvas.Cb.pixels.length * bps;
+        int offsetCr = offsetCb + canvas.U.pixels.length * bps;
 
         fillFrame(offsetY, canvas.Y.pixels);
-        fillFrame(offsetCb, canvas.Cb.pixels);
-        fillFrame(offsetCr, canvas.Cr.pixels);
+        fillFrame(offsetCb, canvas.U.pixels);
+        fillFrame(offsetCr, canvas.V.pixels);
 
         try {
             yuv4mpegOut.write(frameBuffer);
@@ -237,13 +237,13 @@ public abstract class EncoderY4M implements AutoCloseable {
         }
     }
 
-    public void render(int frames, Supplier<CanvasYCbCr> supplier) {
+    public void render(int frames, Supplier<CanvasYUV> supplier) {
         for (int i = 0; i < frames; i++) {
             render(supplier.get());
         }
     }
 
-    public void render(Duration duration, Supplier<CanvasYCbCr> supplier) {
+    public void render(Duration duration, Supplier<CanvasYUV> supplier) {
         float rate = QUICK ? 1f : parameters.framerate.rate;
         int frames = toFrames(rate, duration);
         render(QUICK ? min(QFRAMES, frames) : frames, supplier);
@@ -253,7 +253,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         return matrix.bitdepth > 8 ? 2 : 1;
     }
 
-    public CanvasYCbCr newCanvas() {
-        return new CanvasYCbCr(parameters.resolution, matrix);
+    public CanvasYUV newCanvas() {
+        return new CanvasYUV(parameters.resolution, matrix);
     }
 }

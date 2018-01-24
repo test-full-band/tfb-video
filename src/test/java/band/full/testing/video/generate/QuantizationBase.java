@@ -9,7 +9,7 @@ import static javafx.scene.paint.Color.color;
 import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
 
-import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.core.Plane;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.DecoderY4M;
@@ -65,9 +65,9 @@ public abstract class QuantizationBase
 
     @Override
     protected void encode(EncoderY4M e, Args args) {
-        CanvasYCbCr canvas = e.newCanvas();
+        CanvasYUV canvas = e.newCanvas();
 
-        Plane chroma = args.redChroma ? canvas.Cr : canvas.Cb;
+        Plane chroma = args.redChroma ? canvas.V : canvas.U;
 
         bandsY(canvas.Y, args.yMin);
         bandsC(chroma, canvas.matrix.ACHROMATIC - ROWS / 2);
@@ -110,7 +110,7 @@ public abstract class QuantizationBase
                         col -> verify(c, args, row, col))));
     }
 
-    protected void verify(CanvasYCbCr canvas, Args args, int row, int col) {
+    protected void verify(CanvasYUV canvas, Args args, int row, int col) {
         int c0 = canvas.matrix.ACHROMATIC;
 
         int yCode = args.yMin + col;
@@ -119,8 +119,8 @@ public abstract class QuantizationBase
         if (isValidColor(canvas.matrix, yCode, cCode, args.redChroma)
                 && !isMarked(col, row)) {
             verify(canvas.Y, col, row, yCode);
-            verify(args.redChroma ? canvas.Cr : canvas.Cb, col, row, cCode);
-            verify(args.redChroma ? canvas.Cb : canvas.Cr, col, row, c0);
+            verify(args.redChroma ? canvas.V : canvas.U, col, row, cCode);
+            verify(args.redChroma ? canvas.U : canvas.V, col, row, c0);
         }
     }
 
@@ -140,7 +140,7 @@ public abstract class QuantizationBase
      * the observer where bands separation is to be expected in case they are
      * displayed without a loss of resolution.
      */
-    private void marks(EncoderParameters ep, CanvasYCbCr canvas, Args args) {
+    private void marks(EncoderParameters ep, CanvasYUV canvas, Args args) {
         int c0 = canvas.matrix.ACHROMATIC;
         Plane Y = canvas.Y;
 

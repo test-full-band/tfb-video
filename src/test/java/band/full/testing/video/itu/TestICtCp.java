@@ -1,7 +1,8 @@
 package band.full.testing.video.itu;
 
-import static band.full.testing.video.color.Primaries.sRGB;
-import static band.full.testing.video.itu.ColorRange.FULL;
+import static band.full.testing.video.itu.BT2020.PRIMARIES;
+import static band.full.testing.video.itu.ColorRange.LIMITED;
+import static band.full.testing.video.smpte.ST2084.PQ;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
@@ -9,27 +10,27 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Igor Malinin
  */
-public class TestYCbCr {
-    private static final YCbCr PARAMS = new YCbCr(1, sRGB, 8);
-
-    @Test
-    public void valuesLimited() {
-        assertEquals(16, PARAMS.YMIN);
-        assertEquals(235, PARAMS.YMAX);
-        assertEquals(16, PARAMS.CMIN);
-        assertEquals(240, PARAMS.CMAX);
-        assertEquals(128, PARAMS.ACHROMATIC);
-    }
+public class TestICtCp {
+    private static final ICtCp PARAMS = new ICtCp(9, PQ, PRIMARIES, 12);
 
     @Test
     public void valuesFull() {
-        YCbCr params = new YCbCr(1, sRGB, 8, FULL);
+        assertEquals(0, PARAMS.YMIN);
+        assertEquals(4095, PARAMS.YMAX);
+        assertEquals(1, PARAMS.CMIN);
+        assertEquals(4095, PARAMS.CMAX);
+        assertEquals(2048, PARAMS.ACHROMATIC);
+    }
 
-        assertEquals(0, params.YMIN);
-        assertEquals(255, params.YMAX);
-        assertEquals(1, params.CMIN);
-        assertEquals(255, params.CMAX);
-        assertEquals(128, params.ACHROMATIC);
+    @Test
+    public void valuesLimited() {
+        ICtCp params = new ICtCp(9, PQ, PRIMARIES, 12, LIMITED);
+
+        assertEquals(256, params.YMIN);
+        assertEquals(3760, params.YMAX);
+        assertEquals(256, params.CMIN);
+        assertEquals(3840, params.CMAX);
+        assertEquals(2048, params.ACHROMATIC);
     }
 
     @Test
@@ -60,24 +61,17 @@ public class TestYCbCr {
 
     @Test
     public void black() {
-        assertEquals(0.0, PARAMS.getY(0.0, 0.0, 0.0));
-        assertEquals(0.0, PARAMS.getG(0.0, 0.0, 0.0));
-        assertEquals(0.0, PARAMS.getB(0.0, 0.0));
-        assertEquals(0.0, PARAMS.getR(0.0, 0.0));
+        // TODO
     }
 
     @Test
     public void gray() {
-        assertEquals(0.5, PARAMS.getY(0.5, 0.5, 0.5), 1e-15);
-        assertEquals(0.0, PARAMS.getCb(0.5, 0.5));
-        assertEquals(0.0, PARAMS.getCr(0.5, 0.5));
+        // TODO
     }
 
     @Test
     public void white() {
-        assertEquals(1.0, PARAMS.getY(1.0, 1.0, 1.0), 1e-15);
-        assertEquals(0.0, PARAMS.getCb(1.0, 1.0));
-        assertEquals(0.0, PARAMS.getCr(1.0, 1.0));
+        // TODO
     }
 
     @Test
@@ -99,9 +93,6 @@ public class TestYCbCr {
     }
 
     private void symmetry(double r, double g, double b) {
-        double y = PARAMS.getY(r, g, b);
-        assertEquals(g, PARAMS.getG(y, b, r), 1e-14);
-        assertEquals(b, PARAMS.getB(y, PARAMS.getCb(y, b)), 1e-14);
-        assertEquals(r, PARAMS.getR(y, PARAMS.getCr(y, r)), 1e-14);
+        // TODO
     }
 }

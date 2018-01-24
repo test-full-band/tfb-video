@@ -45,7 +45,7 @@ public final class YCbCr extends ColorMatrix {
         YMIN = range == FULL ? 0 : 16 << shift;
         YMAX = range == FULL ? (256 << shift) - 1 : 235 << shift;
 
-        CMIN = range == FULL ? 0 : 16 << shift;
+        CMIN = range == FULL ? 1 : 16 << shift;
         CMAX = range == FULL ? (256 << shift) - 1 : 240 << shift;
 
         ACHROMATIC = 128 << shift;
@@ -76,7 +76,7 @@ public final class YCbCr extends ColorMatrix {
     public void toRGB(double[] src, double[] rgb) {
         double y = src[0];
         double b = getB(y, src[1]);
-        double r = getB(y, src[2]);
+        double r = getR(y, src[2]);
 
         rgb[0] = r;
         rgb[1] = getG(y, b, r);

@@ -14,7 +14,7 @@ import static java.lang.Math.sqrt;
 import static java.time.Duration.ofMinutes;
 import static java.util.Arrays.fill;
 
-import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.itu.YCbCr;
@@ -45,7 +45,7 @@ public class ChromaSubsampling2160pHDR10 {
     public void concentricBlackWhiteSineE() throws Exception {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-BlackWhiteCodeSineE", HDR10,
                 e -> {
-                    CanvasYCbCr c = e.newCanvas();
+                    CanvasYUV c = e.newCanvas();
                     YCbCr matrix = c.matrix;
 
                     int grayY = round(matrix.toLumaCode(0.25));
@@ -60,8 +60,8 @@ public class ChromaSubsampling2160pHDR10 {
 
                     short achromatic = (short) matrix.ACHROMATIC;
 
-                    fill(c.Cb.pixels, achromatic);
-                    fill(c.Cr.pixels, achromatic);
+                    fill(c.U.pixels, achromatic);
+                    fill(c.V.pixels, achromatic);
 
                     e.render(DURATION, () -> c);
                 });
@@ -70,7 +70,7 @@ public class ChromaSubsampling2160pHDR10 {
     @Test
     public void concentricBlackWhiteSineO() throws Exception {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-BlackWhiteSineO", HDR10, e -> {
-            CanvasYCbCr c = e.newCanvas();
+            CanvasYUV c = e.newCanvas();
             YCbCr matrix = c.matrix;
 
             int grayY = round(matrix.toLumaCode(0.25));
@@ -87,8 +87,8 @@ public class ChromaSubsampling2160pHDR10 {
 
             short achromatic = (short) matrix.ACHROMATIC;
 
-            fill(c.Cb.pixels, achromatic);
-            fill(c.Cr.pixels, achromatic);
+            fill(c.U.pixels, achromatic);
+            fill(c.V.pixels, achromatic);
 
             e.render(DURATION, () -> c);
         });
@@ -102,7 +102,7 @@ public class ChromaSubsampling2160pHDR10 {
     // @Ignore("Find correct amplitudes according to DCI-P3 primaries")
     public void concentricRedBlueSineE() throws Exception {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-RedBlueSineE", HDR10, e -> {
-            CanvasYCbCr c = e.newCanvas();
+            CanvasYUV c = e.newCanvas();
             YCbCr matrix = c.matrix;
 
             int grayY = round(matrix.toLumaCode(0.25));
@@ -122,8 +122,8 @@ public class ChromaSubsampling2160pHDR10 {
                         if (hasChromaX && hasChromaY) {
                             int cx = x >> 1, cy = y >> 1;
 
-                            c.Cb.set(cx, cy, achromatic);
-                            c.Cr.set(cx, cy, achromatic);
+                            c.U.set(cx, cy, achromatic);
+                            c.V.set(cx, cy, achromatic);
                         }
                     } else {
                         double sin = 0.25 * sineSweepHalf(radius);
@@ -138,10 +138,10 @@ public class ChromaSubsampling2160pHDR10 {
                             int cx = x >> 1, cy = y >> 1;
 
                             double Cb = matrix.getCb(Y, B);
-                            c.Cb.set(cx, cy, round(matrix.toChromaCode(Cb)));
+                            c.U.set(cx, cy, round(matrix.toChromaCode(Cb)));
 
                             double Cr = matrix.getCr(Y, R);
-                            c.Cr.set(cx, cy, round(matrix.toChromaCode(Cr)));
+                            c.V.set(cx, cy, round(matrix.toChromaCode(Cr)));
                         }
                     }
                 }

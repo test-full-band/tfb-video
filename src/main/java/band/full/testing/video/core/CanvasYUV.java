@@ -18,51 +18,52 @@ import javafx.scene.image.WritableImage;
 /**
  * @author Igor Malinin
  */
-public class CanvasYCbCr {
+public class CanvasYUV {
     public final Plane Y;
-    public final Plane Cb;
-    public final Plane Cr;
+    public final Plane U;
+    public final Plane V;
 
     public final YCbCr matrix;
 
-    public CanvasYCbCr(Resolution r, YCbCr matrix) {
+    public CanvasYUV(Resolution r, YCbCr matrix) {
         Y = new Plane(r.width, r.height, matrix.YMIN);
 
+        // TODO Other than 4:2:0 subsampling
         int wChroma = r.width / 2;
         int hChroma = r.height / 2;
 
-        Cb = new Plane(wChroma, hChroma, matrix.ACHROMATIC);
-        Cr = new Plane(wChroma, hChroma, matrix.ACHROMATIC);
+        U = new Plane(wChroma, hChroma, matrix.ACHROMATIC);
+        V = new Plane(wChroma, hChroma, matrix.ACHROMATIC);
 
         this.matrix = matrix;
     }
 
-    public void fill(int yValue, int cbValue, int crValue) {
+    public void fill(int yValue, int uValue, int vValue) {
         Y.fill(yValue);
-        Cb.fill(cbValue);
-        Cr.fill(crValue);
+        U.fill(uValue);
+        V.fill(vValue);
     }
 
     public void fillRect(int x, int y, int w, int h,
-            int yValue, int cbValue, int crValue) {
+            int yValue, int uValue, int vValue) {
         Y.fillRect(x, y, w, h, yValue);
 
         // FIXME: precise cw, ch
         int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
 
-        Cb.fillRect(cx, cy, cw, ch, cbValue);
-        Cr.fillRect(cx, cy, cw, ch, crValue);
+        U.fillRect(cx, cy, cw, ch, uValue);
+        V.fillRect(cx, cy, cw, ch, vValue);
     }
 
     public void verifyRect(int x, int y, int w, int h,
-            int yValue, int cbValue, int crValue) {
+            int yValue, int uValue, int vValue) {
         Y.verifyRect(x, y, w, h, yValue);
 
         // FIXME: precise cw, ch
         int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
 
-        Cb.verifyRect(cx, cy, cw, ch, cbValue);
-        Cr.verifyRect(cx, cy, cw, ch, crValue);
+        U.verifyRect(cx, cy, cw, ch, uValue);
+        V.verifyRect(cx, cy, cw, ch, vValue);
     }
 
     public void overlay(Parent parent) {
@@ -124,15 +125,15 @@ public class CanvasYCbCr {
                     // to nearest neighbor) there is no need of higher quality
                     int cx = x >> 1, cy = y >> 1;
 
-                    double overCb = params.getCb(overY, overB);
-                    double oldCb = params.fromChromaCode(Cb.get(cx, cy));
-                    double newCb = oldCb * transparency + overCb * opacity;
-                    Cb.set(cx, cy, round(params.toChromaCode(newCb)));
+                    double overU = params.getCb(overY, overB);
+                    double oldU = params.fromChromaCode(U.get(cx, cy));
+                    double newU = oldU * transparency + overU * opacity;
+                    U.set(cx, cy, round(params.toChromaCode(newU)));
 
-                    double overCr = params.getCr(overY, overR);
-                    double oldCr = params.fromChromaCode(Cr.get(cx, cy));
-                    double newCr = oldCr * transparency + overCr * opacity;
-                    Cr.set(cx, cy, round(params.toChromaCode(newCr)));
+                    double overV = params.getCr(overY, overR);
+                    double oldV = params.fromChromaCode(V.get(cx, cy));
+                    double newV = oldV * transparency + overV * opacity;
+                    V.set(cx, cy, round(params.toChromaCode(newV)));
                 }
             }
         }

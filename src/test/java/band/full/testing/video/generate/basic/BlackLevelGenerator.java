@@ -1,4 +1,4 @@
-package band.full.testing.video.generate;
+package band.full.testing.video.generate.basic;
 
 import static java.lang.Math.max;
 import static java.time.Duration.ofSeconds;
@@ -7,13 +7,14 @@ import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
 
-import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.core.Plane;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.executor.FxDisplay;
+import band.full.testing.video.generate.GeneratorBase;
 import band.full.testing.video.itu.YCbCr;
 
 import java.time.Duration;
@@ -29,13 +30,13 @@ import javafx.scene.text.TextAlignment;
  *
  * @author Igor Malinin
  */
-public class BlackLevelBase extends GeneratorBase {
-    protected static final Duration DURATION = ofSeconds(20);
+public class BlackLevelGenerator extends GeneratorBase {
+    protected static final Duration DURATION = ofSeconds(10);
     protected static final int COLS = 16;
 
     @Override
     protected void encode(EncoderY4M e) {
-        CanvasYCbCr canvas = e.newCanvas();
+        CanvasYUV canvas = e.newCanvas();
 
         patches(canvas);
         marks(e.parameters, canvas);
@@ -48,7 +49,7 @@ public class BlackLevelBase extends GeneratorBase {
      * code value starting from <code>yMin</code> and increment of 1 for every
      * next column.
      */
-    private void patches(CanvasYCbCr canvas) {
+    private void patches(CanvasYUV canvas) {
         YCbCr matrix = canvas.matrix;
 
         range(0, COLS).forEach(col -> {
@@ -64,13 +65,13 @@ public class BlackLevelBase extends GeneratorBase {
         d.read(c -> verify(c));
     }
 
-    protected void verify(CanvasYCbCr canvas) {
+    protected void verify(CanvasYUV canvas) {
         YCbCr matrix = canvas.matrix;
 
         range(0, COLS).parallel().forEach(col -> {
             verify(canvas.Y, col, getLuma(matrix, col));
-            verify(canvas.Cb, col, matrix.ACHROMATIC);
-            verify(canvas.Cr, col, matrix.ACHROMATIC);
+            verify(canvas.U, col, matrix.ACHROMATIC);
+            verify(canvas.V, col, matrix.ACHROMATIC);
         });
     }
 
@@ -90,7 +91,7 @@ public class BlackLevelBase extends GeneratorBase {
      * the observer where bands separation is to be expected in case they are
      * displayed without a loss of resolution.
      */
-    private void marks(EncoderParameters params, CanvasYCbCr canvas) {
+    private void marks(EncoderParameters params, CanvasYUV canvas) {
         canvas.overlay(overlay(params));
     }
 
@@ -151,6 +152,6 @@ public class BlackLevelBase extends GeneratorBase {
 
     /** Quickly display overlay window */
     public static void main(String[] args) {
-        FxDisplay.show(BlackLevelBase::overlay);
+        FxDisplay.show(BlackLevelGenerator::overlay);
     }
 }

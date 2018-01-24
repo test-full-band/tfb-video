@@ -14,7 +14,7 @@ import static javafx.scene.text.Font.font;
 import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExy;
 import band.full.testing.video.color.Primaries;
-import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.DecoderY4M;
@@ -84,7 +84,7 @@ public abstract class CalibrationBase {
     protected void encode(EncoderY4M e, int window, int yCode) {
         Window win = getWindow(window);
 
-        CanvasYCbCr canvas = e.newCanvas();
+        CanvasYUV canvas = e.newCanvas();
         canvas.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
         canvas.overlay(overlay(window, yCode));
 
@@ -95,7 +95,7 @@ public abstract class CalibrationBase {
         d.read(c -> verify(c, window, yCode));
     }
 
-    protected void verify(CanvasYCbCr canvas, int window, int yCode) {
+    protected void verify(CanvasYUV canvas, int window, int yCode) {
         Window win = getWindow(window);
 
         int achromatic = getEncoderParameters().matrix.ACHROMATIC;

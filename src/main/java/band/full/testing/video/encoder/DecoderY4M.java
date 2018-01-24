@@ -11,7 +11,7 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
 
-import band.full.testing.video.core.CanvasYCbCr;
+import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.itu.YCbCr;
 
@@ -144,7 +144,7 @@ public class DecoderY4M implements AutoCloseable {
         System.out.println("Frames read: " + framesRead);
 
         int framesSkipped = 0;
-        CanvasYCbCr canvas = newCanvas();
+        CanvasYUV canvas = newCanvas();
         while (read(canvas)) {
             // skip frames to the end of file
             ++framesSkipped;
@@ -175,7 +175,7 @@ public class DecoderY4M implements AutoCloseable {
         }
     }
 
-    public boolean read(CanvasYCbCr canvas) {
+    public boolean read(CanvasYUV canvas) {
         int n = readFrameBuffer();
 
         if (n == 0) return false; // EOF
@@ -190,11 +190,11 @@ public class DecoderY4M implements AutoCloseable {
 
         int bps = y4mBytesPerSample();
         int offsetCb = offsetY + canvas.Y.pixels.length * bps;
-        int offsetCr = offsetCb + canvas.Cb.pixels.length * bps;
+        int offsetCr = offsetCb + canvas.U.pixels.length * bps;
 
         fillPlane(offsetY, canvas.Y.pixels);
-        fillPlane(offsetCb, canvas.Cb.pixels);
-        fillPlane(offsetCr, canvas.Cr.pixels);
+        fillPlane(offsetCb, canvas.U.pixels);
+        fillPlane(offsetCr, canvas.V.pixels);
 
         ++framesRead;
 
@@ -226,16 +226,16 @@ public class DecoderY4M implements AutoCloseable {
         return pos;
     }
 
-    public void read(Consumer<CanvasYCbCr> consumer) {
-        CanvasYCbCr canvas = newCanvas();
+    public void read(Consumer<CanvasYUV> consumer) {
+        CanvasYUV canvas = newCanvas();
 
         while (read(canvas)) {
             consumer.accept(canvas);
         }
     }
 
-    public void read(int frames, Consumer<CanvasYCbCr> consumer) {
-        CanvasYCbCr canvas = newCanvas();
+    public void read(int frames, Consumer<CanvasYUV> consumer) {
+        CanvasYUV canvas = newCanvas();
 
         for (int i = 0; i < frames; i++) {
             if (!read(canvas))
@@ -245,7 +245,7 @@ public class DecoderY4M implements AutoCloseable {
         }
     }
 
-    public void read(Duration duration, Consumer<CanvasYCbCr> consumer) {
+    public void read(Duration duration, Consumer<CanvasYUV> consumer) {
         float rate = QUICK ? 1f : encoderParameters.framerate.rate;
         int frames = toFrames(rate, duration);
         read(QUICK ? min(QFRAMES, frames) : frames, consumer);
@@ -267,8 +267,8 @@ public class DecoderY4M implements AutoCloseable {
                 : "yuv420p";
     }
 
-    public CanvasYCbCr newCanvas() {
-        return new CanvasYCbCr(encoderParameters.resolution, matrix);
+    public CanvasYUV newCanvas() {
+        return new CanvasYUV(encoderParameters.resolution, matrix);
     }
 
     public static void decode(String name, EncoderParameters parameters,
