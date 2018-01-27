@@ -23,15 +23,26 @@ public final class ICtCp extends ColorMatrix {
     public final Matrix3x3 RGBtoXYZ;
     public final Matrix3x3 XYZtoRGB;
 
-    public ICtCp(int code, TransferCharacteristics transfer,
-            Primaries primaries, int bitdepth) {
-        this(code, transfer, primaries, bitdepth, FULL);
+    public final Matrix3x3 RGBtoLMS;
+    public final Matrix3x3 LMStoRGB;
+
+    public final Matrix3x3 ITPtoPQLMS;
+    public final Matrix3x3 PQLMStoITP;
+
+    // TODO derive matrix from BT.2020 color space
+    // private final Matrix3x3 LMStoXYZ = new Matrix3x3(
+    // 2.071, -1.327, 0.207,
+    // 0.365, 0.681, -0.045,
+    // -0.049, -0.05, 1.188);
+
+    public ICtCp(TransferCharacteristics transfer, Primaries primaries,
+            int bitdepth) {
+        this(transfer, primaries, bitdepth, FULL);
     }
 
-    public ICtCp(int code, TransferCharacteristics transfer,
-            Primaries primaries, int bitdepth,
-            ColorRange range) {
-        super(code, primaries);
+    public ICtCp(TransferCharacteristics transfer, Primaries primaries,
+            int bitdepth, ColorRange range) {
+        super(14, primaries);
 
         if (bitdepth < 8) throw new IllegalArgumentException(
                 "bitdepth should be at least 8 but was " + bitdepth);
@@ -52,27 +63,37 @@ public final class ICtCp extends ColorMatrix {
 
         RGBtoXYZ = primaries.getRGBtoXYZ();
         XYZtoRGB = primaries.getXYZtoRGB();
+
+        RGBtoLMS = new Matrix3x3(
+                1688, 2146, 262,
+                683, 2951, 462,
+                99, 309, 3688)
+                        .multiply(1.0 / 4096);
+
+        LMStoRGB = RGBtoLMS.invert();
+
+        PQLMStoITP = new Matrix3x3(
+                2048, 2048, 0,
+                6610, -13613, 7003,
+                17933, -17390, -543)
+                        .multiply(1.0 / 4096);
+
+        ITPtoPQLMS = PQLMStoITP.invert();
     }
 
     /** Input is linear RGB. Output is nonlinear ITP. */
     @Override
     public void fromRGB(double[] rgb, double[] itp) {
-        double r = rgb[0];
-        double g = rgb[1];
-        double b = rgb[2];
-
-        double l = transfer.oetf((1688d * r + 2146d * g + 262d * b) / 4096d);
-        double m = transfer.oetf((683d * r + 2951d * g + 462d * b) / 4096d);
-        double s = transfer.oetf((99d * r + 309d * g + 3688d * b) / 4096d);
-
-        itp[0] = (l + m) / 2d; // I
-        itp[1] = (6610 * l - 13611 * m + 7003 * s) / 4096d; // Ct
-        itp[2] = (17933 * l - 17390 * m + 543 * s) / 4096d; // Cp
+        RGBtoLMS.multiply(rgb, itp);
+        transfer.oetf(itp, itp); // L'M'S'
+        PQLMStoITP.multiply(itp, itp);
     }
 
     @Override
     public void toRGB(double[] itp, double[] rgb) {
-        throw new NoSuchMethodError("Decoding have to be implemented!"); // TODO
+        ITPtoPQLMS.multiply(itp, rgb);
+        transfer.eotf(rgb, rgb); // LMS
+        LMStoRGB.multiply(rgb, rgb);
     }
 
     public final double toLumaCode(double i) {

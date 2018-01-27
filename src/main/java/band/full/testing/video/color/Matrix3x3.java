@@ -61,17 +61,30 @@ public final class Matrix3x3 {
     }
 
     public double[] multiply(double[] vector) {
-        double[] m = new double[3];
+        return multiply(vector, new double[3]);
+    }
 
-        for (int row = 0; row < 3; row++) {
-            double[] srcRow = values[row];
+    public double[] multiply(double[] vector, double[] result) {
+        double[] srcRow = values[0];
+        double r0 = srcRow[0] * vector[0]
+                + srcRow[1] * vector[1]
+                + srcRow[2] * vector[2];
 
-            for (int col = 0; col < 3; col++) {
-                m[row] += srcRow[col] * vector[col];
-            }
-        }
+        srcRow = values[1];
+        double r1 = srcRow[0] * vector[0]
+                + srcRow[1] * vector[1]
+                + srcRow[2] * vector[2];
 
-        return m;
+        srcRow = values[2];
+        double r2 = srcRow[0] * vector[0]
+                + srcRow[1] * vector[1]
+                + srcRow[2] * vector[2];
+
+        result[0] = r0;
+        result[1] = r1;
+        result[2] = r2;
+
+        return result;
     }
 
     public Matrix3x3 multiply(Matrix3x3 other) {

@@ -1,5 +1,6 @@
 package band.full.testing.video.itu;
 
+import band.full.testing.video.color.Primaries;
 import band.full.testing.video.smpte.ST2084;
 
 /**
@@ -15,5 +16,9 @@ import band.full.testing.video.smpte.ST2084;
  *      White paper: What is ICtCp? - Introduction</a>
  */
 public class BT2100 {
-    public static final TransferCharacteristics TRANSFER = ST2084.PQ;
+    public static final Primaries PRIMARIES = BT2020.PRIMARIES;
+    public static final TransferCharacteristics PQ = ST2084.PQ;
+
+    public static final ICtCp ITP10_PQ = new ICtCp(PQ, PRIMARIES, 10);
+    public static final ICtCp ITP12_PQ = new ICtCp(PQ, PRIMARIES, 12);
 }

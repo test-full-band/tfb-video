@@ -3,7 +3,10 @@ package band.full.testing.video.itu;
 import static java.lang.Math.pow;
 
 /**
- * Uses precise definition of the formula from BT.2020 recommendation
+ * Common gamma OETF.<br>
+ * Uses precise definition of the formula from BT.2020 recommendation.
+ *
+ * @see BT2020
  */
 class Gamma implements TransferCharacteristics {
     private static final double POWER = 0.45;
@@ -25,6 +28,7 @@ class Gamma implements TransferCharacteristics {
         return code;
     }
 
+    /** Inverse OETF */
     @Override
     public double eotf(double v) {
         return v < BL ? v / LINEAR : pow((v + A1) / ALPHA, GAMMA);

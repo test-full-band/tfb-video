@@ -11,7 +11,20 @@ import org.junit.jupiter.api.Test;
  * @author Igor Malinin
  */
 public class TestICtCp {
-    private static final ICtCp PARAMS = new ICtCp(9, PQ, PRIMARIES, 12);
+    private static final ICtCp PARAMS = new ICtCp(PQ, PRIMARIES, 12);
+
+    @Test
+    public void valuesITPtoPQLMS() {
+        assertEquals(1.0, PARAMS.ITPtoPQLMS.get(0, 0));
+        assertEquals(0.009, PARAMS.ITPtoPQLMS.get(0, 1), 1e-3);
+        assertEquals(0.111, PARAMS.ITPtoPQLMS.get(0, 2), 1e-3);
+        assertEquals(1.0, PARAMS.ITPtoPQLMS.get(1, 0));
+        assertEquals(-0.009, PARAMS.ITPtoPQLMS.get(1, 1), 1e-3);
+        assertEquals(-0.111, PARAMS.ITPtoPQLMS.get(1, 2), 1e-3);
+        assertEquals(1.0, PARAMS.ITPtoPQLMS.get(2, 0));
+        assertEquals(0.56, PARAMS.ITPtoPQLMS.get(2, 1), 1e-3);
+        assertEquals(-0.321, PARAMS.ITPtoPQLMS.get(2, 2), 1e-3);
+    }
 
     @Test
     public void valuesFull() {
@@ -24,7 +37,7 @@ public class TestICtCp {
 
     @Test
     public void valuesLimited() {
-        ICtCp params = new ICtCp(9, PQ, PRIMARIES, 12, LIMITED);
+        ICtCp params = new ICtCp(PQ, PRIMARIES, 12, LIMITED);
 
         assertEquals(256, params.YMIN);
         assertEquals(3760, params.YMAX);
@@ -93,6 +106,14 @@ public class TestICtCp {
     }
 
     private void symmetry(double r, double g, double b) {
-        // TODO
+        double[] rgb = {r, g, b};
+        double[] itp = new double[3];
+
+        PARAMS.fromRGB(rgb, itp);
+        PARAMS.toRGB(itp, rgb);
+
+        assertEquals(r, rgb[0], 1e-13);
+        assertEquals(g, rgb[1], 1e-13);
+        assertEquals(b, rgb[2], 1e-13);
     }
 }
