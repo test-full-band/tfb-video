@@ -28,7 +28,7 @@ public class BT709 {
 
     /**
      * BT.709 only defines low resolution rounded values, use precise definition
-     * of the same formula instead.
+     * of the same formula instead as defined in BT.2020.
      * <p>
      * transfer_characteristics = 1
      * <ul>
@@ -52,7 +52,7 @@ public class BT709 {
      * <li>See Equations E-28 to E-30
      * </ul>
      */
-    public static YCbCr BT709_8bit = new YCbCr(1, PRIMARIES, 8);
+    public static YCbCr BT709_8bit = new YCbCr(1, TRANSFER, PRIMARIES, 8);
 
     /**
      * <p>
@@ -66,7 +66,7 @@ public class BT709 {
      * <li>See Equations E-28 to E-30
      * </ul>
      */
-    public static YCbCr BT709_10bit = new YCbCr(1, PRIMARIES, 10);
+    public static YCbCr BT709_10bit = new YCbCr(1, TRANSFER, PRIMARIES, 10);
 
     private BT709() {}
 }

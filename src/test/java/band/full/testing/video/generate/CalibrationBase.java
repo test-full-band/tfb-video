@@ -20,7 +20,7 @@ import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +67,7 @@ public abstract class CalibrationBase {
     }
 
     public void grayscale(int window) {
-        YCbCr matrix = getEncoderParameters().matrix;
+        ColorMatrix matrix = getEncoderParameters().matrix;
 
         // show brightest and darkest patterns in the beginning
         grayscale(window, -1, matrix.YMAX);
@@ -125,7 +125,7 @@ public abstract class CalibrationBase {
     protected Parent overlay(int window, int yCode) {
         EncoderParameters params = getEncoderParameters();
         double ye = params.matrix.fromLumaCode(yCode);
-        double yo = params.transfer.eotf(ye);
+        double yo = params.matrix.transfer.eotf(ye);
         CIExy xy = getColor(yo);
 
         String text = format("HDR10 grayscale CIE(x=%.4f, y=%.4f) %.1f%% Y%d,"

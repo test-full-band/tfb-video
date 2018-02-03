@@ -4,7 +4,7 @@ import static band.full.testing.video.core.Quantizer.round;
 import static band.full.testing.video.executor.FxDisplay.runAndWait;
 import static javafx.scene.paint.Color.TRANSPARENT;
 
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import java.util.function.Consumer;
 
@@ -23,9 +23,9 @@ public class CanvasYUV {
     public final Plane U;
     public final Plane V;
 
-    public final YCbCr matrix;
+    public final ColorMatrix matrix;
 
-    public CanvasYUV(Resolution r, YCbCr matrix) {
+    public CanvasYUV(Resolution r, ColorMatrix matrix) {
         Y = new Plane(r.width, r.height, matrix.YMIN);
 
         // TODO Other than 4:2:0 subsampling
@@ -53,6 +53,24 @@ public class CanvasYUV {
 
         U.fillRect(cx, cy, cw, ch, uValue);
         V.fillRect(cx, cy, cw, ch, vValue);
+    }
+
+    public void verify(CanvasYUV expected) {
+        Y.verify(expected.Y);
+        U.verify(expected.U);
+        V.verify(expected.V);
+    }
+
+    public void verify(CanvasYUV expected, int deviation, double maxMisses) {
+        Y.verify(expected.Y, deviation, maxMisses);
+        U.verify(expected.U, deviation, maxMisses);
+        V.verify(expected.V, deviation, maxMisses);
+    }
+
+    public void verify(CanvasYUV expected, int deviation, int maxMisses) {
+        Y.verify(expected.Y, deviation, maxMisses);
+        U.verify(expected.U, deviation, maxMisses);
+        V.verify(expected.V, deviation, maxMisses);
     }
 
     public void verifyRect(int x, int y, int w, int h,
@@ -92,6 +110,8 @@ public class CanvasYUV {
     public void overlay(Image image) {
         PixelReader reader = image.getPixelReader();
 
+        double[] yuv = new double[3]; // reusable buffer
+
         for (int y = 0; y < Y.height; y++) {
             boolean hasChromaY = (y & 1) == 0;
 
@@ -109,31 +129,27 @@ public class CanvasYUV {
                 double opacity = alpha / 255.0;
                 double transparency = 1.0 - opacity;
 
-                double overR = ((argb >> 16) & 0xff) / 255.0;
-                double overG = ((argb >> 8) & 0xff) / 255.0;
-                double overB = ((argb) & 0xff) / 255.0;
+                matrix.fromARGB(argb, yuv);
 
-                YCbCr params = matrix;
-
-                double overY = params.getY(overR, overG, overB);
-                double oldY = params.fromLumaCode(Y.get(x, y));
+                double overY = yuv[0];
+                double oldY = matrix.fromLumaCode(Y.get(x, y));
                 double newY = oldY * transparency + overY * opacity;
-                Y.set(x, y, round(params.toLumaCode(newY)));
+                Y.set(x, y, round(matrix.toLumaCode(newY)));
 
                 if (hasChromaX && hasChromaY) {
                     // for overlay chroma just drop in-between samples (equals
                     // to nearest neighbor) there is no need of higher quality
                     int cx = x >> 1, cy = y >> 1;
 
-                    double overU = params.getCb(overY, overB);
-                    double oldU = params.fromChromaCode(U.get(cx, cy));
+                    double overU = yuv[1];
+                    double oldU = matrix.fromChromaCode(U.get(cx, cy));
                     double newU = oldU * transparency + overU * opacity;
-                    U.set(cx, cy, round(params.toChromaCode(newU)));
+                    U.set(cx, cy, round(matrix.toChromaCode(newU)));
 
-                    double overV = params.getCr(overY, overR);
-                    double oldV = params.fromChromaCode(V.get(cx, cy));
+                    double overV = yuv[2];
+                    double oldV = matrix.fromChromaCode(V.get(cx, cy));
                     double newV = oldV * transparency + overV * opacity;
-                    V.set(cx, cy, round(params.toChromaCode(newV)));
+                    V.set(cx, cy, round(matrix.toChromaCode(newV)));
                 }
             }
         }

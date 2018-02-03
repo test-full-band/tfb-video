@@ -5,9 +5,11 @@ package band.full.testing.video.color;
 public interface EOTF {
     double eotf(double v);
 
-    default void eotf(double[] src, double[] dst) {
+    default double[] eotf(double[] src, double[] dst) {
         for (int i = 0; i < src.length; i++) {
             dst[i] = eotf(src[i]);
         }
+
+        return dst;
     }
 }

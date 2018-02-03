@@ -17,8 +17,18 @@ import band.full.testing.video.smpte.ST2084;
  */
 public class BT2100 {
     public static final Primaries PRIMARIES = BT2020.PRIMARIES;
-    public static final TransferCharacteristics PQ = ST2084.PQ;
+    public static final ST2084 PQ = ST2084.PQ;
+    public static final HybridLogGamma HLG = HybridLogGamma.HLG;
 
-    public static final ICtCp ITP10_PQ = new ICtCp(PQ, PRIMARIES, 10);
-    public static final ICtCp ITP12_PQ = new ICtCp(PQ, PRIMARIES, 12);
+    public static final YCbCr HLG10 = new YCbCr(9, HLG, PRIMARIES, 10);
+    public static final YCbCr HLG12 = new YCbCr(9, HLG, PRIMARIES, 12);
+
+    public static final ICtCp HLG10ITP = new ICtCp(HLG, PRIMARIES, 10);
+    public static final ICtCp HLG12ITP = new ICtCp(HLG, PRIMARIES, 12);
+
+    public static final YCbCr PQ10 = new YCbCr(9, PQ, PRIMARIES, 10);
+    public static final YCbCr PQ12 = new YCbCr(9, PQ, PRIMARIES, 12);
+
+    public static final ICtCp PQ10ITP = new ICtCp(PQ, PRIMARIES, 10);
+    public static final ICtCp PQ12ITP = new ICtCp(PQ, PRIMARIES, 12);
 }

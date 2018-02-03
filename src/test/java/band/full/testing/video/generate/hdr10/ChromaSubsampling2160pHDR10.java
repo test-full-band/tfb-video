@@ -17,7 +17,7 @@ import static java.util.Arrays.fill;
 import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +46,7 @@ public class ChromaSubsampling2160pHDR10 {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-BlackWhiteCodeSineE", HDR10,
                 e -> {
                     CanvasYUV c = e.newCanvas();
-                    YCbCr matrix = c.matrix;
+                    ColorMatrix matrix = c.matrix;
 
                     int grayY = round(matrix.toLumaCode(0.25));
 
@@ -71,7 +71,7 @@ public class ChromaSubsampling2160pHDR10 {
     public void concentricBlackWhiteSineO() throws Exception {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-BlackWhiteSineO", HDR10, e -> {
             CanvasYUV c = e.newCanvas();
-            YCbCr matrix = c.matrix;
+            ColorMatrix matrix = c.matrix;
 
             int grayY = round(matrix.toLumaCode(0.25));
 
@@ -103,10 +103,14 @@ public class ChromaSubsampling2160pHDR10 {
     public void concentricRedBlueSineE() throws Exception {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-RedBlueSineE", HDR10, e -> {
             CanvasYUV c = e.newCanvas();
-            YCbCr matrix = c.matrix;
+            ColorMatrix matrix = c.matrix;
 
             int grayY = round(matrix.toLumaCode(0.25));
             int achromatic = matrix.ACHROMATIC;
+
+            // reusable buffers
+            double[] rgb = new double[3];
+            double[] yuv = new double[3];
 
             for (int y = 0; y < c.Y.height; y++) {
                 boolean hasChromaY = (y & 1) == 0;
@@ -128,20 +132,19 @@ public class ChromaSubsampling2160pHDR10 {
                     } else {
                         double sin = 0.25 * sineSweepHalf(radius);
 
-                        double R = 0.25 + sin;
-                        double B = 0.25 - sin;
+                        rgb[0] = 0.25 + sin;
+                        rgb[1] = 0.0;
+                        rgb[2] = 0.25 - sin;
 
-                        double Y = matrix.getY(R, 0.0, B);
-                        c.Y.set(x, y, round(matrix.toLumaCode(Y)));
+                        matrix.fromRGB(rgb, yuv);
+
+                        c.Y.set(x, y, round(matrix.toLumaCode(yuv[0])));
 
                         if (hasChromaX && hasChromaY) {
                             int cx = x >> 1, cy = y >> 1;
 
-                            double Cb = matrix.getCb(Y, B);
-                            c.U.set(cx, cy, round(matrix.toChromaCode(Cb)));
-
-                            double Cr = matrix.getCr(Y, R);
-                            c.V.set(cx, cy, round(matrix.toChromaCode(Cr)));
+                            c.U.set(cx, cy, round(matrix.toChromaCode(yuv[1])));
+                            c.V.set(cx, cy, round(matrix.toChromaCode(yuv[2])));
                         }
                     }
                 }

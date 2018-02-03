@@ -61,8 +61,11 @@ public class BT2020 {
      * <li>See Equations E-28 to E-30
      * </ul>
      */
-    public static YCbCr BT2020_10bit = new YCbCr(9, PRIMARIES, 10);
-    public static YCbCr BT2020_12bit = new YCbCr(9, PRIMARIES, 12);
+    public static YCbCr BT2020_10bit =
+            new YCbCr(9, TRANSFER_10bit, PRIMARIES, 10);
+
+    public static YCbCr BT2020_12bit =
+            new YCbCr(9, TRANSFER_12bit, PRIMARIES, 12);
 
     private BT2020() {}
 }

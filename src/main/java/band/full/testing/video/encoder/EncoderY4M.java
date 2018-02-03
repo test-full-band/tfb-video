@@ -10,7 +10,7 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 
 import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.core.Resolution;
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -63,7 +63,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     public final String name;
     public final EncoderParameters parameters;
 
-    public final YCbCr matrix;
+    public final ColorMatrix matrix;
 
     public final File dir;
     public final File y4m;
@@ -153,7 +153,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         switch (parameters.preset) {
             case FAST:
-                return "fast";
+                return LOSSLESS ? "ultrafast" : "fast";
             case SLOW:
                 return "slow";
             case VERYSLOW:

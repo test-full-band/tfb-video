@@ -14,7 +14,7 @@ import band.full.testing.video.generate.basic.BasicSetupBase;
 public class BasicSetup2160pBT2020_10 extends BasicSetupBase {
     @Override
     public void generate(GeneratorBase generator, String fileName) {
-        generator.generate("HEVC/UHD4K/BT2020/Calibrate/Basic/" + fileName,
+        generator.generate("HEVC/UHD4K/BT2020_10/Calibrate/Basic/" + fileName,
                 HEVC, UHD4K_MAIN10);
     }
 }

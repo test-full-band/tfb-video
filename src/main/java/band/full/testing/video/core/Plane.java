@@ -36,6 +36,41 @@ public class Plane {
         pixels[y * width + x] = (short) value;
     }
 
+    public void verify(Plane expected) {
+        verify(expected, 0, 0);
+    }
+
+    public void verify(Plane expected, int deviation, double maxMisses) {
+        int intMisses = (int) (width * height * maxMisses);
+
+        verify(expected, deviation, intMisses);
+    }
+
+    public void verify(Plane expected, int deviation, int maxMisses) {
+        int count = range(0, height).parallel().map(iy -> {
+            int base = iy * width;
+            return verify(base, base + width, expected.pixels, deviation);
+        }).sum();
+
+        assertFalse(count + maxMisses < width * height);
+    }
+
+    private int verify(int from, int to, short[] expected, int deviation) {
+        int count = 0;
+
+        for (int i = from; i < to; i++) {
+            int delta = pixels[i] - expected[i];
+
+            if (delta == 0) {
+                ++count;
+            } else {
+                assertFalse(abs(delta) > deviation);
+            }
+        }
+
+        return count;
+    }
+
     public void fillRect(int x, int y, int w, int h, int value) {
         int x1 = limit(x, width);
         int y1 = limit(y, height);

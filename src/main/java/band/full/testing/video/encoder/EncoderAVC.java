@@ -49,14 +49,16 @@ public class EncoderAVC extends EncoderY4M {
         }
 
         int colorprim = matrix.primaries.code;
-        int transfer = parameters.transfer.code();
+        int transfer = matrix.transfer.code();
         int colormatrix = matrix.code;
 
+        // TODO: passing/detecting chromaloc; avoid hardcoding
         addAll(command, "--preset", getPresetParam(),
                 "--range", matrix.range == FULL ? "pc" : "tv",
                 "--colorprim", getColorPrimString(colorprim),
                 "--transfer", getTransferString(transfer),
-                "--colormatrix", getColorMatrixString(colormatrix));
+                "--colormatrix", getColorMatrixString(colormatrix),
+                "--chromaloc", "2"); // chroma_loc_info_present_flag
 
         return builder;
     }

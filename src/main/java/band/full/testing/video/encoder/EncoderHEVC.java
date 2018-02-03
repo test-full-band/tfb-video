@@ -1,5 +1,6 @@
 package band.full.testing.video.encoder;
 
+import static band.full.testing.video.itu.ColorRange.FULL;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
 
@@ -31,7 +32,7 @@ public class EncoderHEVC extends EncoderY4M {
 
         int bitdepth = matrix.bitdepth;
         int colorprim = matrix.primaries.code;
-        int transfer = parameters.transfer.code();
+        int transfer = matrix.transfer.code();
         int colormatrix = matrix.code;
 
         List<String> command = builder.command();
@@ -44,7 +45,7 @@ public class EncoderHEVC extends EncoderY4M {
                 "--colorprim", Integer.toString(colorprim),
                 "--transfer", Integer.toString(transfer),
                 "--colormatrix", Integer.toString(colormatrix),
-                "--chromaloc", "2");
+                "--chromaloc", "2"); // chroma_loc_info_present_flag
 
         parameters.masterDisplay.ifPresent(
                 md -> addAll(command, "--master-display", md));
@@ -59,7 +60,7 @@ public class EncoderHEVC extends EncoderY4M {
 
         addAll(command, "--repeat-headers",
                 "--no-opt-qp-pps", "--no-opt-ref-list-length-pps", // [ref.1]
-                "--range", matrix.range.toString(),
+                "--range", matrix.range == FULL ? "full" : "limited",
                 "--output-depth", Integer.toString(bitdepth));
 
         return builder;

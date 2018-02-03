@@ -6,7 +6,7 @@ import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.generate.GeneratorBase;
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import java.time.Duration;
 
@@ -21,7 +21,7 @@ public class CheckerboardGenerator extends GeneratorBase {
     @Override
     protected void encode(EncoderY4M e) {
         CanvasYUV canvas = e.newCanvas();
-        YCbCr matrix = canvas.matrix;
+        ColorMatrix matrix = canvas.matrix;
 
         canvas.Y.calculate(
                 (x, y) -> (x + y) % 2 == 0 ? matrix.YMIN : matrix.YMAX);

@@ -4,10 +4,10 @@ import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.core.Window.square;
 import static band.full.testing.video.encoder.EncoderParameters.MASTER_DISPLAY_PRIMARIES;
-import static band.full.testing.video.itu.BT2020.BT2020_10bit;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
+import static band.full.testing.video.itu.BT2100.PQ10;
+import static band.full.testing.video.itu.BT2100.PQ10ITP;
 import static band.full.testing.video.itu.ColorRange.FULL;
-import static band.full.testing.video.itu.ColorRange.LIMITED;
 import static band.full.testing.video.smpte.ST2084.PQ;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -25,8 +25,7 @@ import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.itu.ColorRange;
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import org.junit.jupiter.api.Test;
 
@@ -95,7 +94,7 @@ public class Calibrate2160pHDR10_LGOLED {
      */
     @Test
     public void oled6grayscale() {
-        grayscale(6, 540, LIMITED, OLED6_CODES);
+        grayscale(6, 540, PQ10, OLED6_CODES);
     }
 
     /**
@@ -107,47 +106,45 @@ public class Calibrate2160pHDR10_LGOLED {
      */
     @Test
     public void oled7grayscale() {
-        grayscale(7, 540, FULL, OLED7_CODES_FR540);
-        grayscale(7, 540, LIMITED, OLED7_CODES_LR540);
-        grayscale(7, 1000, FULL, OLED7_CODES_FR1000);
-        grayscale(7, 1000, LIMITED, OLED7_CODES_LR1000);
-        grayscale(7, 4000, FULL, OLED7_CODES_FR4000);
-        grayscale(7, 4000, LIMITED, OLED7_CODES_LR4000);
+        grayscale(7, 540, PQ10ITP, OLED7_CODES_FR540);
+        grayscale(7, 540, PQ10, OLED7_CODES_LR540);
+        grayscale(7, 1000, PQ10ITP, OLED7_CODES_FR1000);
+        grayscale(7, 1000, PQ10, OLED7_CODES_LR1000);
+        grayscale(7, 4000, PQ10ITP, OLED7_CODES_FR4000);
+        grayscale(7, 4000, PQ10, OLED7_CODES_LR4000);
     }
 
     public void grayscale(int version, int display,
-            ColorRange range, int[] codes) {
-        YCbCr params = new YCbCr(BT2020_10bit.code, PRIMARIES, 10, range);
-
+            ColorMatrix matrix, int[] codes) {
         // show brightest and darkest patterns in the beginning
         if (version == 6) {
-            grayscale(-1, version, display, params, codes[codes.length - 1],
+            grayscale(-1, version, display, matrix, codes[codes.length - 1],
                     "; set TV to max of 540 nit!");
         } else {
-            grayscale(-1, version, display, params, codes[codes.length - 1]);
+            grayscale(-1, version, display, matrix, codes[codes.length - 1]);
         }
 
-        grayscale(0, version, display, params, params.YMIN); // pure black
+        grayscale(0, version, display, matrix, matrix.YMIN); // pure black
 
         for (int i = 0; i < codes.length; i++) {
-            grayscale(i + 1, version, display, params, codes[i]);
+            grayscale(i + 1, version, display, matrix, codes[i]);
         }
 
         // test clipping of 10000 nit
-        grayscale(codes.length + 1, version, display, params, params.YMAX);
+        grayscale(codes.length + 1, version, display, matrix, matrix.YMAX);
     }
 
     private void grayscale(int sequence, int version, int display,
-            YCbCr params, int yCode) {
-        grayscale(sequence, version, display, params, yCode, "");
+            ColorMatrix matrix, int yCode) {
+        grayscale(sequence, version, display, matrix, yCode, "");
     }
 
     private void grayscale(int sequence, int version, int display,
-            YCbCr params, int yCode, String suffix) {
-        String name = getFileName(sequence, version, display, params, yCode);
+            ColorMatrix matrix, int yCode, String suffix) {
+        String name = getFileName(sequence, version, display, matrix, yCode);
 
         EncoderParameters options =
-                new EncoderParameters(STD_2160p, PQ, params, FPS_23_976)
+                new EncoderParameters(STD_2160p, matrix, FPS_23_976)
                         .withEncoderOptions(
                                 "--master-display", MASTER_DISPLAY_PRIMARIES
                                         + "L(" + display + "0000,0)");
@@ -157,19 +154,19 @@ public class Calibrate2160pHDR10_LGOLED {
 
             CanvasYUV canvas = e.newCanvas();
             canvas.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
-            canvas.overlay(overlay(version, display, params, yCode, suffix));
+            canvas.overlay(overlay(version, display, matrix, yCode, suffix));
 
             e.render(DURATION, () -> canvas);
         });
     }
 
     private static String getFileName(int seq, int version, int display,
-            YCbCr params, int yCode) {
+            ColorMatrix matrix, int yCode) {
         boolean v2016 = version == 6;
 
-        String dirRange = params.range == FULL ? "FR" : "LR";
+        String dirRange = matrix.range == FULL ? "FR" : "LR";
         String dirSuffix = v2016 ? "" : format("%s_%04d", dirRange, display);
-        String fileRange = params.range == FULL ? "FR" : "10"; // std HDR10
+        String fileRange = matrix.range == FULL ? "FR" : "10"; // std HDR10
         String fileSuffix = v2016 ? "" : format("_%d", display);
         String fileSeq = seq < 0 ? "$$" : format("%02d", seq);
 
@@ -178,10 +175,10 @@ public class Calibrate2160pHDR10_LGOLED {
     }
 
     private static Parent overlay(int version, int display,
-            YCbCr params, int yCode, String suffix) {
-        double ye = params.fromLumaCode(yCode);
+            ColorMatrix matrix, int yCode, String suffix) {
+        double ye = matrix.fromLumaCode(yCode);
 
-        Label label = new Label(getLabel(version, display, params, yCode,
+        Label label = new Label(getLabel(version, display, matrix, yCode,
                 suffix));
         label.setFont(font(40));
         label.setTextFill(gray(max(0.25, min(0.5, ye))));
@@ -194,8 +191,8 @@ public class Calibrate2160pHDR10_LGOLED {
     }
 
     private static String getLabel(int version, int display,
-            YCbCr params, int yCode, String suffix) {
-        double ye = params.fromLumaCode(yCode);
+            ColorMatrix matrix, int yCode, String suffix) {
+        double ye = matrix.fromLumaCode(yCode);
         double yo = PQ.eotf(ye);
         CIExy xy = getColor(yo);
 

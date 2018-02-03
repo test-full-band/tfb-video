@@ -1,7 +1,8 @@
 package band.full.testing.video.itu;
 
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
-import static band.full.testing.video.itu.ColorRange.LIMITED;
+import static band.full.testing.video.itu.ColorRange.NARROW;
+import static band.full.testing.video.itu.ICtCp.ITPtoPQLMS;
 import static band.full.testing.video.smpte.ST2084.PQ;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,15 +16,15 @@ public class TestICtCp {
 
     @Test
     public void valuesITPtoPQLMS() {
-        assertEquals(1.0, PARAMS.ITPtoPQLMS.get(0, 0));
-        assertEquals(0.009, PARAMS.ITPtoPQLMS.get(0, 1), 1e-3);
-        assertEquals(0.111, PARAMS.ITPtoPQLMS.get(0, 2), 1e-3);
-        assertEquals(1.0, PARAMS.ITPtoPQLMS.get(1, 0));
-        assertEquals(-0.009, PARAMS.ITPtoPQLMS.get(1, 1), 1e-3);
-        assertEquals(-0.111, PARAMS.ITPtoPQLMS.get(1, 2), 1e-3);
-        assertEquals(1.0, PARAMS.ITPtoPQLMS.get(2, 0));
-        assertEquals(0.56, PARAMS.ITPtoPQLMS.get(2, 1), 1e-3);
-        assertEquals(-0.321, PARAMS.ITPtoPQLMS.get(2, 2), 1e-3);
+        assertEquals(1.0, ITPtoPQLMS.get(0, 0));
+        assertEquals(0.009, ITPtoPQLMS.get(0, 1), 1e-3);
+        assertEquals(0.111, ITPtoPQLMS.get(0, 2), 1e-3);
+        assertEquals(1.0, ITPtoPQLMS.get(1, 0));
+        assertEquals(-0.009, ITPtoPQLMS.get(1, 1), 1e-3);
+        assertEquals(-0.111, ITPtoPQLMS.get(1, 2), 1e-3);
+        assertEquals(1.0, ITPtoPQLMS.get(2, 0));
+        assertEquals(0.56, ITPtoPQLMS.get(2, 1), 1e-3);
+        assertEquals(-0.321, ITPtoPQLMS.get(2, 2), 1e-3);
     }
 
     @Test
@@ -37,7 +38,7 @@ public class TestICtCp {
 
     @Test
     public void valuesLimited() {
-        ICtCp params = new ICtCp(PQ, PRIMARIES, 12, LIMITED);
+        ICtCp params = new ICtCp(PQ, PRIMARIES, 12, NARROW);
 
         assertEquals(256, params.YMIN);
         assertEquals(3760, params.YMAX);

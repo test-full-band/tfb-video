@@ -15,7 +15,7 @@ import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.executor.FxDisplay;
 import band.full.testing.video.generate.GeneratorBase;
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import java.time.Duration;
 
@@ -50,7 +50,7 @@ public class BlackLevelGenerator extends GeneratorBase {
      * next column.
      */
     private void patches(CanvasYUV canvas) {
-        YCbCr matrix = canvas.matrix;
+        ColorMatrix matrix = canvas.matrix;
 
         range(0, COLS).forEach(col -> {
             Plane luma = canvas.Y;
@@ -66,7 +66,7 @@ public class BlackLevelGenerator extends GeneratorBase {
     }
 
     protected void verify(CanvasYUV canvas) {
-        YCbCr matrix = canvas.matrix;
+        ColorMatrix matrix = canvas.matrix;
 
         range(0, COLS).parallel().forEach(col -> {
             verify(canvas.Y, col, getLuma(matrix, col));
@@ -97,7 +97,7 @@ public class BlackLevelGenerator extends GeneratorBase {
 
     protected static Parent overlay(EncoderParameters params) {
         Resolution resolution = params.resolution;
-        YCbCr matrix = params.matrix;
+        ColorMatrix matrix = params.matrix;
 
         Pane grid = new Pane();
 
@@ -112,19 +112,19 @@ public class BlackLevelGenerator extends GeneratorBase {
         return grid;
     }
 
-    private static Label top(Resolution res, YCbCr matrix, int col) {
+    private static Label top(Resolution res, ColorMatrix matrix, int col) {
         Label l = text(res, matrix, col);
         l.relocate(getX(res.width, col), 0);
         return l;
     }
 
-    private static Label bottom(Resolution res, YCbCr matrix, int col) {
+    private static Label bottom(Resolution res, ColorMatrix matrix, int col) {
         Label l = text(res, matrix, col);
         l.relocate(getX(res.width, col), res.height - l.getPrefHeight());
         return l;
     }
 
-    private static Label text(Resolution res, YCbCr matrix, int col) {
+    private static Label text(Resolution res, ColorMatrix matrix, int col) {
         Label l = new Label(Integer.toString(getLuma(matrix, col)));
         l.setFont(font(res.height / 54));
         l.setTextFill(gray(matrix.fromLumaCode(matrix.YMIN * 4)));
@@ -138,7 +138,7 @@ public class BlackLevelGenerator extends GeneratorBase {
         return height / 15;
     }
 
-    private static int getLuma(YCbCr matrix, int col) {
+    private static int getLuma(ColorMatrix matrix, int col) {
         return max(0, matrix.YMIN - 5) + col;
     }
 

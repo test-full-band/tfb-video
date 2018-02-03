@@ -4,7 +4,6 @@ import static band.full.testing.video.core.Framerate.FPS_23_976;
 import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.generate.GeneratorFactory.HEVC;
 import static band.full.testing.video.itu.BT709.BT709_10bit;
-import static band.full.testing.video.itu.BT709.TRANSFER;
 import static java.lang.String.format;
 
 import band.full.testing.video.encoder.EncoderParameters;
@@ -20,7 +19,7 @@ import band.full.testing.video.generate.QuantizationBase10;
 @GenerateVideo
 public class Quantization2160pBT709_10 extends QuantizationBase10 {
     private static final EncoderParameters UHD4K_BT709b10 =
-            new EncoderParameters(STD_2160p, TRANSFER, BT709_10bit, FPS_23_976);
+            new EncoderParameters(STD_2160p, BT709_10bit, FPS_23_976);
 
     @Override
     protected void quants(String name, int yCode) {

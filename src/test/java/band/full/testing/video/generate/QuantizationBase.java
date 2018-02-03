@@ -16,7 +16,7 @@ import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.executor.FxDisplay;
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import java.time.Duration;
 
@@ -110,17 +110,22 @@ public abstract class QuantizationBase
                         col -> verify(c, args, row, col))));
     }
 
-    protected void verify(CanvasYUV canvas, Args args, int row, int col) {
-        int c0 = canvas.matrix.ACHROMATIC;
+    protected void verify(CanvasYUV c, Args args, int row, int col) {
+        if (isMarked(col, row)) return; // do not verify cells with markings
 
+        ColorMatrix matrix = c.matrix;
         int yCode = args.yMin + col;
-        int cCode = c0 - ROWS / 2 + row;
+        int cCode = matrix.ACHROMATIC - ROWS / 2 + row;
 
-        if (isValidColor(canvas.matrix, yCode, cCode, args.redChroma)
-                && !isMarked(col, row)) {
-            verify(canvas.Y, col, row, yCode);
-            verify(args.redChroma ? canvas.V : canvas.U, col, row, cCode);
-            verify(args.redChroma ? canvas.U : canvas.V, col, row, c0);
+        boolean redChroma = args.redChroma;
+        int uCode = redChroma ? matrix.ACHROMATIC : cCode;
+        int vCode = redChroma ? cCode : matrix.ACHROMATIC;
+
+        // do not verify cells with markings
+        if (matrix.isValidCode(yCode, uCode, vCode)) {
+            verify(c.Y, col, row, yCode);
+            verify(c.U, col, row, redChroma ? matrix.ACHROMATIC : cCode);
+            verify(c.V, col, row, redChroma ? cCode : matrix.ACHROMATIC);
         }
     }
 
@@ -176,7 +181,7 @@ public abstract class QuantizationBase
         int cMin = cMid - midRow;
         int cMax = cMid + midRow;
 
-        YCbCr matrix = params.matrix;
+        ColorMatrix matrix = params.matrix;
 
         Color color = yMin > matrix.YMIN * 3 ? BLACK
                 : gray(matrix.fromLumaCode(yMin + matrix.YMIN * 6));
@@ -199,7 +204,9 @@ public abstract class QuantizationBase
 
         for (int yCode = yMin; yCode <= yMax; yCode++) {
             for (int cCode = cMin; cCode <= cMax; cCode++) {
-                if (!isValidColor(matrix, yCode, cCode, redChroma)) {
+                int uCode = redChroma ? matrix.ACHROMATIC : cCode;
+                int vCode = redChroma ? cCode : matrix.ACHROMATIC;
+                if (!matrix.isValidCode(yCode, uCode, vCode)) {
                     grid.getChildren().add(
                             text(res, "X", color, yCode - yMin, cCode - cMin));
                 }
@@ -215,18 +222,6 @@ public abstract class QuantizationBase
         if (col < 2 || col >= COLS - 2) return row == ROWS / 2;
         if (row < 2 || row >= ROWS - 2) return col == COLS / 2;
         return false;
-    }
-
-    protected static boolean isValidColor(YCbCr matrix,
-            int yCode, int cCode, boolean redChroma) {
-        double y = matrix.fromLumaCode(yCode);
-        double c = matrix.fromChromaCode(cCode);
-
-        double r = matrix.getR(y, redChroma ? c : 0.0);
-        double b = matrix.getB(y, redChroma ? 0.0 : c);
-        double g = matrix.getG(y, b, r);
-
-        return r >= 0.0 && g >= 0.0 && b >= 0.0;
     }
 
     private static Label text(Resolution res, String text, Color color,

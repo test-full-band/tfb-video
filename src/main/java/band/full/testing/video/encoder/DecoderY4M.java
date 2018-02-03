@@ -9,11 +9,12 @@ import static java.lang.Math.min;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.stream;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 
 import band.full.testing.video.core.CanvasYUV;
 import band.full.testing.video.core.Resolution;
-import band.full.testing.video.itu.YCbCr;
+import band.full.testing.video.itu.ColorMatrix;
 
 import java.io.EOFException;
 import java.io.File;
@@ -22,6 +23,7 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -31,9 +33,9 @@ public class DecoderY4M implements AutoCloseable {
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
 
     public final String name;
-    public final EncoderParameters encoderParameters;
+    public final EncoderParameters parameters;
 
-    public final YCbCr matrix;
+    public final ColorMatrix matrix;
 
     public final File dir;
     public final File mp4;
@@ -44,12 +46,12 @@ public class DecoderY4M implements AutoCloseable {
     private Process process;
     private final InputStream yuv4mpegIn;
 
-    protected DecoderY4M(String name, EncoderParameters encoderParameters)
+    protected DecoderY4M(String name, EncoderParameters parameters)
             throws IOException {
         this.name = name;
-        this.encoderParameters = encoderParameters;
+        this.parameters = parameters;
 
-        matrix = encoderParameters.matrix;
+        matrix = parameters.matrix;
 
         String root = "target/testing-video" + (LOSSLESS ? "-lossless" : "");
         String prefix = root + "/" + name;
@@ -58,7 +60,7 @@ public class DecoderY4M implements AutoCloseable {
 
         dir = mp4.getParentFile();
 
-        Resolution resolution = encoderParameters.resolution;
+        Resolution resolution = parameters.resolution;
 
         int frameLength = resolution.width * resolution.height * 3
                 / 2 * y4mBytesPerSample();
@@ -70,17 +72,25 @@ public class DecoderY4M implements AutoCloseable {
 
         verify(headers, 'W', resolution.width);
         verify(headers, 'H', resolution.height);
-        verify(headers, 'F',
-                QUICK ? QRATE : encoderParameters.framerate.toString());
+        verify(headers, 'F', QUICK ? QRATE : parameters.framerate.toString());
         verify(headers, 'I', "p");
         verify(headers, 'A', "1:1");
-        verify(headers, 'C', y4mPixelFormat());
+        verify(headers, 'C', y4mPixelFormats());
     }
 
     private void verify(Map<Character, String> headers, char c, String string) {
         String value = headers.get(c);
 
         if (!string.equals(value))
+            throw new RuntimeException(
+                    "Unexpected YUV4MPEG2 header: " + c + value);
+    }
+
+    private void verify(Map<Character, String> headers, char c,
+            Set<String> strings) {
+        String value = headers.get(c);
+
+        if (!strings.contains(value))
             throw new RuntimeException(
                     "Unexpected YUV4MPEG2 header: " + c + value);
     }
@@ -246,7 +256,7 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     public void read(Duration duration, Consumer<CanvasYUV> consumer) {
-        float rate = QUICK ? 1f : encoderParameters.framerate.rate;
+        float rate = QUICK ? 1f : parameters.framerate.rate;
         int frames = toFrames(rate, duration);
         read(QUICK ? min(QFRAMES, frames) : frames, consumer);
     }
@@ -255,10 +265,17 @@ public class DecoderY4M implements AutoCloseable {
         return matrix.bitdepth > 8 ? 2 : 1;
     }
 
-    private String y4mPixelFormat() {
+    private Set<String> y4mPixelFormats() {
         return matrix.bitdepth > 8
-                ? "420p" + matrix.bitdepth
-                : "420mpeg2";
+                ? singleton("420p" + matrix.bitdepth)
+                : Set.of("420mpeg2", "420jpeg", "420paldv");
+        // For 8 bit output the choice is illogical, so accept any
+        // Works this way:
+        // * chromaloc=0 => mpeg2, also the 'default' if unset
+        // * chromaloc=1 => paldv
+        // * chromaloc=2..5 => jpeg, i.e. otherwise
+        // In reality chromaloc=2 is co-sited with luma
+        // and in JPEG chroma is not co-sited with luma
     }
 
     private String ffmpegPixelFormat() {
@@ -268,7 +285,7 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     public CanvasYUV newCanvas() {
-        return new CanvasYUV(encoderParameters.resolution, matrix);
+        return new CanvasYUV(parameters.resolution, matrix);
     }
 
     public static void decode(String name, EncoderParameters parameters,
