@@ -6,7 +6,6 @@ import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.core.Resolution.STD_720p;
 import static band.full.testing.video.encoder.Preset.SLOW;
 import static band.full.testing.video.itu.BT2020.BT2020_10bit;
-import static band.full.testing.video.itu.BT2100.PQ10;
 import static band.full.testing.video.itu.BT709.BT709_8bit;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -15,6 +14,7 @@ import static java.util.Optional.ofNullable;
 
 import band.full.testing.video.core.Framerate;
 import band.full.testing.video.core.Resolution;
+import band.full.testing.video.itu.BT2100;
 import band.full.testing.video.itu.ColorMatrix;
 
 import java.util.List;
@@ -39,8 +39,19 @@ public class EncoderParameters {
     public static final EncoderParameters UHD4K_MAIN10 = new EncoderParameters(
             STD_2160p, BT2020_10bit, FPS_23_976);
 
+    public static final EncoderParameters HLG10 = new EncoderParameters(
+            STD_2160p, BT2100.HLG10, FPS_23_976);
+
+    public static final EncoderParameters HLG10ITP = new EncoderParameters(
+            STD_2160p, BT2100.HLG10ITP, FPS_23_976);
+
     public static final EncoderParameters HDR10 = new EncoderParameters(
-            STD_2160p, PQ10, FPS_23_976).withMasterDisplay(MASTER_DISPLAY);
+            STD_2160p, BT2100.PQ10, FPS_23_976)
+                    .withMasterDisplay(MASTER_DISPLAY);
+
+    public static final EncoderParameters HDR10ITP = new EncoderParameters(
+            STD_2160p, BT2100.PQ10ITP, FPS_23_976)
+                    .withMasterDisplay(MASTER_DISPLAY);
 
     public final Resolution resolution;
     public final ColorMatrix matrix;

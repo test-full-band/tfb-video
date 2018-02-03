@@ -1,6 +1,7 @@
 package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
+import static band.full.testing.video.encoder.EncoderParameters.HDR10ITP;
 import static band.full.testing.video.generate.GeneratorFactory.HEVC;
 
 import band.full.testing.video.executor.GenerateVideo;
@@ -16,5 +17,8 @@ public class BasicSetup2160pHDR10 extends BasicSetupBase {
     public void generate(GeneratorBase generator, String fileName) {
         generator.generate("HEVC/UHD4K/HDR10/Calibrate/Basic/" + fileName,
                 HEVC, HDR10);
+
+        generator.generate("HEVC/UHD4K/HDR10ITP/Calibrate/Basic/" + fileName,
+                HEVC, HDR10ITP);
     }
 }
