@@ -1,5 +1,6 @@
 package band.full.testing.video.generate;
 
+import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,7 +12,12 @@ import org.junit.jupiter.params.provider.ValueSource;
  * @author Igor Malinin
  */
 @GenerateVideo
-public abstract class QuantizationBase10 extends QuantizationBase {
+public class QuantizationBase10 extends QuantizationBase {
+    protected QuantizationBase10(GeneratorFactory factory,
+            EncoderParameters params, String folder, String pattern) {
+        super(factory, params, folder, pattern);
+    }
+
     @ParameterizedTest
     @ValueSource(ints = {64, 96})
     public void quantsNearBlack(int yCode) {

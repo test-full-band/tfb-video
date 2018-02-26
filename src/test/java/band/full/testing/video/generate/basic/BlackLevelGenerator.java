@@ -7,14 +7,16 @@ import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
 
-import band.full.testing.video.core.CanvasYUV;
+import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.core.Plane;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.executor.FxDisplay;
+import band.full.testing.video.executor.FxImage;
 import band.full.testing.video.generate.GeneratorBase;
+import band.full.testing.video.generate.GeneratorFactory;
 import band.full.testing.video.itu.ColorMatrix;
 
 import java.time.Duration;
@@ -34,14 +36,19 @@ public class BlackLevelGenerator extends GeneratorBase {
     protected static final Duration DURATION = ofSeconds(10);
     protected static final int COLS = 16;
 
+    public BlackLevelGenerator(GeneratorFactory factory,
+            EncoderParameters params, String folder, String name) {
+        super(factory, params, folder, name);
+    }
+
     @Override
     protected void encode(EncoderY4M e) {
-        CanvasYUV canvas = e.newCanvas();
+        FrameBuffer fb = e.newFrameBuffer();
 
-        patches(canvas);
-        marks(e.parameters, canvas);
+        patches(fb);
+        marks(e.parameters, fb);
 
-        e.render(DURATION, () -> canvas);
+        e.render(DURATION, () -> fb);
     }
 
     /**
@@ -49,11 +56,11 @@ public class BlackLevelGenerator extends GeneratorBase {
      * code value starting from <code>yMin</code> and increment of 1 for every
      * next column.
      */
-    private void patches(CanvasYUV canvas) {
-        ColorMatrix matrix = canvas.matrix;
+    private void patches(FrameBuffer fb) {
+        ColorMatrix matrix = fb.matrix;
 
         range(0, COLS).forEach(col -> {
-            Plane luma = canvas.Y;
+            Plane luma = fb.Y;
             int x = getX(luma.width, col);
             int w = getW(luma.width, col);
             luma.fillRect(x, 0, w, luma.height, getLuma(matrix, col));
@@ -62,16 +69,16 @@ public class BlackLevelGenerator extends GeneratorBase {
 
     @Override
     protected void verify(DecoderY4M d) {
-        d.read(c -> verify(c));
+        d.read(fb -> verify(fb));
     }
 
-    protected void verify(CanvasYUV canvas) {
-        ColorMatrix matrix = canvas.matrix;
+    protected void verify(FrameBuffer fb) {
+        ColorMatrix matrix = fb.matrix;
 
         range(0, COLS).parallel().forEach(col -> {
-            verify(canvas.Y, col, getLuma(matrix, col));
-            verify(canvas.U, col, matrix.ACHROMATIC);
-            verify(canvas.V, col, matrix.ACHROMATIC);
+            verify(fb.Y, col, getLuma(matrix, col));
+            verify(fb.U, col, matrix.ACHROMATIC);
+            verify(fb.V, col, matrix.ACHROMATIC);
         });
     }
 
@@ -91,8 +98,8 @@ public class BlackLevelGenerator extends GeneratorBase {
      * the observer where bands separation is to be expected in case they are
      * displayed without a loss of resolution.
      */
-    private void marks(EncoderParameters params, CanvasYUV canvas) {
-        canvas.overlay(overlay(params));
+    private void marks(EncoderParameters params, FrameBuffer fb) {
+        FxImage.overlay(overlay(params), fb);
     }
 
     protected static Parent overlay(EncoderParameters params) {

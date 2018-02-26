@@ -20,10 +20,11 @@ import static javafx.scene.text.Font.font;
 import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExy;
 import band.full.testing.video.color.Matrix3x3;
-import band.full.testing.video.core.CanvasYUV;
+import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.encoder.EncoderParameters;
+import band.full.testing.video.executor.FxImage;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.itu.ColorMatrix;
 
@@ -152,11 +153,12 @@ public class Calibrate2160pHDR10_LGOLED {
         EncoderHEVC.encode(name, options, e -> {
             Window win = square(e.parameters.resolution, 0.1);
 
-            CanvasYUV canvas = e.newCanvas();
-            canvas.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
-            canvas.overlay(overlay(version, display, matrix, yCode, suffix));
+            FrameBuffer fb = e.newFrameBuffer();
+            fb.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
+            FxImage.overlay(overlay(version, display, matrix, yCode, suffix),
+                    fb);
 
-            e.render(DURATION, () -> canvas);
+            e.render(DURATION, () -> fb);
         });
     }
 

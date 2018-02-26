@@ -29,7 +29,7 @@ have to follow it when sending pull requests.
 Required executables can be installed from following sources: 
 
  * [x264](http://download.videolan.org/pub/x264/binaries/)
- * [x265 multilib](http://wp.xin.at/x265-for-winxp-and-winxp-x64)
+ * [x265 multilib](http://msystem.waw.pl/x265/)
  * [MP4Box](https://www.videohelp.com/software/MP4Box)
  * [ffmpeg](http://ffmpeg.zeranoe.com/builds/)
 

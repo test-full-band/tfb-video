@@ -1,6 +1,7 @@
 package band.full.testing.video.generate.basic;
 
-import band.full.testing.video.generate.GeneratorBase;
+import band.full.testing.video.encoder.EncoderParameters;
+import band.full.testing.video.generate.GeneratorFactory;
 
 import org.junit.jupiter.api.Test;
 
@@ -10,15 +11,26 @@ import org.junit.jupiter.api.Test;
  * @author Igor Malinin
  */
 public abstract class BasicSetupBase {
+    public final GeneratorFactory factory;
+    public final EncoderParameters params;
+    public final String folder;
+
+    protected BasicSetupBase(GeneratorFactory factory,
+            EncoderParameters params, String folder) {
+        this.factory = factory;
+        this.params = params;
+        this.folder = folder;
+    }
+
     @Test
     public void blackLevel() {
-        generate(new BlackLevelGenerator(), "BlackLevel");
+        new BlackLevelGenerator(factory, params, folder, "BlackLevel")
+                .generate();
     }
 
     @Test
     public void checkerboard() {
-        generate(new CheckerboardGenerator(), "Checkerboard");
+        new CheckerboardGenerator(factory, params, folder, "Checkerboard")
+                .generate();
     }
-
-    public abstract void generate(GeneratorBase generator, String fileName);
 }

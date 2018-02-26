@@ -41,12 +41,6 @@ public enum GeneratorFactory {
     }
 
     @FunctionalInterface
-    interface ParametrizedEncoder<A> {
-        void encode(String name, EncoderParameters ep, A args,
-                Consumer<EncoderY4M> consumer);
-    }
-
-    @FunctionalInterface
     interface ParametrizedConsumer<T, A> {
         void accept(T t, A args);
     }

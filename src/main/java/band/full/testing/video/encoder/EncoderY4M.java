@@ -8,7 +8,7 @@ import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
-import band.full.testing.video.core.CanvasYUV;
+import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.itu.ColorMatrix;
 
@@ -26,8 +26,6 @@ public abstract class EncoderY4M implements AutoCloseable {
     enum IO {
         PIPE, TEMP_FILE, KEEP_FILE;
 
-        static final IO Y4M = get("encoder.file.y4m");
-
         private static IO get(String property) {
             switch (getProperty(property, "pipe")) {
                 case "temp":
@@ -39,13 +37,17 @@ public abstract class EncoderY4M implements AutoCloseable {
         }
 
         boolean isPipe() {
-            return Y4M == PIPE;
+            return this == PIPE;
         }
 
-        boolean isTempFile() {
-            return Y4M == PIPE;
+        boolean isKeepFile() {
+            return this == IO.KEEP_FILE;
         }
     }
+
+    static final IO Y4M = IO.get("encoder.file.y4m");
+
+    final IO OUT = IO.get("encoder.file." + getFormat());
 
     public static final boolean LOSSLESS = getBoolean("encoder.lossless");
 
@@ -116,7 +118,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     private OutputStream open() throws IOException {
-        if (!IO.Y4M.isPipe()) return new FileOutputStream(y4m);
+        if (!Y4M.isPipe()) return new FileOutputStream(y4m);
 
         if (QUICK) {
             System.err.println("Encoding in QUICK mode."
@@ -170,7 +172,7 @@ public abstract class EncoderY4M implements AutoCloseable {
     public void close() throws IOException, InterruptedException {
         yuv4mpegOut.close();
 
-        if (!IO.Y4M.isPipe()) {
+        if (!Y4M.isPipe()) {
             ProcessBuilder builder = createProcessBuilder();
 
             System.out.println(builder.command());
@@ -182,7 +184,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         if (result != 0)
             throw new IOException(getExecutable() + " failed: " + result);
 
-        if (IO.Y4M.isTempFile()) {
+        if (!Y4M.isKeepFile()) {
             y4m.delete();
         }
 
@@ -201,7 +203,9 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         builder.start().waitFor();
 
-        out.delete();
+        if (!OUT.isKeepFile()) {
+            out.delete();
+        }
     }
 
     private void fillFrame(int offset, short[] pixels) {
@@ -219,16 +223,16 @@ public abstract class EncoderY4M implements AutoCloseable {
         }
     }
 
-    public void render(CanvasYUV canvas) {
+    public void render(FrameBuffer fb) {
         int bps = y4mBytesPerSample();
 
         int offsetY = FRAME_HEADER.length;
-        int offsetCb = offsetY + canvas.Y.pixels.length * bps;
-        int offsetCr = offsetCb + canvas.U.pixels.length * bps;
+        int offsetCb = offsetY + fb.Y.pixels.length * bps;
+        int offsetCr = offsetCb + fb.U.pixels.length * bps;
 
-        fillFrame(offsetY, canvas.Y.pixels);
-        fillFrame(offsetCb, canvas.U.pixels);
-        fillFrame(offsetCr, canvas.V.pixels);
+        fillFrame(offsetY, fb.Y.pixels);
+        fillFrame(offsetCb, fb.U.pixels);
+        fillFrame(offsetCr, fb.V.pixels);
 
         try {
             yuv4mpegOut.write(frameBuffer);
@@ -237,13 +241,13 @@ public abstract class EncoderY4M implements AutoCloseable {
         }
     }
 
-    public void render(int frames, Supplier<CanvasYUV> supplier) {
+    public void render(int frames, Supplier<FrameBuffer> supplier) {
         for (int i = 0; i < frames; i++) {
             render(supplier.get());
         }
     }
 
-    public void render(Duration duration, Supplier<CanvasYUV> supplier) {
+    public void render(Duration duration, Supplier<FrameBuffer> supplier) {
         float rate = QUICK ? 1f : parameters.framerate.rate;
         int frames = toFrames(rate, duration);
         render(QUICK ? min(QFRAMES, frames) : frames, supplier);
@@ -253,7 +257,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         return matrix.bitdepth > 8 ? 2 : 1;
     }
 
-    public CanvasYUV newCanvas() {
-        return new CanvasYUV(parameters.resolution, matrix);
+    public FrameBuffer newFrameBuffer() {
+        return new FrameBuffer(parameters.resolution, matrix);
     }
 }

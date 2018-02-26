@@ -5,7 +5,6 @@ import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
 import static band.full.testing.video.generate.GeneratorFactory.AVC;
 
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generate.GeneratorBase;
 import band.full.testing.video.generate.basic.BasicSetupBase;
 
 /**
@@ -15,8 +14,7 @@ import band.full.testing.video.generate.basic.BasicSetupBase;
  */
 @GenerateVideo(MAIN)
 public class BasicSetup1080p extends BasicSetupBase {
-    public void generate(GeneratorBase generator, String fileName) {
-        generator.generate("AVC/FullHD/Calibrate/Basic/" + fileName,
-                AVC, FULLHD_MAIN8);
+    public BasicSetup1080p() {
+        super(AVC, FULLHD_MAIN8, "FullHD/Calibrate/Basic");
     }
 }

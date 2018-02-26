@@ -2,7 +2,6 @@ package band.full.testing.video.generate.hevc;
 
 import static band.full.testing.video.encoder.EncoderParameters.FULLHD_MAIN8;
 import static band.full.testing.video.generate.GeneratorFactory.HEVC;
-import static java.lang.String.format;
 
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.generate.Quants3DBase;
@@ -17,15 +16,13 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 @GenerateVideo
 public class Quants3D1080pHEVC extends Quants3DBase {
-    @ParameterizedTest
-    @MethodSource("params")
-    public void quantsNearBlack(Args args) {
-        generate(HEVC, FULLHD_MAIN8, args);
+    public Quants3D1080pHEVC() {
+        super(HEVC, FULLHD_MAIN8, "FullHD/Quants3D", "Quants3D1080pHEVC");
     }
 
-    @Override
-    protected String getFileName(Args args) {
-        return format("HEVC/FullHD/Quantization/Quants3D1080pHEVC-%s%d",
-                args.speed, args.lsb);
+    @ParameterizedTest
+    @MethodSource("params")
+    public void quants(Args args) {
+        generate(args);
     }
 }

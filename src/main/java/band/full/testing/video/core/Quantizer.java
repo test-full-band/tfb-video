@@ -11,12 +11,4 @@ public interface Quantizer {
                 : round < Integer.MIN_VALUE ? Integer.MIN_VALUE
                         : (int) round;
     }
-
-    static Quantizer newRPDF() {
-        return null; // FIXME
-    }
-
-    static Quantizer newTPDF() {
-        return null; // FIXME
-    }
 }

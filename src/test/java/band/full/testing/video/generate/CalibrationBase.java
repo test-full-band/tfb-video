@@ -14,12 +14,13 @@ import static javafx.scene.text.Font.font;
 import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExy;
 import band.full.testing.video.color.Primaries;
-import band.full.testing.video.core.CanvasYUV;
+import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.core.Resolution;
 import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
+import band.full.testing.video.executor.FxImage;
 import band.full.testing.video.itu.ColorMatrix;
 
 import org.junit.jupiter.api.Test;
@@ -84,24 +85,24 @@ public abstract class CalibrationBase {
     protected void encode(EncoderY4M e, int window, int yCode) {
         Window win = getWindow(window);
 
-        CanvasYUV canvas = e.newCanvas();
-        canvas.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
-        canvas.overlay(overlay(window, yCode));
+        FrameBuffer fb = e.newFrameBuffer();
+        fb.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
+        FxImage.overlay(overlay(window, yCode), fb);
 
-        e.render(DURATION, () -> canvas);
+        e.render(DURATION, () -> fb);
     }
 
     protected void verify(DecoderY4M d, int window, int yCode) {
-        d.read(c -> verify(c, window, yCode));
+        d.read(fb -> verify(fb, window, yCode));
     }
 
-    protected void verify(CanvasYUV canvas, int window, int yCode) {
+    protected void verify(FrameBuffer fb, int window, int yCode) {
         Window win = getWindow(window);
 
         int achromatic = getEncoderParameters().matrix.ACHROMATIC;
 
         // TODO near-lossless target, allow up to 1% tiny single-step misses
-        canvas.verifyRect(win.x, win.y, win.width, win.height,
+        fb.verifyRect(win.x, win.y, win.width, win.height,
                 yCode, achromatic, achromatic);
     }
 

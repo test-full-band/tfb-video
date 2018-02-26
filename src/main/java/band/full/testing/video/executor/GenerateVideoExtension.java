@@ -38,7 +38,7 @@ public class GenerateVideoExtension
     private static boolean STARTED;
 
     @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
+    public void beforeAll(ExtensionContext context) {
         if (!STARTED) {
             out.println("Starting JavaFX");
             Platform.startup(() -> {});

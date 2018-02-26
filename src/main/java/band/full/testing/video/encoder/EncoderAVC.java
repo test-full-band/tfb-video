@@ -26,7 +26,7 @@ public class EncoderAVC extends EncoderY4M {
     protected ProcessBuilder createProcessBuilder() {
         ProcessBuilder builder = new ProcessBuilder(getExecutable(),
                 "--demuxer", "y4m",
-                IO.Y4M.isPipe() ? "-" : y4m.getPath(),
+                Y4M.isPipe() ? "-" : y4m.getPath(),
                 "-o", out.getPath())
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);

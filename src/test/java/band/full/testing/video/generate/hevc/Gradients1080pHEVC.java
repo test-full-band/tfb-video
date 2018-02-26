@@ -5,7 +5,7 @@ import static band.full.testing.video.encoder.EncoderParameters.FULLHD_MAIN8;
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static java.time.Duration.ofSeconds;
 
-import band.full.testing.video.core.CanvasYUV;
+import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
 
@@ -30,15 +30,15 @@ public class Gradients1080pHEVC {
 
     public void gradients(String name) {
         EncoderHEVC.encode(name, FULLHD_MAIN8, e -> {
-            CanvasYUV c = e.newCanvas();
-            e.render(ofSeconds(30), () -> gradients(c));
+            FrameBuffer fb = e.newFrameBuffer();
+            e.render(ofSeconds(30), () -> gradients(fb));
         });
     }
 
     /** Render with new dither per frame */
-    private CanvasYUV gradients(CanvasYUV canvas) {
-        canvas.Y.calculate(this::fn);
-        return canvas;
+    private FrameBuffer gradients(FrameBuffer fb) {
+        fb.Y.calculate(this::fn);
+        return fb;
     }
 
     private static final int REMOVE_BITS = 2;

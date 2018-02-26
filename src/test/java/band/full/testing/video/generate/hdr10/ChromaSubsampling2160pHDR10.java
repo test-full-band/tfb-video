@@ -14,7 +14,7 @@ import static java.lang.Math.sqrt;
 import static java.time.Duration.ofMinutes;
 import static java.util.Arrays.fill;
 
-import band.full.testing.video.core.CanvasYUV;
+import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
 import band.full.testing.video.itu.ColorMatrix;
@@ -45,12 +45,12 @@ public class ChromaSubsampling2160pHDR10 {
     public void concentricBlackWhiteSineE() throws Exception {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-BlackWhiteCodeSineE", HDR10,
                 e -> {
-                    CanvasYUV c = e.newCanvas();
-                    ColorMatrix matrix = c.matrix;
+                    FrameBuffer fb = e.newFrameBuffer();
+                    ColorMatrix matrix = fb.matrix;
 
                     int grayY = round(matrix.toLumaCode(0.25));
 
-                    c.Y.calculate((x, y) -> {
+                    fb.Y.calculate((x, y) -> {
                         double radius = r(x, y);
 
                         return (radius > MAX_DISTANCE) ? grayY
@@ -60,24 +60,24 @@ public class ChromaSubsampling2160pHDR10 {
 
                     short achromatic = (short) matrix.ACHROMATIC;
 
-                    fill(c.U.pixels, achromatic);
-                    fill(c.V.pixels, achromatic);
+                    fill(fb.U.pixels, achromatic);
+                    fill(fb.V.pixels, achromatic);
 
-                    e.render(DURATION, () -> c);
+                    e.render(DURATION, () -> fb);
                 });
     }
 
     @Test
     public void concentricBlackWhiteSineO() throws Exception {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-BlackWhiteSineO", HDR10, e -> {
-            CanvasYUV c = e.newCanvas();
-            ColorMatrix matrix = c.matrix;
+            FrameBuffer fb = e.newFrameBuffer();
+            ColorMatrix matrix = fb.matrix;
 
             int grayY = round(matrix.toLumaCode(0.25));
 
             double amp = PQ.eotf(0.5) / 2.0;
 
-            c.Y.calculate((x, y) -> {
+            fb.Y.calculate((x, y) -> {
                 double radius = r(x, y);
 
                 return (radius > MAX_DISTANCE) ? grayY
@@ -87,10 +87,10 @@ public class ChromaSubsampling2160pHDR10 {
 
             short achromatic = (short) matrix.ACHROMATIC;
 
-            fill(c.U.pixels, achromatic);
-            fill(c.V.pixels, achromatic);
+            fill(fb.U.pixels, achromatic);
+            fill(fb.V.pixels, achromatic);
 
-            e.render(DURATION, () -> c);
+            e.render(DURATION, () -> fb);
         });
     }
 
@@ -102,8 +102,8 @@ public class ChromaSubsampling2160pHDR10 {
     // @Ignore("Find correct amplitudes according to DCI-P3 primaries")
     public void concentricRedBlueSineE() throws Exception {
         EncoderHEVC.encode(PATH + "/ChromaHDR10-RedBlueSineE", HDR10, e -> {
-            CanvasYUV c = e.newCanvas();
-            ColorMatrix matrix = c.matrix;
+            FrameBuffer fb = e.newFrameBuffer();
+            ColorMatrix matrix = fb.matrix;
 
             int grayY = round(matrix.toLumaCode(0.25));
             int achromatic = matrix.ACHROMATIC;
@@ -112,22 +112,22 @@ public class ChromaSubsampling2160pHDR10 {
             double[] rgb = new double[3];
             double[] yuv = new double[3];
 
-            for (int y = 0; y < c.Y.height; y++) {
+            for (int y = 0; y < fb.Y.height; y++) {
                 boolean hasChromaY = (y & 1) == 0;
 
-                for (int x = 0; x < c.Y.width; x++) {
+                for (int x = 0; x < fb.Y.width; x++) {
                     boolean hasChromaX = (x & 1) == 0;
 
                     double radius = r(x, y);
 
                     if (radius > MAX_DISTANCE) {
-                        c.Y.set(x, y, grayY);
+                        fb.Y.set(x, y, grayY);
 
                         if (hasChromaX && hasChromaY) {
                             int cx = x >> 1, cy = y >> 1;
 
-                            c.U.set(cx, cy, achromatic);
-                            c.V.set(cx, cy, achromatic);
+                            fb.U.set(cx, cy, achromatic);
+                            fb.V.set(cx, cy, achromatic);
                         }
                     } else {
                         double sin = 0.25 * sineSweepHalf(radius);
@@ -138,19 +138,21 @@ public class ChromaSubsampling2160pHDR10 {
 
                         matrix.fromRGB(rgb, yuv);
 
-                        c.Y.set(x, y, round(matrix.toLumaCode(yuv[0])));
+                        fb.Y.set(x, y, round(matrix.toLumaCode(yuv[0])));
 
                         if (hasChromaX && hasChromaY) {
                             int cx = x >> 1, cy = y >> 1;
 
-                            c.U.set(cx, cy, round(matrix.toChromaCode(yuv[1])));
-                            c.V.set(cx, cy, round(matrix.toChromaCode(yuv[2])));
+                            fb.U.set(cx, cy,
+                                    round(matrix.toChromaCode(yuv[1])));
+                            fb.V.set(cx, cy,
+                                    round(matrix.toChromaCode(yuv[2])));
                         }
                     }
                 }
             }
 
-            e.render(DURATION, () -> c);
+            e.render(DURATION, () -> fb);
         });
     }
 

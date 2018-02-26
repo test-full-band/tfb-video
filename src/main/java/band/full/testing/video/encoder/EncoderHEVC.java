@@ -25,7 +25,7 @@ public class EncoderHEVC extends EncoderY4M {
     @Override
     protected ProcessBuilder createProcessBuilder() {
         ProcessBuilder builder = new ProcessBuilder(getExecutable(),
-                IO.Y4M.isPipe() ? "-" : y4m.getPath(),
+                Y4M.isPipe() ? "-" : y4m.getPath(),
                 out.getPath())
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
