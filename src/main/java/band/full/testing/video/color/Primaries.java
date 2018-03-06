@@ -35,8 +35,8 @@ public class Primaries {
     public final CIExy blue;
     public final CIExy white;
 
-    public final Matrix3x3 rgb2xyz;
-    public final Matrix3x3 xyz2rgb;
+    public final Matrix3x3 RGBtoXYZ;
+    public final Matrix3x3 XYZtoRGB;
 
     public Primaries(int code, CIExy red, CIExy green, CIExy blue,
             CIExy white) {
@@ -46,16 +46,8 @@ public class Primaries {
         this.blue = blue;
         this.white = white;
 
-        rgb2xyz = createRGBtoXYZ();
-        xyz2rgb = rgb2xyz.invert();
-    }
-
-    public Matrix3x3 getRGBtoXYZ() {
-        return rgb2xyz;
-    }
-
-    public Matrix3x3 getXYZtoRGB() {
-        return xyz2rgb;
+        RGBtoXYZ = createRGBtoXYZ();
+        XYZtoRGB = RGBtoXYZ.invert();
     }
 
     private Matrix3x3 createRGBtoXYZ() {

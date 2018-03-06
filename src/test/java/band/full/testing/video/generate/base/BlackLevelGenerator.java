@@ -1,4 +1,4 @@
-package band.full.testing.video.generate.basic;
+package band.full.testing.video.generate.base;
 
 import static java.lang.Math.max;
 import static java.time.Duration.ofSeconds;
@@ -37,8 +37,8 @@ public class BlackLevelGenerator extends GeneratorBase {
     protected static final int COLS = 16;
 
     public BlackLevelGenerator(GeneratorFactory factory,
-            EncoderParameters params, String folder, String name) {
-        super(factory, params, folder, name);
+            EncoderParameters params, String folder) {
+        super(factory, params, folder, "BlackLevel");
     }
 
     @Override

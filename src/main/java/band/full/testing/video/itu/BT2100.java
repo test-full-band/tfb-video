@@ -1,5 +1,7 @@
 package band.full.testing.video.itu;
 
+import static band.full.testing.video.itu.ColorRange.FULL;
+
 import band.full.testing.video.color.Primaries;
 import band.full.testing.video.smpte.ST2084;
 
@@ -28,6 +30,9 @@ public class BT2100 {
 
     public static final YCbCr PQ10 = new YCbCr(9, PQ, PRIMARIES, 10);
     public static final YCbCr PQ12 = new YCbCr(9, PQ, PRIMARIES, 12);
+
+    public static final YCbCr PQ10FR = new YCbCr(9, PQ, PRIMARIES, 10, FULL);
+    public static final YCbCr PQ12FR = new YCbCr(9, PQ, PRIMARIES, 12, FULL);
 
     public static final ICtCp PQ10ITP = new ICtCp(PQ, PRIMARIES, 10);
     public static final ICtCp PQ12ITP = new ICtCp(PQ, PRIMARIES, 12);

@@ -1,14 +1,14 @@
-package band.full.testing.video.generate;
+package band.full.testing.video.generate.base;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.rangeClosed;
 
 import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
+import band.full.testing.video.generate.GeneratorFactory;
+import band.full.testing.video.generate.ParametrizedGeneratorBase;
 
-import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -30,14 +30,12 @@ public class Quants3DBase extends ParametrizedGeneratorBase<Quants3DBase.Args> {
         }
     }
 
-    protected static List<Args> params() {
-        return IntStream.of(1, 2, 4, 8, 16).boxed()
-                .flatMap(lsb -> Stream.of(
-                        new Args("Fast", 1, lsb),
-                        new Args("Norm", 2, lsb),
-                        new Args("Slow", 4, lsb),
-                        new Args("Xtra", 6, lsb)))
-                .collect(toList());
+    protected static Stream<Args> params() {
+        return IntStream.of(1, 2, 4, 8, 16).boxed().flatMap(lsb -> Stream.of(
+                new Args("Fast", 1, lsb),
+                new Args("Norm", 2, lsb),
+                new Args("Slow", 4, lsb),
+                new Args("Xtra", 6, lsb)));
     }
 
     protected Quants3DBase(GeneratorFactory factory,

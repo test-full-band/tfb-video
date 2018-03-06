@@ -11,7 +11,7 @@ import static band.full.testing.video.generate.GeneratorFactory.AVC;
 
 import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generate.QuantizationBase8;
+import band.full.testing.video.generate.base.Quants2DBase8;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,9 +23,9 @@ import java.io.IOException;
  * @author Igor Malinin
  */
 @GenerateVideo(MAIN)
-public class Quantization1080p extends QuantizationBase8 {
-    public Quantization1080p() {
-        super(AVC, FULLHD_MAIN8, "FullHD/Quantization", "Quants1080p");
+public class Quants2D1080p extends Quants2DBase8 {
+    public Quants2D1080p() {
+        super(AVC, FULLHD_MAIN8, "FullHD/Quantization", "FHD");
     }
 
     @Test

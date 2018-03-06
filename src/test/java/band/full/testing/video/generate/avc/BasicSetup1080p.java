@@ -5,7 +5,7 @@ import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
 import static band.full.testing.video.generate.GeneratorFactory.AVC;
 
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generate.basic.BasicSetupBase;
+import band.full.testing.video.generate.base.BasicSetupBase;
 
 /**
  * Testing color bands separation / quantization step uniformity.

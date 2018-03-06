@@ -1,7 +1,8 @@
-package band.full.testing.video.generate;
+package band.full.testing.video.generate.base;
 
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
+import band.full.testing.video.generate.GeneratorFactory;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -12,8 +13,8 @@ import org.junit.jupiter.params.provider.ValueSource;
  * @author Igor Malinin
  */
 @GenerateVideo
-public class QuantizationBase8 extends QuantizationBase {
-    protected QuantizationBase8(GeneratorFactory factory,
+public class Quants2DBase8 extends Quants2DBase {
+    protected Quants2DBase8(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
         super(factory, params, folder, pattern);
     }

@@ -47,7 +47,7 @@ public final class YCbCr extends ColorMatrix {
     @Override
     public double[] fromLinearRGB(double[] rgb, double[] yuv) {
         transfer.oetf(rgb, yuv);
-        return toRGB(yuv, yuv);
+        return fromRGB(yuv, yuv);
     }
 
     @Override

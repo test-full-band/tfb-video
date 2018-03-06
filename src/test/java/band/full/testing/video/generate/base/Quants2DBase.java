@@ -1,4 +1,4 @@
-package band.full.testing.video.generate;
+package band.full.testing.video.generate.base;
 
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
@@ -16,6 +16,8 @@ import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.executor.FxImage;
+import band.full.testing.video.generate.GeneratorFactory;
+import band.full.testing.video.generate.ParametrizedGeneratorBase;
 
 import java.time.Duration;
 
@@ -31,8 +33,7 @@ import javafx.scene.text.TextAlignment;
  *
  * @author Igor Malinin
  */
-class QuantizationBase
-        extends ParametrizedGeneratorBase<QuantizationBase.Args> {
+class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
     protected static final Duration DURATION = ofSeconds(30);
 
     /** Number of rows have to be an odd number - center row is neutral. */
@@ -52,9 +53,9 @@ class QuantizationBase
     }
 
     /** only package private direct children are allowed */
-    QuantizationBase(GeneratorFactory factory,
+    Quants2DBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
-        super(factory, params, folder, pattern);
+        super(factory, params, folder, "Quants2D-" + pattern);
     }
 
     @Override

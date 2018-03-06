@@ -7,7 +7,7 @@ import static band.full.testing.video.itu.BT709.BT709_10bit;
 
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generate.QuantizationBase10;
+import band.full.testing.video.generate.base.Quants2DBase10;
 
 /**
  * Testing color bands separation / quantization step uniformity.
@@ -15,12 +15,11 @@ import band.full.testing.video.generate.QuantizationBase10;
  * @author Igor Malinin
  */
 @GenerateVideo
-public class Quantization2160pBT709_10 extends QuantizationBase10 {
+public class Quants2D2160pBT709_10 extends Quants2DBase10 {
     private static final EncoderParameters UHD4K_BT709b10 =
             new EncoderParameters(STD_2160p, BT709_10bit, FPS_23_976);
 
-    public Quantization2160pBT709_10() {
-        super(HEVC, UHD4K_BT709b10, "UHD4K/BT709_10/Quantization",
-                "QuantsBT709_10");
+    public Quants2D2160pBT709_10() {
+        super(HEVC, UHD4K_BT709b10, "UHD4K/BT709_10/Quantization", "U4K");
     }
 }

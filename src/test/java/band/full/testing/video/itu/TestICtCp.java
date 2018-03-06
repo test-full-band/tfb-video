@@ -30,6 +30,8 @@ public class TestICtCp {
 
     @Test
     public void valuesFull() {
+        assertEquals(0, MATRIX.VMIN);
+        assertEquals(4095, MATRIX.VMAX);
         assertEquals(0, MATRIX.YMIN);
         assertEquals(4095, MATRIX.YMAX);
         assertEquals(1, MATRIX.CMIN);
@@ -41,6 +43,8 @@ public class TestICtCp {
     public void valuesLimited() {
         ICtCp params = new ICtCp(PQ, PRIMARIES, 12, NARROW);
 
+        assertEquals(16, params.VMIN);
+        assertEquals(4079, params.VMAX);
         assertEquals(256, params.YMIN);
         assertEquals(3760, params.YMAX);
         assertEquals(256, params.CMIN);

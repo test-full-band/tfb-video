@@ -18,7 +18,7 @@ public class TestPrimaries {
 
     @Test
     public void checkRGBtoXYZ() {
-        Matrix3x3 RGBtoXYZ = sRGB.getRGBtoXYZ();
+        Matrix3x3 RGBtoXYZ = sRGB.RGBtoXYZ;
 
         assertEquals(0.4124, RGBtoXYZ.get(0, 0), 1e-4);
         assertEquals(0.3576, RGBtoXYZ.get(0, 1), 1e-4);
@@ -35,7 +35,7 @@ public class TestPrimaries {
 
     @Test
     public void checkXYZtoRGB() {
-        Matrix3x3 XYZtoRGB = sRGB.getXYZtoRGB();
+        Matrix3x3 XYZtoRGB = sRGB.XYZtoRGB;
 
         assertEquals(3.241, XYZtoRGB.get(0, 0), 1e-4);
         assertEquals(-1.54, XYZtoRGB.get(0, 1), 1e-2);
@@ -52,7 +52,7 @@ public class TestPrimaries {
 
     @Test
     public void checkBT2020toXYZ() {
-        Matrix3x3 RGBtoXYZ = BT2020.PRIMARIES.getRGBtoXYZ();
+        Matrix3x3 RGBtoXYZ = BT2020.PRIMARIES.RGBtoXYZ;
 
         assertEquals(0.2627, RGBtoXYZ.get(1, 0), 1e-4);
         assertEquals(0.6780, RGBtoXYZ.get(1, 1), 1e-4);

@@ -49,6 +49,10 @@ public class EncoderParameters {
             STD_2160p, BT2100.PQ10, FPS_23_976)
                     .withMasterDisplay(MASTER_DISPLAY);
 
+    public static final EncoderParameters HDR10FR = new EncoderParameters(
+            STD_2160p, BT2100.PQ10FR, FPS_23_976)
+                    .withMasterDisplay(MASTER_DISPLAY);
+
     public static final EncoderParameters HDR10ITP = new EncoderParameters(
             STD_2160p, BT2100.PQ10ITP, FPS_23_976)
                     .withMasterDisplay(MASTER_DISPLAY);

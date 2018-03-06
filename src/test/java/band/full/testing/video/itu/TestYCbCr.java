@@ -17,6 +17,8 @@ public class TestYCbCr {
 
     @Test
     public void valuesLimited() {
+        assertEquals(1, MATRIX.VMIN);
+        assertEquals(255, MATRIX.VMAX);
         assertEquals(16, MATRIX.YMIN);
         assertEquals(235, MATRIX.YMAX);
         assertEquals(16, MATRIX.CMIN);
@@ -28,6 +30,8 @@ public class TestYCbCr {
     public void valuesFull() {
         YCbCr matrix = new YCbCr(1, TRANSFER, sRGB, 8, FULL);
 
+        assertEquals(0, matrix.VMIN);
+        assertEquals(255, matrix.VMAX);
         assertEquals(0, matrix.YMIN);
         assertEquals(255, matrix.YMAX);
         assertEquals(1, matrix.CMIN);

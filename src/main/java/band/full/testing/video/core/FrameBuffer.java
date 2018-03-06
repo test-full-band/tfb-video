@@ -25,10 +25,18 @@ public class FrameBuffer {
         this.matrix = matrix;
     }
 
+    public void fill(int[] yuv) {
+        fill(yuv[0], yuv[1], yuv[2]);
+    }
+
     public void fill(int yValue, int uValue, int vValue) {
         Y.fill(yValue);
         U.fill(uValue);
         V.fill(vValue);
+    }
+
+    public void fillRect(int x, int y, int w, int h, int[] yuv) {
+        fillRect(x, y, w, h, yuv[0], yuv[1], yuv[2]);
     }
 
     public void fillRect(int x, int y, int w, int h,

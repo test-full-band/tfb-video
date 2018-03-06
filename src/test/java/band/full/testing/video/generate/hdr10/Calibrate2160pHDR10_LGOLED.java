@@ -1,55 +1,33 @@
 package band.full.testing.video.generate.hdr10;
 
-import static band.full.testing.video.core.Framerate.FPS_23_976;
-import static band.full.testing.video.core.Resolution.STD_2160p;
-import static band.full.testing.video.core.Window.square;
+import static band.full.testing.video.encoder.EncoderParameters.HDR10;
+import static band.full.testing.video.encoder.EncoderParameters.HDR10FR;
 import static band.full.testing.video.encoder.EncoderParameters.MASTER_DISPLAY_PRIMARIES;
-import static band.full.testing.video.itu.BT2020.PRIMARIES;
-import static band.full.testing.video.itu.BT2100.PQ10;
-import static band.full.testing.video.itu.BT2100.PQ10ITP;
+import static band.full.testing.video.generate.GeneratorFactory.HEVC;
 import static band.full.testing.video.itu.ColorRange.FULL;
-import static band.full.testing.video.smpte.ST2084.PQ;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static java.lang.String.format;
-import static java.time.Duration.ofSeconds;
-import static javafx.scene.layout.Background.EMPTY;
-import static javafx.scene.paint.Color.gray;
-import static javafx.scene.text.Font.font;
 
-import band.full.testing.video.color.CIEXYZ;
-import band.full.testing.video.color.CIExy;
-import band.full.testing.video.color.Matrix3x3;
-import band.full.testing.video.core.FrameBuffer;
-import band.full.testing.video.core.Window;
-import band.full.testing.video.encoder.EncoderHEVC;
+import band.full.testing.video.color.CIExyY;
 import band.full.testing.video.encoder.EncoderParameters;
-import band.full.testing.video.executor.FxImage;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.itu.ColorMatrix;
+import band.full.testing.video.generate.base.CalibrationBase;
 
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-
-import javafx.geometry.Insets;
-import javafx.scene.Parent;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
 
 /**
  * Calibration patterns for LG OLED TVs.
  *
  * @author Igor Malinin
+ * @see <a href=
+ *      "http://www.lg.com/us/support/products/documents/UHDA%20Calibration%20Procedure.pdf">
+ *      Procedure to Calibrate 2016 OLED TVs to Meet UHD Alliance Grayscale
+ *      Tracking Requirements</a>
+ * @see <a href=
+ *      "http://www.lg.com/us/support/products/documents/Calibration%20Notes%20for%202017%20LG%20OLED%20TVs.pdf">
+ *      Calibration Notes for 2017 LG OLED TVs</a>
  */
 @GenerateVideo
 public class Calibrate2160pHDR10_LGOLED {
-    // TODO extends CalibrationBase
-    private static final String PATH = "HEVC/UHD4K/HDR10/Calibrate/LG/OLED";
-
-    private static final Duration DURATION = ofSeconds(30);
-    private static final Matrix3x3 RGB2XYZ = PRIMARIES.getRGBtoXYZ();
-
     private static final int[] OLED6_CODES = {
         127, 254, 320, 386, 419, 451, 467, 482, 498, 513,
         529, 544, 560, 575, 591, 606, 622, 637, 653, 668,
@@ -85,129 +63,90 @@ public class Calibrate2160pHDR10_LGOLED {
         608, 625, 640, 658, 673, 690, 704, 718, 749, // 831.56 nit
     };
 
-    /**
-     * 2016 TVs
-     *
-     * @see <a href=
-     *      "http://www.lg.com/us/support/products/documents/UHDA%20Calibration%20Procedure.pdf">
-     *      Procedure to Calibrate 2016 OLED TVs to Meet UHD Alliance Grayscale
-     *      Tracking Requirements</a>
-     */
-    @Test
-    public void oled6grayscale() {
-        grayscale(6, 540, PQ10, OLED6_CODES);
+    private static class LG extends CalibrationBase {
+        private final int version;
+        private final int display;
+
+        LG(EncoderParameters ep, int version, int display) {
+            super(HEVC, ep.withEncoderOptions("--master-display",
+                    MASTER_DISPLAY_PRIMARIES + "L(" + display + "0000,0)"),
+                    "UHD4K/HDR10/Calibrate/[LG]", "U4K_HDR10");
+
+            this.version = version;
+            this.display = display;
+        }
+
+        @Override
+        protected String getLabelText(Args args) {
+            CIExyY xyY = getColor(args);
+
+            String text = format("LG OLED%d HDR10 %d grayscale"
+                    + " CIE(x=%.4f, y=%.4f) Y%d, %.2f nit",
+                    version, display, xyY.x, xyY.y, args.y, xyY.Y * 10000.0);
+
+            if (version == 6 && args.sequence.equals("$$"))
+                return text + "; set TV to max of 540 nit!";
+
+            return text;
+        }
+
+        @Override
+        protected String getFileName(Args args) {
+            boolean v2016 = version == 6;
+
+            String dirRange = matrix.range == FULL ? "FR" : "LR";
+
+            String versionDir = v2016 ? "OLED6"
+                    : format("OLED%d%s_%04d", version, dirRange, display);
+
+            String fileRange = matrix.range == FULL ? "10FR" : "10";
+            String fileSuffix = v2016 ? "" : format("_%d", display);
+
+            return factory.name() + '/' + folder + '/' + versionDir + '/' +
+                    format("GrayHDR%s_LGOLED%d%s-%s-Y%03d", fileRange,
+                            version, fileSuffix, args.sequence, args.y);
+        }
     }
 
-    /**
-     * 2017 TVs
-     *
-     * @see <a href=
-     *      "http://www.lg.com/us/support/products/documents/Calibration%20Notes%20for%202017%20LG%20OLED%20TVs.pdf">
-     *      Calibration Notes for 2017 LG OLED TVs</a>
-     */
+    /** 2016 TVs */
     @Test
-    public void oled7grayscale() {
-        grayscale(7, 540, PQ10ITP, OLED7_CODES_FR540);
-        grayscale(7, 540, PQ10, OLED7_CODES_LR540);
-        grayscale(7, 1000, PQ10ITP, OLED7_CODES_FR1000);
-        grayscale(7, 1000, PQ10, OLED7_CODES_LR1000);
-        grayscale(7, 4000, PQ10ITP, OLED7_CODES_FR4000);
-        grayscale(7, 4000, PQ10, OLED7_CODES_LR4000);
+    public void oled6grayscale() {
+        grayscale(6, 540, HDR10, OLED6_CODES);
+    }
+
+    /** 2017 TVs, Full Range signal */
+    @Test
+    public void oled7grayscaleFR() {
+        grayscale(7, 540, HDR10FR, OLED7_CODES_FR540);
+        grayscale(7, 1000, HDR10FR, OLED7_CODES_FR1000);
+        grayscale(7, 4000, HDR10FR, OLED7_CODES_FR4000);
+    }
+
+    /** 2017 TVs, Limited Range signal */
+    @Test
+    public void oled7grayscaleLR() {
+        grayscale(7, 540, HDR10, OLED7_CODES_LR540);
+        grayscale(7, 1000, HDR10, OLED7_CODES_LR1000);
+        grayscale(7, 4000, HDR10, OLED7_CODES_LR4000);
     }
 
     public void grayscale(int version, int display,
-            ColorMatrix matrix, int[] codes) {
-        // show brightest and darkest patterns in the beginning
-        if (version == 6) {
-            grayscale(-1, version, display, matrix, codes[codes.length - 1],
-                    "; set TV to max of 540 nit!");
-        } else {
-            grayscale(-1, version, display, matrix, codes[codes.length - 1]);
-        }
+            EncoderParameters ep, int[] codes) {
+        LG lg = new LG(ep, version, display);
 
-        grayscale(0, version, display, matrix, matrix.YMIN); // pure black
+        // show brightest and darkest patterns in the beginning
+        generate(lg, "$$", codes[codes.length - 1]);
+        generate(lg, "00", ep.matrix.YMIN);
 
         for (int i = 0; i < codes.length; i++) {
-            grayscale(i + 1, version, display, matrix, codes[i]);
+            generate(lg, format("%02d", i + 1), codes[i]);
         }
 
         // test clipping of 10000 nit
-        grayscale(codes.length + 1, version, display, matrix, matrix.YMAX);
+        generate(lg, format("%02d", codes.length + 1), ep.matrix.YMAX);
     }
 
-    private void grayscale(int sequence, int version, int display,
-            ColorMatrix matrix, int yCode) {
-        grayscale(sequence, version, display, matrix, yCode, "");
-    }
-
-    private void grayscale(int sequence, int version, int display,
-            ColorMatrix matrix, int yCode, String suffix) {
-        String name = getFileName(sequence, version, display, matrix, yCode);
-
-        EncoderParameters options =
-                new EncoderParameters(STD_2160p, matrix, FPS_23_976)
-                        .withEncoderOptions(
-                                "--master-display", MASTER_DISPLAY_PRIMARIES
-                                        + "L(" + display + "0000,0)");
-
-        EncoderHEVC.encode(name, options, e -> {
-            Window win = square(e.parameters.resolution, 0.1);
-
-            FrameBuffer fb = e.newFrameBuffer();
-            fb.Y.fillRect(win.x, win.y, win.width, win.height, yCode);
-            FxImage.overlay(overlay(version, display, matrix, yCode, suffix),
-                    fb);
-
-            e.render(DURATION, () -> fb);
-        });
-    }
-
-    private static String getFileName(int seq, int version, int display,
-            ColorMatrix matrix, int yCode) {
-        boolean v2016 = version == 6;
-
-        String dirRange = matrix.range == FULL ? "FR" : "LR";
-        String dirSuffix = v2016 ? "" : format("%s_%04d", dirRange, display);
-        String fileRange = matrix.range == FULL ? "FR" : "10"; // std HDR10
-        String fileSuffix = v2016 ? "" : format("_%d", display);
-        String fileSeq = seq < 0 ? "$$" : format("%02d", seq);
-
-        return PATH + format("%d%s/GrayHDR%s_LGOLED%d%s-%s-Y%03d", version,
-                dirSuffix, fileRange, version, fileSuffix, fileSeq, yCode);
-    }
-
-    private static Parent overlay(int version, int display,
-            ColorMatrix matrix, int yCode, String suffix) {
-        double ye = matrix.fromLumaCode(yCode);
-
-        Label label = new Label(getLabel(version, display, matrix, yCode,
-                suffix));
-        label.setFont(font(40));
-        label.setTextFill(gray(max(0.25, min(0.5, ye))));
-
-        BorderPane.setMargin(label, new Insets(20));
-        BorderPane layout = new BorderPane();
-        layout.setBackground(EMPTY);
-        layout.setBottom(label);
-        return layout;
-    }
-
-    private static String getLabel(int version, int display,
-            ColorMatrix matrix, int yCode, String suffix) {
-        double ye = matrix.fromLumaCode(yCode);
-        double yo = PQ.eotf(ye);
-        CIExy xy = getColor(yo);
-
-        String text = format("LG OLED%d HDR10 %d grayscale"
-                + " CIE(x=%.4f, y=%.4f) Y%d, %.2f nit",
-                version, display, xy.x, xy.y, yCode, yo * 10000.0);
-
-        return text + suffix;
-    }
-
-    private static CIExy getColor(double yo) {
-        double w = yo <= 0 ? 1 : yo; // fake color for pure black
-        double[] rgb = {w, w, w};
-        return new CIEXYZ(RGB2XYZ.multiply(rgb)).CIExy();
+    private void generate(LG lg, String sequence, int y) {
+        lg.generate(lg.gray(10, sequence, y));
     }
 }

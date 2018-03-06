@@ -17,8 +17,9 @@ public abstract class ColorMatrix {
     public final int bitdepth;
     public final ColorRange range;
 
-    public final int YMIN, YMAX;
-    public final int CMIN, CMAX;
+    public final int VMIN, VMAX; // video data range
+    public final int YMIN, YMAX; // luma range
+    public final int CMIN, CMAX; // chroma range
     public final int ACHROMATIC;
 
     public final Matrix3x3 RGBtoXYZ;
@@ -37,6 +38,9 @@ public abstract class ColorMatrix {
 
         int shift = bitdepth - 8;
 
+        VMIN = range == FULL ? 0 : 1 << shift;
+        VMAX = ((range == FULL ? 256 : 255) << shift) - 1;
+
         YMIN = range == FULL ? 0 : 16 << shift;
         YMAX = range == FULL ? (256 << shift) - 1 : 235 << shift;
 
@@ -45,8 +49,8 @@ public abstract class ColorMatrix {
 
         ACHROMATIC = 128 << shift;
 
-        RGBtoXYZ = primaries.getRGBtoXYZ();
-        XYZtoRGB = primaries.getXYZtoRGB();
+        RGBtoXYZ = primaries.RGBtoXYZ;
+        XYZtoRGB = primaries.XYZtoRGB;
     }
 
     public abstract double[] fromRGB(double[] rgb, double[] yuv);
@@ -56,6 +60,14 @@ public abstract class ColorMatrix {
     public abstract double[] toRGB(double[] yuv, double[] rgb);
 
     public abstract double[] toLinearRGB(double[] yuv, double[] rgb);
+
+    public double[] toCodes(double[] yuv, double[] codes) {
+        codes[0] = toLumaCode(yuv[0]);
+        codes[1] = toChromaCode(yuv[1]);
+        codes[2] = toChromaCode(yuv[2]);
+
+        return codes;
+    }
 
     /**
      * Input is packed 32 bit ARGB (8 bit per component).<br>
@@ -92,12 +104,28 @@ public abstract class ColorMatrix {
         return y * (YMAX - YMIN) + YMIN;
     }
 
+    public final double[] toLumaCode(double[] rgb, double[] dst) {
+        for (int i = 0; i < rgb.length; i++) {
+            dst[i] = toLumaCode(rgb[i]);
+        }
+
+        return dst;
+    }
+
     public final double toChromaCode(double c) {
         return c * (CMAX - CMIN) + ACHROMATIC;
     }
 
     public final double fromLumaCode(double yCode) {
         return (yCode - YMIN) / (YMAX - YMIN);
+    }
+
+    public final double[] fromLumaCode(double[] src, double[] rgb) {
+        for (int i = 0; i < rgb.length; i++) {
+            rgb[i] = fromLumaCode(src[i]);
+        }
+
+        return src;
     }
 
     public final double fromChromaCode(double cCode) {

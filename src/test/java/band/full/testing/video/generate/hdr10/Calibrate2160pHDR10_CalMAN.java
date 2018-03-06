@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 @GenerateVideo(LOSSLESS)
 @Disabled("Investigate chromacity percentage")
 public class Calibrate2160pHDR10_CalMAN {
-    private static final Matrix3x3 RGB2XYZ = PRIMARIES.getRGBtoXYZ();
+    private static final Matrix3x3 RGBtoXYZ = PRIMARIES.RGBtoXYZ;
 
     // TODO Calman codes for red
     private static final double[][] RxyY = {
@@ -40,11 +40,11 @@ public class Calibrate2160pHDR10_CalMAN {
 
     @Test
     public void red() throws Exception {
-        Matrix3x3 XYZ2RGB = PRIMARIES.getXYZtoRGB();
+        Matrix3x3 XYZtoRGB = PRIMARIES.XYZtoRGB;
 
         for (double[] dxyY : RxyY) {
             CIExyY xyY = new CIExyY(dxyY[1], dxyY[2], dxyY[3] / 100.0);
-            double[] rgb = XYZ2RGB.multiply(xyY.CIEXYZ().array());
+            double[] rgb = XYZtoRGB.multiply(xyY.CIEXYZ().array());
 
             // Linear RGB
             System.out.print(format("R%.4f G%6.4f B%.4f | ",
@@ -74,7 +74,7 @@ public class Calibrate2160pHDR10_CalMAN {
                     BT709_8bit.toChromaCode(cb),
                     BT709_8bit.toChromaCode(cr)));
 
-            CIEXYZ xyz = new CIEXYZ(RGB2XYZ.multiply(rgb));
+            CIEXYZ xyz = new CIEXYZ(RGBtoXYZ.multiply(rgb));
             System.out.println(xyz.CIExyY());
         }
     }
