@@ -18,7 +18,7 @@ public class TestYCbCr {
     @Test
     public void valuesLimited() {
         assertEquals(1, MATRIX.VMIN);
-        assertEquals(255, MATRIX.VMAX);
+        assertEquals(254, MATRIX.VMAX);
         assertEquals(16, MATRIX.YMIN);
         assertEquals(235, MATRIX.YMAX);
         assertEquals(16, MATRIX.CMIN);
