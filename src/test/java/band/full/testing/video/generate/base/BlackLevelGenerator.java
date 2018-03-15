@@ -37,8 +37,8 @@ public class BlackLevelGenerator extends GeneratorBase {
     protected static final int COLS = 16;
 
     public BlackLevelGenerator(GeneratorFactory factory,
-            EncoderParameters params, String folder) {
-        super(factory, params, folder, "BlackLevel");
+            EncoderParameters params, String folder, String pattern) {
+        super(factory, params, folder, "BlackLevel-" + pattern);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class BlackLevelGenerator extends GeneratorBase {
         FrameBuffer fb = e.newFrameBuffer();
 
         patches(fb);
-        marks(e.parameters, fb);
+        marks(fb);
 
         e.render(DURATION, () -> fb);
     }
@@ -61,8 +61,8 @@ public class BlackLevelGenerator extends GeneratorBase {
 
         range(0, COLS).forEach(col -> {
             Plane luma = fb.Y;
-            int x = getX(luma.width, col);
-            int w = getW(luma.width, col);
+            int x = getX(width, col);
+            int w = getW(width, col);
             luma.fillRect(x, 0, w, luma.height, getLuma(matrix, col));
         });
     }
@@ -98,7 +98,7 @@ public class BlackLevelGenerator extends GeneratorBase {
      * the observer where bands separation is to be expected in case they are
      * displayed without a loss of resolution.
      */
-    private void marks(EncoderParameters params, FrameBuffer fb) {
+    private void marks(FrameBuffer fb) {
         FxImage.overlay(overlay(params), fb);
     }
 

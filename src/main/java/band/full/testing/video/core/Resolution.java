@@ -1,5 +1,7 @@
 package band.full.testing.video.core;
 
+import static java.lang.String.format;
+
 /**
  * @author Igor Malinin
  */
@@ -15,5 +17,10 @@ public class Resolution {
     public Resolution(int width, int height) {
         this.width = width;
         this.height = height;
+    }
+
+    @Override
+    public String toString() {
+        return format("[%d, %d]", width, height);
     }
 }

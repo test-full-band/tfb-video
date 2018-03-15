@@ -12,9 +12,8 @@ import band.full.testing.video.generate.base.Quants2DBase10;
  * @author Igor Malinin
  */
 @GenerateVideo
-public class Quants2D2160pBT2020_10 extends Quants2DBase10 {
-    public Quants2D2160pBT2020_10() {
-        super(HEVC, UHD4K_MAIN10, "UHD4K/BT2020_10/Quantization",
-                "U4K_BT2020_10");
+public class Quants2D2160pBT2020 extends Quants2DBase10 {
+    public Quants2D2160pBT2020() {
+        super(HEVC, UHD4K_MAIN10, "UHD4K/BT2020_10/Quants2D", "U4K_2020");
     }
 }

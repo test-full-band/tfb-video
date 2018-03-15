@@ -45,19 +45,19 @@ public class CheckerboardGenerator
     }
 
     public CheckerboardGenerator(GeneratorFactory factory,
-            EncoderParameters params, String folder) {
-        super(factory, params, folder, "Checkerboard");
+            EncoderParameters params, String folder, String pattern) {
+        super(factory, params, folder, "Checkerboard-" + pattern);
     }
 
     public Stream<Args> args() {
         Stream<Args> args = Stream.of(
-                new Args("", matrix.YMIN, matrix.YMAX),
+                new Args("$NR", matrix.YMIN, matrix.YMAX),
                 new Args("1090",
                         round(matrix.toLumaCode(0.1)),
                         round(matrix.toLumaCode(0.9))),
                 new Args("2080",
-                        round(matrix.toLumaCode(0.1)),
-                        round(matrix.toLumaCode(0.9))),
+                        round(matrix.toLumaCode(0.2)),
+                        round(matrix.toLumaCode(0.8))),
                 new Args("2575",
                         round(matrix.toLumaCode(0.25)),
                         round(matrix.toLumaCode(0.75))),
@@ -67,12 +67,13 @@ public class CheckerboardGenerator
 
         return (matrix.range == FULL) ? args
                 : concat(args, Stream.of(
-                        new Args("VR", matrix.VMIN, matrix.VMAX)));
+                        new Args("$VR", matrix.VMIN, matrix.VMAX)));
     }
 
     @Override
     protected String getFileName(Args args) {
-        return factory.name() + '/' + folder + '/' + pattern + args.suffix;
+        return factory.folder + '/' + folder + '/'
+                + pattern + '-' + args.suffix;
     }
 
     @Override

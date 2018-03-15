@@ -60,7 +60,7 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
 
     @Override
     protected String getFileName(Args args) {
-        return factory.name() + '/' + folder + '/' + pattern +
+        return factory.folder + '/' + folder + '/' + pattern +
                 format("-Y%03d%s-%s", args.yMin,
                         args.redChroma ? "Cr" : "Cb", args.suffix);
     }
@@ -130,7 +130,7 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
         int vCode = redChroma ? cCode : matrix.ACHROMATIC;
 
         // do not verify cells with markings
-        if (matrix.isValidCode(yCode, uCode, vCode)) {
+        if (matrix.isNominal(yCode, uCode, vCode)) {
             verify(fb.Y, col, row, yCode);
             verify(fb.U, col, row, redChroma ? matrix.ACHROMATIC : cCode);
             verify(fb.V, col, row, redChroma ? cCode : matrix.ACHROMATIC);
@@ -206,7 +206,7 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
             for (int cCode = cMin; cCode <= cMax; cCode++) {
                 int uCode = redChroma ? matrix.ACHROMATIC : cCode;
                 int vCode = redChroma ? cCode : matrix.ACHROMATIC;
-                if (!matrix.isValidCode(yCode, uCode, vCode)) {
+                if (!matrix.isNominal(yCode, uCode, vCode)) {
                     grid.getChildren().add(
                             text("X", color, yCode - yMin, cCode - cMin));
                 }

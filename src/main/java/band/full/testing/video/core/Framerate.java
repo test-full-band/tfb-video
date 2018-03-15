@@ -7,17 +7,17 @@ import java.time.Duration;
  */
 public class Framerate {
     public static final Framerate FPS_23_976 =
-            new Framerate("24000:1001", 24000f / 1001f);
+            new Framerate("24000:1001", 24_000f / 1_001f);
 
     public static final Framerate FPS_24 = new Framerate("24:1", 24f);
 
     public static final Framerate FPS_29_97 =
-            new Framerate("30000:1001", 30000f / 1001f);
+            new Framerate("30000:1001", 30_000f / 1_001f);
 
     public static final Framerate FPS_30 = new Framerate("30:1", 30f);
 
     public static final Framerate FPS_59_94 =
-            new Framerate("60000:1001", 60000f / 1001f);
+            new Framerate("60000:1001", 60_000f / 1_001f);
 
     public static final Framerate FPS_60 = new Framerate("60:1", 60f);
 

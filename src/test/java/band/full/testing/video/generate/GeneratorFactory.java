@@ -12,13 +12,15 @@ import java.util.function.Consumer;
  * @author Igor Malinin
  */
 public enum GeneratorFactory {
-    AVC(EncoderAVC::encode),
-    HEVC(EncoderHEVC::encode);
+    AVC(EncoderAVC::encode, "H.264 AVC"),
+    HEVC(EncoderHEVC::encode, "H.265 HEVC");
 
     public final Encoder encoder;
+    public final String folder;
 
-    GeneratorFactory(Encoder encoder) {
+    GeneratorFactory(Encoder encoder, String folder) {
         this.encoder = encoder;
+        this.folder = folder;
     }
 
     public void generate(String name, EncoderParameters ep,

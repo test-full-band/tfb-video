@@ -61,6 +61,14 @@ public abstract class ColorMatrix {
 
     public abstract double[] toLinearRGB(double[] yuv, double[] rgb);
 
+    public double[] fromCodes(double[] yuv, double[] codes) {
+        codes[0] = fromLumaCode(yuv[0]);
+        codes[1] = fromChromaCode(yuv[1]);
+        codes[2] = fromChromaCode(yuv[2]);
+
+        return codes;
+    }
+
     public double[] toCodes(double[] yuv, double[] codes) {
         codes[0] = toLumaCode(yuv[0]);
         codes[1] = toChromaCode(yuv[1]);
@@ -81,23 +89,20 @@ public abstract class ColorMatrix {
         return fromRGB(yuv, yuv);
     }
 
-    public boolean isValidColor(double[] yuv) {
+    public boolean isNominal(double[] yuv) {
         double[] rgb = new double[3];
         toRGB(yuv, rgb);
-        return isValid(rgb[0]) && isValid(rgb[1]) && isValid(rgb[2]);
+        return isNominal(rgb[0]) && isNominal(rgb[1]) && isNominal(rgb[2]);
     }
 
-    protected boolean isValid(double val) {
+    protected boolean isNominal(double val) {
         return val >= 0.0 && val <= 1.0;
     }
 
-    public boolean isValidCode(int yCode, int uCode, int vCode) {
-        double[] yuv = {
-            fromLumaCode(yCode),
-            fromChromaCode(uCode),
-            fromChromaCode(vCode)};
-
-        return isValidColor(yuv);
+    public boolean isNominal(int yCode, int uCode, int vCode) {
+        double[] yuv = {yCode, uCode, vCode};
+        fromCodes(yuv, yuv);
+        return isNominal(yuv);
     }
 
     public final double toLumaCode(double y) {

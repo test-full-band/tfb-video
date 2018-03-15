@@ -1,5 +1,7 @@
 package band.full.testing.video.color;
 
+import static java.lang.String.format;
+
 /**
  * Color Primaries
  *
@@ -68,7 +70,6 @@ public class Primaries {
 
     @Override
     public String toString() {
-        return "Primaries[R" + red + " G" + green + " B" + blue
-                + " W" + white + "]";
+        return format("Primaries[R%s G%s B%s W%s]", red, green, blue, white);
     }
 }

@@ -20,6 +20,6 @@ public class Quants2D2160pBT709_10 extends Quants2DBase10 {
             new EncoderParameters(STD_2160p, BT709_10bit, FPS_23_976);
 
     public Quants2D2160pBT709_10() {
-        super(HEVC, UHD4K_BT709b10, "UHD4K/BT709_10/Quantization", "U4K");
+        super(HEVC, UHD4K_BT709b10, "UHD4K/BT709_10/Quants2D", "U4K_10");
     }
 }

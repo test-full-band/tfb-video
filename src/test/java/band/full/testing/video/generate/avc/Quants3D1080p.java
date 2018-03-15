@@ -18,7 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @GenerateVideo(MAIN)
 public class Quants3D1080p extends Quants3DBase {
     public Quants3D1080p() {
-        super(AVC, FULLHD_MAIN8, "FullHD/Quants3D", "Quants3D1080p");
+        super(AVC, FULLHD_MAIN8, "FullHD/Quants3D", "1080p");
     }
 
     @ParameterizedTest

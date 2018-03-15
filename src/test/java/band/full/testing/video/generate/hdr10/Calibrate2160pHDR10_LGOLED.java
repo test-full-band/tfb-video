@@ -102,7 +102,7 @@ public class Calibrate2160pHDR10_LGOLED {
             String fileRange = matrix.range == FULL ? "10FR" : "10";
             String fileSuffix = v2016 ? "" : format("_%d", display);
 
-            return factory.name() + '/' + folder + '/' + versionDir + '/' +
+            return factory.folder + '/' + folder + '/' + versionDir + '/' +
                     format("GrayHDR%s_LGOLED%d%s-%s-Y%03d", fileRange,
                             version, fileSuffix, args.sequence, args.y);
         }

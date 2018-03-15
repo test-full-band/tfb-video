@@ -1,10 +1,13 @@
 package band.full.testing.video.generate.base;
 
+import static band.full.testing.video.color.CIEXYZ.ILLUMINANT_D50;
+import static band.full.testing.video.color.ChromaticAdaptation.bradford;
 import static band.full.testing.video.core.Quantizer.round;
 import static band.full.testing.video.core.Window.proportional;
 import static band.full.testing.video.core.Window.square;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.generate.GeneratorFactory.HEVC;
+import static band.full.testing.video.generate.base.ColorChecker.DIGITAL_SG;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.String.format;
@@ -15,9 +18,11 @@ import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.text.Font.font;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+import band.full.testing.video.color.CIELab;
 import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExy;
 import band.full.testing.video.color.CIExyY;
+import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.core.Window;
 import band.full.testing.video.encoder.DecoderY4M;
@@ -32,6 +37,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -89,10 +96,41 @@ public class CalibrationBase
         generate(args);
     }
 
+    @ParameterizedTest(name = "{arguments}")
+    @MethodSource("colorchecker")
+    public void colorchecker(Args args) {
+        generate(args);
+    }
+
     private static final int GRAYSCALE_STEPS = 20;
 
     public Stream<Args> grayscales() {
         return IntStream.of(5, 10, 20, 50).boxed().flatMap(this::grayscale);
+    }
+
+    public List<Args> colorchecker() {
+        Matrix3x3 adaptation = bradford(
+                ILLUMINANT_D50, matrix.primaries.white.CIEXYZ());
+
+        List<Args> result = new ArrayList<>();
+
+        for (int i = 0; i < DIGITAL_SG.size(); i++) {
+            String alpha = String.valueOf((char) ('A' + i));
+
+            List<CIELab> column = DIGITAL_SG.get(i);
+            for (int j = 0; j < column.size(); j++) {
+                double[] buf = column.get(j).CIEXYZ().array();
+                matrix.XYZtoRGB.multiply(adaptation.multiply(buf, buf), buf);
+
+                int[] yuv = round(
+                        matrix.toCodes(matrix.fromLinearRGB(buf, buf), buf));
+
+                result.add(new Args("colorchecker", "ColorChecker", 10,
+                        alpha + (j + 1), yuv[0], yuv[1], yuv[2]));
+            }
+        }
+
+        return result;
     }
 
     public Stream<Args> grayscale(int window) {
@@ -123,10 +161,28 @@ public class CalibrationBase
         double ye = matrix.fromLumaCode(args.y);
         CIExyY xyY = getColor(args);
 
+        double nominalDisplayPeakLuminance;
+        switch (matrix.transfer.code()) {
+            case 16:
+                nominalDisplayPeakLuminance = 10_000.0;
+                break;
+
+            case 18:
+                nominalDisplayPeakLuminance = 1_000.0;
+                break;
+
+            default:
+                nominalDisplayPeakLuminance = 100.0;
+                break;
+        }
+
+        // TODO BT.1888 EOTF for BT.709 OETF
+
         return format(
-                "%s %s CIE(x=%.4f, y=%.4f) %.1f%% Y%d, %.1f nit",
+                "%s %s CIE(x=%.4f, y=%.4f) %.1f cd/m² %.1f%% [%d:%d:%d]",
                 pattern, args.label, xyY.x, xyY.y,
-                ye * 100.0, args.y, xyY.Y * 10000.0);
+                xyY.Y * nominalDisplayPeakLuminance,
+                ye * 100.0, args.y, args.u, args.v);
     }
 
     @Override
@@ -134,7 +190,7 @@ public class CalibrationBase
         int window = args.window;
         String win = window <= 0 ? "Fill" : format("Win%02d", window);
 
-        return factory.name() + '/' + folder + '/' +
+        return factory.folder + '/' + folder + '/' +
                 format("%s/%s%d-%s-%s-Y%03d",
                         win, args.file, window,
                         pattern, args.sequence, args.y);
@@ -182,7 +238,7 @@ public class CalibrationBase
         double ye = matrix.fromLumaCode(args.y);
 
         Label label = new Label(getLabelText(args));
-        label.setFont(font(40));
+        label.setFont(font(resolution.height / 54));
         label.setTextFill(Color.gray(max(0.25, min(0.5, ye))));
 
         BorderPane.setMargin(label, new Insets(20));
@@ -193,11 +249,8 @@ public class CalibrationBase
     }
 
     protected CIExyY getColor(Args args) {
-        double[] buf = {
-            matrix.fromLumaCode(args.y),
-            matrix.fromChromaCode(args.u),
-            matrix.fromChromaCode(args.v)
-        };
+        double[] buf = {args.y, args.u, args.v};
+        matrix.fromCodes(buf, buf);
 
         if (buf[0] <= 0.0) {
             // fake color value for pure black

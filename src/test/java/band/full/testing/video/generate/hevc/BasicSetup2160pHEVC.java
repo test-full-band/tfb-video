@@ -12,6 +12,6 @@ import band.full.testing.video.generate.base.BasicSetupBase;
 @GenerateVideo
 public class BasicSetup2160pHEVC extends BasicSetupBase {
     public BasicSetup2160pHEVC() {
-        super(HEVC, UHD4K_MAIN8, "UHD4K/BT709/Calibrate/Basic");
+        super(HEVC, UHD4K_MAIN8, "UHD4K/BT709/Calibrate/Basic", "U4K");
     }
 }

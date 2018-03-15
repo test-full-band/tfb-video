@@ -41,7 +41,7 @@ public abstract class GeneratorBase {
     }
 
     protected String getFileName() {
-        return factory.name() + '/' + folder + '/' + pattern;
+        return factory.folder + '/' + folder + '/' + pattern;
     }
 
     protected abstract void encode(EncoderY4M e);

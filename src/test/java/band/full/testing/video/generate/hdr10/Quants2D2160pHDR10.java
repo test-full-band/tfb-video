@@ -14,6 +14,6 @@ import band.full.testing.video.generate.base.Quants2DBase10;
 @GenerateVideo
 public class Quants2D2160pHDR10 extends Quants2DBase10 {
     public Quants2D2160pHDR10() {
-        super(HEVC, HDR10, "UHD4K/HDR10/Quantization", "U4K_HDR10");
+        super(HEVC, HDR10, "UHD4K/HDR10/Quants2D", "U4K_HDR10");
     }
 }

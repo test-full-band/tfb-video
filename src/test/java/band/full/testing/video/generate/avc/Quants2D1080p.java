@@ -25,7 +25,7 @@ import java.io.IOException;
 @GenerateVideo(MAIN)
 public class Quants2D1080p extends Quants2DBase8 {
     public Quants2D1080p() {
-        super(AVC, FULLHD_MAIN8, "FullHD/Quantization", "FHD");
+        super(AVC, FULLHD_MAIN8, "FullHD/Quants2D", "1080p");
     }
 
     @Test

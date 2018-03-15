@@ -41,13 +41,13 @@ public class TestYCbCr {
 
     @Test
     public void isValidCode() {
-        assertFalse(MATRIX.isValidCode(15, 128, 128));
-        assertTrue(MATRIX.isValidCode(16, 128, 128));
-        assertTrue(MATRIX.isValidCode(17, 128, 128));
-        assertFalse(MATRIX.isValidCode(16, 127, 128));
-        assertFalse(MATRIX.isValidCode(16, 128, 127));
-        assertFalse(MATRIX.isValidCode(16, 129, 128));
-        assertFalse(MATRIX.isValidCode(16, 128, 129));
+        assertFalse(MATRIX.isNominal(15, 128, 128));
+        assertTrue(MATRIX.isNominal(16, 128, 128));
+        assertTrue(MATRIX.isNominal(17, 128, 128));
+        assertFalse(MATRIX.isNominal(16, 127, 128));
+        assertFalse(MATRIX.isNominal(16, 128, 127));
+        assertFalse(MATRIX.isNominal(16, 129, 128));
+        assertFalse(MATRIX.isNominal(16, 128, 129));
     }
 
     @Test

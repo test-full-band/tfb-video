@@ -2,8 +2,6 @@ package band.full.testing.video.encoder;
 
 import static band.full.testing.video.core.Framerate.toFrames;
 import static band.full.testing.video.encoder.EncoderY4M.LOSSLESS;
-import static band.full.testing.video.encoder.EncoderY4M.QFRAMES;
-import static band.full.testing.video.encoder.EncoderY4M.QRATE;
 import static band.full.testing.video.encoder.EncoderY4M.QUICK;
 import static java.lang.Math.min;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
@@ -31,6 +29,8 @@ import java.util.function.Consumer;
  */
 public class DecoderY4M implements AutoCloseable {
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
+
+    private int qframes;
 
     public final String name;
     public final EncoderParameters parameters;
@@ -72,7 +72,7 @@ public class DecoderY4M implements AutoCloseable {
 
         verify(headers, 'W', resolution.width);
         verify(headers, 'H', resolution.height);
-        verify(headers, 'F', QUICK ? QRATE : parameters.framerate.toString());
+        verify(headers, 'F', QUICK ? "1:1" : parameters.framerate.toString());
         verify(headers, 'I', "p");
         verify(headers, 'A', "1:1");
         verify(headers, 'C', y4mPixelFormats());
@@ -247,6 +247,23 @@ public class DecoderY4M implements AutoCloseable {
     public void read(int frames, Consumer<FrameBuffer> consumer) {
         FrameBuffer fb = newFrameBuffer();
 
+        if (QUICK && parameters.framerate.rate > 1.0) {
+            int rate = (int) parameters.framerate.rate;
+
+            if (qframes > rate * 60) return;
+            frames = min(frames, rate * 10);
+
+            for (int i = qframes % rate; i < frames; i += rate) {
+                if (!read(fb))
+                    throw new RuntimeException("Not enough frames");
+
+                consumer.accept(fb);
+            }
+
+            qframes += frames;
+            return;
+        }
+
         for (int i = 0; i < frames; i++) {
             if (!read(fb))
                 throw new RuntimeException("Not enough frames");
@@ -256,9 +273,7 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     public void read(Duration duration, Consumer<FrameBuffer> consumer) {
-        float rate = QUICK ? 1f : parameters.framerate.rate;
-        int frames = toFrames(rate, duration);
-        read(QUICK ? min(QFRAMES, frames) : frames, consumer);
+        read(toFrames(parameters.framerate.rate, duration), consumer);
     }
 
     private int y4mBytesPerSample() {

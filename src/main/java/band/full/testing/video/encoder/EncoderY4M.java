@@ -49,6 +49,8 @@ public abstract class EncoderY4M implements AutoCloseable {
 
     final IO OUT = IO.get("encoder.file." + getFormat());
 
+    private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
+
     public static final boolean LOSSLESS = getBoolean("encoder.lossless");
 
     /**
@@ -56,11 +58,9 @@ public abstract class EncoderY4M implements AutoCloseable {
      * one frame per second. This is useful for quick testing the build
      * procedures. Produced videos will not be fully usable!
      */
-    protected static final boolean QUICK = getBoolean("encoder.quick");
-    protected static final String QRATE = "1:1";
-    protected static final int QFRAMES = 15;
+    public static final boolean QUICK = getBoolean("encoder.quick");
 
-    private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
+    private int qframes;
 
     public final String name;
     public final EncoderParameters parameters;
@@ -111,7 +111,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         String header = "YUV4MPEG2"
                 + " W" + resolution.width + " H" + resolution.height
-                + " F" + (QUICK ? QRATE : parameters.framerate)
+                + " F" + (QUICK ? "1:1" : parameters.framerate)
                 + " Ip A1:1 C420p" + matrix.bitdepth + "\n";
 
         yuv4mpegOut.write(header.getBytes(US_ASCII));
@@ -242,15 +242,27 @@ public abstract class EncoderY4M implements AutoCloseable {
     }
 
     public void render(int frames, Supplier<FrameBuffer> supplier) {
+        if (QUICK && parameters.framerate.rate > 1.0) {
+            int rate = (int) parameters.framerate.rate;
+
+            if (qframes > rate * 60) return;
+            frames = min(frames, rate * 10);
+
+            for (int i = qframes % rate; i < frames; i += rate) {
+                render(supplier.get());
+            }
+
+            qframes += frames;
+            return;
+        }
+
         for (int i = 0; i < frames; i++) {
             render(supplier.get());
         }
     }
 
     public void render(Duration duration, Supplier<FrameBuffer> supplier) {
-        float rate = QUICK ? 1f : parameters.framerate.rate;
-        int frames = toFrames(rate, duration);
-        render(QUICK ? min(QFRAMES, frames) : frames, supplier);
+        render(toFrames(parameters.framerate.rate, duration), supplier);
     }
 
     private int y4mBytesPerSample() {

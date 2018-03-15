@@ -1,5 +1,7 @@
 package band.full.testing.video.generate.base;
 
+import static band.full.testing.video.encoder.EncoderY4M.QUICK;
+import static java.lang.String.format;
 import static java.util.stream.IntStream.rangeClosed;
 
 import band.full.testing.video.core.FrameBuffer;
@@ -28,6 +30,11 @@ public class Quants3DBase extends ParametrizedGeneratorBase<Quants3DBase.Args> {
             this.frames = frames;
             this.lsb = lsb;
         }
+
+        @Override
+        public String toString() {
+            return format("speed: %s, frames: %d, lsb: %d", speed, frames, lsb);
+        }
     }
 
     protected static Stream<Args> params() {
@@ -39,13 +46,18 @@ public class Quants3DBase extends ParametrizedGeneratorBase<Quants3DBase.Args> {
     }
 
     protected Quants3DBase(GeneratorFactory factory,
+            EncoderParameters params, String folder) {
+        super(factory, params, folder, "Quants3D");
+    }
+
+    protected Quants3DBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
-        super(factory, params, folder, pattern);
+        super(factory, params, folder, "Quants3D-" + pattern);
     }
 
     @Override
     protected String getFileName(Args args) {
-        return factory.name() + '/' + folder + '/' +
+        return factory.folder + '/' + folder + '/' +
                 pattern + '-' + args.speed + args.lsb;
     }
 
@@ -65,6 +77,8 @@ public class Quants3DBase extends ParametrizedGeneratorBase<Quants3DBase.Args> {
 
     @Override
     protected void verify(DecoderY4M d, Args args) {
+        if (QUICK) return;
+
         int uCode = matrix.ACHROMATIC;
         int vCode = matrix.ACHROMATIC;
 

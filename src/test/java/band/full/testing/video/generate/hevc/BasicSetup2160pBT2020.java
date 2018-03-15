@@ -10,8 +10,9 @@ import band.full.testing.video.generate.base.BasicSetupBase;
  * @author Igor Malinin
  */
 @GenerateVideo
-public class BasicSetup2160pBT2020_10 extends BasicSetupBase {
-    public BasicSetup2160pBT2020_10() {
-        super(HEVC, UHD4K_MAIN10, "UHD4K/BT2020_10/Calibrate/Basic");
+public class BasicSetup2160pBT2020 extends BasicSetupBase {
+    public BasicSetup2160pBT2020() {
+        super(HEVC, UHD4K_MAIN10, "UHD4K/BT2020_10/Calibrate/Basic",
+                "U4K_2020");
     }
 }

@@ -17,8 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @GenerateVideo
 public class Quants3D2160pBT2020 extends Quants3DBase {
     public Quants3D2160pBT2020() {
-        super(HEVC, UHD4K_MAIN10, "UHD4K/BT2020/Quants3D",
-                "Quants3D1080p4K2020");
+        super(HEVC, UHD4K_MAIN10, "UHD4K/BT2020_10/Quants3D", "U4K_2020");
     }
 
     @ParameterizedTest

@@ -19,24 +19,27 @@ import java.util.stream.Stream;
  */
 @TestInstance(PER_CLASS)
 public abstract class BasicSetupBase {
-    public final GeneratorFactory factory;
-    public final EncoderParameters params;
-    public final String folder;
+    protected final GeneratorFactory factory;
+    protected final EncoderParameters params;
+    protected final String folder;
+    protected final String pattern;
 
-    CheckerboardGenerator checkerboard;
+    protected final CheckerboardGenerator checkerboard;
 
     protected BasicSetupBase(GeneratorFactory factory,
-            EncoderParameters params, String folder) {
+            EncoderParameters params, String folder, String pattern) {
         this.factory = factory;
         this.params = params;
         this.folder = folder;
+        this.pattern = pattern;
 
-        checkerboard = new CheckerboardGenerator(factory, params, folder);
+        checkerboard = new CheckerboardGenerator(
+                factory, params, folder, pattern);
     }
 
     @Test
     public void blackLevel() {
-        new BlackLevelGenerator(factory, params, folder).generate();
+        new BlackLevelGenerator(factory, params, folder, pattern).generate();
     }
 
     @ParameterizedTest

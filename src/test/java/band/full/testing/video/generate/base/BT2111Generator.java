@@ -2,12 +2,11 @@ package band.full.testing.video.generate.base;
 
 import static band.full.testing.video.core.Quantizer.round;
 import static band.full.testing.video.core.Resolution.STD_1080p;
-import static band.full.testing.video.itu.BT2100.PQ10;
-import static band.full.testing.video.itu.BT709.BT709_8bit;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.time.Duration.ofSeconds;
 
+import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.core.Plane;
 import band.full.testing.video.encoder.DecoderY4M;
@@ -15,6 +14,7 @@ import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.generate.GeneratorBase;
 import band.full.testing.video.generate.GeneratorFactory;
+import band.full.testing.video.itu.BT709;
 
 import java.time.Duration;
 
@@ -25,6 +25,8 @@ public class BT2111Generator extends GeneratorBase {
     protected static final Duration DURATION = ofSeconds(10);
 
     private final double alpha;
+    private final Matrix3x3 bt709conv;
+
     private final int scale;
 
     // bar widths in comments are based on 1920x1080 resolution
@@ -59,6 +61,9 @@ public class BT2111Generator extends GeneratorBase {
                 throw new IllegalArgumentException(
                         "Unsupported transfer function: " + matrix.transfer);
         }
+
+        bt709conv = BT709.PRIMARIES.RGBtoXYZ.multiply(matrix.XYZtoRGB)
+                .multiply(matrix.transfer.eotf(alpha));
 
         scale = width / STD_1080p.width;
 
@@ -104,7 +109,7 @@ public class BT2111Generator extends GeneratorBase {
         x = fillBigBar(fb, x, b12, wd, b2, 0.0, 0.0, 1.0); // B
     }
 
-    private int fillBigBar(FrameBuffer fb, int x, int b12, int w, int b2,
+    private int fillBigBar(FrameBuffer fb, int x, int y, int w, int h,
             double r, double g, double b) {
         double[] rgb = {r, g, b}, buf = new double[3];
 
@@ -116,8 +121,8 @@ public class BT2111Generator extends GeneratorBase {
         int[] dim = round(
                 matrix.toCodes(matrix.fromLinearRGB(rgb, buf), buf));
 
-        fb.fillRect(x, 0, w, b12, bright);
-        fb.fillRect(x, b12, w, b2, dim);
+        fb.fillRect(x, 0, w, y, bright);
+        fb.fillRect(x, y, w, h, dim);
         return x + w;
     }
 
@@ -138,10 +143,11 @@ public class BT2111Generator extends GeneratorBase {
         int b2 = height / 2, b12 = b2 / 6, y = b2 + 2 * b12;
 
         for (int x = wc; x < width; x++) {
-            // TODO 12 bit
+            // TODO 12 bit support and diagonal sub-pixel shift below 8K
+            // TODO half toning for 10 bit above 2K
             int value = max(matrix.VMIN, min(matrix.VMAX,
                     matrix.VMAX + x / scale + 206 - width / scale));
-            fb.Y.fillRect(x, y, 2, b12, value);
+            fb.Y.fillRect(x, y, 1, b12, value);
         }
     }
 
@@ -178,10 +184,9 @@ public class BT2111Generator extends GeneratorBase {
     private int fill709(FrameBuffer fb, int x, int y, int w, int h,
             double r, double g, double b) {
         double[] buf = {r, g, b};
-        PQ10.XYZtoRGB.multiply(BT709_8bit.RGBtoXYZ.multiply(buf, buf), buf);
-        multiply(buf, PQ10.transfer.eotf(alpha));
-        PQ10.toCodes(PQ10.fromLinearRGB(buf, buf), buf);
-        fb.fillRect(x, height / 4 * 3, w, height / 4, round(buf));
+        bt709conv.multiply(buf, buf);
+        matrix.toCodes(matrix.fromLinearRGB(buf, buf), buf);
+        fb.fillRect(x, y, w, h, round(buf));
         return x + w;
     }
 

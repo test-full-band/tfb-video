@@ -1,6 +1,7 @@
 package band.full.testing.video.core;
 
 import static java.lang.Math.sqrt;
+import static java.lang.String.format;
 
 public class Window {
     public final int x;
@@ -13,6 +14,11 @@ public class Window {
         this.y = y;
         this.width = width;
         this.height = height;
+    }
+
+    @Override
+    public String toString() {
+        return format("Window[%d, %d, %d, %d]", x, y, width, height);
     }
 
     public static Window square(Resolution resolution, double area) {

@@ -15,6 +15,6 @@ import band.full.testing.video.generate.base.BasicSetupBase;
 @GenerateVideo(MAIN)
 public class BasicSetup1080p extends BasicSetupBase {
     public BasicSetup1080p() {
-        super(AVC, FULLHD_MAIN8, "FullHD/Calibrate/Basic");
+        super(AVC, FULLHD_MAIN8, "FullHD/Calibrate/Basic", "1080p");
     }
 }

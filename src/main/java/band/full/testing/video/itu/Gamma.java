@@ -8,7 +8,7 @@ import static java.lang.Math.pow;
  *
  * @see BT2020
  */
-class Gamma implements TransferCharacteristics {
+public class Gamma implements TransferCharacteristics {
     private static final double POWER = 0.45;
     private static final double LINEAR = 4.5;
     private static final double ALPHA = 1.09929682680944;

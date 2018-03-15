@@ -12,6 +12,6 @@ import band.full.testing.video.generate.base.BasicSetupBase;
 @GenerateVideo
 public class BasicSetup1080pHEVC extends BasicSetupBase {
     public BasicSetup1080pHEVC() {
-        super(HEVC, FULLHD_MAIN8, "FullHD/Calibrate/Basic");
+        super(HEVC, FULLHD_MAIN8, "FullHD/Calibrate/Basic", "FHD");
     }
 }
