@@ -43,8 +43,8 @@ public class FxDisplay extends Application {
 
         box.setBackground(new Background(new BackgroundFill(fill, null, null)));
 
-        ScrollPane scroll = new ScrollPane(box);
-        Scene scene = new Scene(scroll);
+        var scroll = new ScrollPane(box);
+        var scene = new Scene(scroll);
 
         stage.setScene(scene);
         stage.show();
@@ -73,7 +73,7 @@ public class FxDisplay extends Application {
     }
 
     public static void runAndWait(Runnable runnable) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+        var future = new CompletableFuture<>();
 
         Platform.runLater(() -> {
             try {

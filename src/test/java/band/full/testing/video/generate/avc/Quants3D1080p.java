@@ -2,10 +2,10 @@ package band.full.testing.video.generate.avc;
 
 import static band.full.testing.video.encoder.EncoderParameters.FULLHD_MAIN8;
 import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
-import static band.full.testing.video.generate.GeneratorFactory.AVC;
+import static band.full.testing.video.generator.GeneratorFactory.AVC;
 
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generate.base.Quants3DBase;
+import band.full.testing.video.generator.Quants3DBase;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;

@@ -5,7 +5,6 @@ import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -24,7 +23,7 @@ public class EncoderHEVC extends EncoderY4M {
 
     @Override
     protected ProcessBuilder createProcessBuilder() {
-        ProcessBuilder builder = new ProcessBuilder(getExecutable(),
+        var builder = new ProcessBuilder(getExecutable(),
                 Y4M.isPipe() ? "-" : y4m.getPath(),
                 out.getPath())
                         .redirectOutput(INHERIT)
@@ -35,7 +34,7 @@ public class EncoderHEVC extends EncoderY4M {
         int transfer = matrix.transfer.code();
         int colormatrix = matrix.code;
 
-        List<String> command = builder.command();
+        var command = builder.command();
 
         addAll(command, "--y4m", "--preset", getPresetParam(),
                 "--profile", bitdepth == 8 ? "main" : "main" + bitdepth);

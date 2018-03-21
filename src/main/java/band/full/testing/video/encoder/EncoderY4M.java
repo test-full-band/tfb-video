@@ -9,7 +9,6 @@ import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 import band.full.testing.video.core.FrameBuffer;
-import band.full.testing.video.core.Resolution;
 import band.full.testing.video.itu.ColorMatrix;
 
 import java.io.File;
@@ -100,7 +99,7 @@ public abstract class EncoderY4M implements AutoCloseable {
                     "Cannot create directory: " + dir);
         }
 
-        Resolution resolution = parameters.resolution;
+        var resolution = parameters.resolution;
 
         int frameLength = resolution.width * resolution.height * 3
                 / 2 * y4mBytesPerSample();
@@ -132,7 +131,7 @@ public abstract class EncoderY4M implements AutoCloseable {
             System.out.println("Generating normal encode...");
         }
 
-        ProcessBuilder builder = createProcessBuilder();
+        var builder = createProcessBuilder();
 
         System.out.println(builder.command());
 
@@ -173,7 +172,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         yuv4mpegOut.close();
 
         if (!Y4M.isPipe()) {
-            ProcessBuilder builder = createProcessBuilder();
+            var builder = createProcessBuilder();
 
             System.out.println(builder.command());
 
@@ -190,7 +189,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         mp4.delete(); // force overwrite
 
-        ProcessBuilder builder = new ProcessBuilder("MP4Box",
+        var builder = new ProcessBuilder("MP4Box",
                 "-add", out.getPath(),
                 "-brand", "hvc1", mp4.getPath())
                         .redirectOutput(INHERIT)

@@ -38,7 +38,38 @@ public class ST2084 implements TransferCharacteristics {
 
     private ST2084() {}
 
-    /** values are 0..1 */
+    /**
+     * transfer_characteristics = 16
+     * <ul>
+     * <li>SMPTE ST 2084 for 10, 12, 14 and 16-bit systems
+     * <li>Rec. ITU-R BT.2100-0 perceptual quantization (PQ) system
+     * </ul>
+     */
+    @Override
+    public int code() {
+        return 16;
+    }
+
+    @Override
+    public boolean isDefinedByEOTF() {
+        return true;
+    }
+
+    @Override
+    public double getNominalDisplayPeakLuminance() {
+        return 10_000.0;
+    }
+
+    @Override
+    public double oetf(double l) {
+        return eotfi(l); // TODO
+    }
+
+    @Override
+    public double oetfi(double v) {
+        return eotf(v); // TODO
+    }
+
     @Override
     public double eotf(double v) {
         if (v <= 0.0)
@@ -57,9 +88,8 @@ public class ST2084 implements TransferCharacteristics {
         return pow(a / b, 1.0 / N);
     }
 
-    /** values are 0..1 */
     @Override
-    public double oetf(double l) {
+    public double eotfi(double l) {
         if (l <= 0.0)
             return 0.0;
 
@@ -69,17 +99,5 @@ public class ST2084 implements TransferCharacteristics {
         double b = 1 + C3 * ln;
 
         return pow(a / b, M);
-    }
-
-    /**
-     * transfer_characteristics = 16
-     * <ul>
-     * <li>SMPTE ST 2084 for 10, 12, 14 and 16-bit systems
-     * <li>Rec. ITU-R BT.2100-0 perceptual quantization (PQ) system
-     * </ul>
-     */
-    @Override
-    public int code() {
-        return 16;
     }
 }

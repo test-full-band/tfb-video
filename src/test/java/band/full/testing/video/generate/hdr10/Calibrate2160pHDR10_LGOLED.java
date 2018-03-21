@@ -3,14 +3,13 @@ package band.full.testing.video.generate.hdr10;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10FR;
 import static band.full.testing.video.encoder.EncoderParameters.MASTER_DISPLAY_PRIMARIES;
-import static band.full.testing.video.generate.GeneratorFactory.HEVC;
+import static band.full.testing.video.generator.GeneratorFactory.HEVC;
 import static band.full.testing.video.itu.ColorRange.FULL;
 import static java.lang.String.format;
 
-import band.full.testing.video.color.CIExyY;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generate.base.CalibrationBase;
+import band.full.testing.video.generator.CalibrationBase;
 
 import org.junit.jupiter.api.Test;
 
@@ -77,17 +76,13 @@ public class Calibrate2160pHDR10_LGOLED {
         }
 
         @Override
-        protected String getLabelText(Args args) {
-            CIExyY xyY = getColor(args);
+        protected String getBottomLeftText(Args args) {
+            String suffix = version == 6 && args.sequence.equals("$$")
+                    ? "; set TV to max of 540 nit!"
+                    : "";
 
-            String text = format("LG OLED%d HDR10 %d grayscale"
-                    + " CIE(x=%.4f, y=%.4f) Y%d, %.2f nit",
-                    version, display, xyY.x, xyY.y, args.y, xyY.Y * 10000.0);
-
-            if (version == 6 && args.sequence.equals("$$"))
-                return text + "; set TV to max of 540 nit!";
-
-            return text;
+            return format("LG OLED%d HDR10 %d grayscale Y%d%s",
+                    version, display, args.y, suffix);
         }
 
         @Override
@@ -132,7 +127,7 @@ public class Calibrate2160pHDR10_LGOLED {
 
     public void grayscale(int version, int display,
             EncoderParameters ep, int[] codes) {
-        LG lg = new LG(ep, version, display);
+        var lg = new LG(ep, version, display);
 
         // show brightest and darkest patterns in the beginning
         generate(lg, "$$", codes[codes.length - 1]);

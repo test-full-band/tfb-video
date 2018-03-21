@@ -1,27 +1,11 @@
 package band.full.testing.video.generate.hdr10;
 
-import static band.full.testing.video.core.Quantizer.round;
-import static band.full.testing.video.core.Resolution.STD_2160p;
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
 import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
-import static band.full.testing.video.smpte.ST2084.PQ;
-import static java.lang.Math.PI;
-import static java.lang.Math.cos;
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
-import static java.time.Duration.ofMinutes;
-import static java.util.Arrays.fill;
+import static band.full.testing.video.generator.GeneratorFactory.HEVC;
 
-import band.full.testing.video.core.FrameBuffer;
-import band.full.testing.video.encoder.EncoderHEVC;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.itu.ColorMatrix;
-
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
+import band.full.testing.video.generator.ChromaSubsamplingBase;
 
 /**
  * Testing quality of chroma upsampling.
@@ -29,153 +13,8 @@ import java.time.Duration;
  * @author Igor Malinin
  */
 @GenerateVideo(LOSSLESS)
-public class ChromaSubsampling2160pHDR10 {
-    private static final String PATH = "HEVC/UHD4K/HDR10/Chroma";
-    private static final Duration DURATION = ofMinutes(1);
-
-    private static final int CENTER_X = STD_2160p.width / 2;
-    private static final int CENTER_Y = STD_2160p.height / 2;
-    private static final double MAX_DISTANCE = CENTER_Y;
-    private static final double RANGE = 32; // Fmax / Fmin
-
-    /**
-     * Black & White concentric sine circles
-     */
-    @Test
-    public void concentricBlackWhiteSineE() throws Exception {
-        EncoderHEVC.encode(PATH + "/ChromaHDR10-BlackWhiteCodeSineE", HDR10,
-                e -> {
-                    FrameBuffer fb = e.newFrameBuffer();
-                    ColorMatrix matrix = fb.matrix;
-
-                    int grayY = round(matrix.toLumaCode(0.25));
-
-                    fb.Y.calculate((x, y) -> {
-                        double radius = r(x, y);
-
-                        return (radius > MAX_DISTANCE) ? grayY
-                                : round(matrix.toLumaCode(
-                                        0.25 * (1.0 - cosineSweep(radius))));
-                    });
-
-                    short achromatic = (short) matrix.ACHROMATIC;
-
-                    fill(fb.U.pixels, achromatic);
-                    fill(fb.V.pixels, achromatic);
-
-                    e.render(DURATION, () -> fb);
-                });
-    }
-
-    @Test
-    public void concentricBlackWhiteSineO() throws Exception {
-        EncoderHEVC.encode(PATH + "/ChromaHDR10-BlackWhiteSineO", HDR10, e -> {
-            FrameBuffer fb = e.newFrameBuffer();
-            ColorMatrix matrix = fb.matrix;
-
-            int grayY = round(matrix.toLumaCode(0.25));
-
-            double amp = PQ.eotf(0.5) / 2.0;
-
-            fb.Y.calculate((x, y) -> {
-                double radius = r(x, y);
-
-                return (radius > MAX_DISTANCE) ? grayY
-                        : round(matrix.toLumaCode(
-                                PQ.oetf(amp * (1.0 - cosineSweep(radius)))));
-            });
-
-            short achromatic = (short) matrix.ACHROMATIC;
-
-            fill(fb.U.pixels, achromatic);
-            fill(fb.V.pixels, achromatic);
-
-            e.render(DURATION, () -> fb);
-        });
-    }
-
-    /**
-     * Concentric circles of varying width alternating Red and Blue with half
-     * the resolution of the Y channel.
-     */
-    @Test
-    // @Ignore("Find correct amplitudes according to DCI-P3 primaries")
-    public void concentricRedBlueSineE() throws Exception {
-        EncoderHEVC.encode(PATH + "/ChromaHDR10-RedBlueSineE", HDR10, e -> {
-            FrameBuffer fb = e.newFrameBuffer();
-            ColorMatrix matrix = fb.matrix;
-
-            int grayY = round(matrix.toLumaCode(0.25));
-            int achromatic = matrix.ACHROMATIC;
-
-            // reusable buffers
-            double[] rgb = new double[3];
-            double[] yuv = new double[3];
-
-            for (int y = 0; y < fb.Y.height; y++) {
-                boolean hasChromaY = (y & 1) == 0;
-
-                for (int x = 0; x < fb.Y.width; x++) {
-                    boolean hasChromaX = (x & 1) == 0;
-
-                    double radius = r(x, y);
-
-                    if (radius > MAX_DISTANCE) {
-                        fb.Y.set(x, y, grayY);
-
-                        if (hasChromaX && hasChromaY) {
-                            int cx = x >> 1, cy = y >> 1;
-
-                            fb.U.set(cx, cy, achromatic);
-                            fb.V.set(cx, cy, achromatic);
-                        }
-                    } else {
-                        double sin = 0.25 * sineSweepHalf(radius);
-
-                        rgb[0] = 0.25 + sin;
-                        rgb[1] = 0.0;
-                        rgb[2] = 0.25 - sin;
-
-                        matrix.fromRGB(rgb, yuv);
-
-                        fb.Y.set(x, y, round(matrix.toLumaCode(yuv[0])));
-
-                        if (hasChromaX && hasChromaY) {
-                            int cx = x >> 1, cy = y >> 1;
-
-                            fb.U.set(cx, cy,
-                                    round(matrix.toChromaCode(yuv[1])));
-                            fb.V.set(cx, cy,
-                                    round(matrix.toChromaCode(yuv[2])));
-                        }
-                    }
-                }
-            }
-
-            e.render(DURATION, () -> fb);
-        });
-    }
-
-    /** luma log sine sweep */
-    private double cosineSweep(double r) {
-        double w1 = PI * MAX_DISTANCE / RANGE; // double frequency
-        double L = 1.0 / log(RANGE);
-
-        return cos(w1 * L * (exp(r / MAX_DISTANCE / L) - 1.0));
-    }
-
-    /** chroma half frequency log sine sweep */
-    private double sineSweepHalf(double r) {
-        double w1 = PI * MAX_DISTANCE / RANGE / 2.0;
-        double L = 1.0 / log(RANGE);
-
-        return sin(w1 * L * (exp(r / MAX_DISTANCE / L) - 1.0));
-    }
-
-    /** radius from screen center */
-    private static double r(int x, int y) {
-        int dX = CENTER_X - x;
-        int dY = CENTER_Y - y;
-        return sqrt(dX * dX + dY * dY);
+public class ChromaSubsampling2160pHDR10 extends ChromaSubsamplingBase {
+    public ChromaSubsampling2160pHDR10() {
+        super(HEVC, HDR10, "UHD4K/HDR10/Chroma", "U4K_HDR10");
     }
 }

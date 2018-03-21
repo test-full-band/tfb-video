@@ -43,7 +43,7 @@ public abstract class Dither implements Quantizer {
 
         @Override
         public int quantize(double value) {
-            float r = state;
+            var r = state;
             state = PRNG.nextFloat();
             return round(value + r - state);
         }

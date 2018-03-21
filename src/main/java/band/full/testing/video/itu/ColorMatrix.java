@@ -90,7 +90,7 @@ public abstract class ColorMatrix {
     }
 
     public boolean isNominal(double[] yuv) {
-        double[] rgb = new double[3];
+        var rgb = new double[3];
         toRGB(yuv, rgb);
         return isNominal(rgb[0]) && isNominal(rgb[1]) && isNominal(rgb[2]);
     }

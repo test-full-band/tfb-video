@@ -40,9 +40,10 @@ public class Primaries {
     public final Matrix3x3 RGBtoXYZ;
     public final Matrix3x3 XYZtoRGB;
 
-    public Primaries(int code, CIExy red, CIExy green, CIExy blue,
-            CIExy white) {
+    public Primaries(int code,
+            CIExy red, CIExy green, CIExy blue, CIExy white) {
         this.code = code;
+
         this.red = red;
         this.green = green;
         this.blue = blue;
@@ -63,7 +64,7 @@ public class Primaries {
         Matrix3x3 inverse = m.invert();
 
         double[] w = {white.x / white.y, 1.0,
-            (1 - white.x - white.y) / white.y};
+            (1.0 - white.x - white.y) / white.y};
 
         return m.multiplyColumns(inverse.multiply(w));
     }

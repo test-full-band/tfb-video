@@ -7,11 +7,11 @@ import static band.full.testing.video.executor.FxImage.transform;
 import static band.full.testing.video.executor.FxImage.truncate;
 import static band.full.testing.video.executor.FxImage.write;
 import static band.full.testing.video.executor.GenerateVideo.Type.MAIN;
-import static band.full.testing.video.generate.GeneratorFactory.AVC;
+import static band.full.testing.video.generator.GeneratorFactory.AVC;
 
 import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generate.base.Quants2DBase8;
+import band.full.testing.video.generator.Quants2DBase8;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,14 +30,14 @@ public class Quants2D1080p extends Quants2DBase8 {
 
     @Test
     public void image() throws IOException {
-        FrameBuffer fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
+        var fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
         generate(fb, new Args("PNG", 16, true));
         write(fb, "Quants.png", rgb -> transform(amplify(rgb, 6.0)));
     }
 
     @Test
     public void image5bit() throws IOException {
-        FrameBuffer fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
+        var fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
         generate(fb, new Args("PNG", 16, true));
 
         write(fb, "Quants5bit.png",
@@ -46,7 +46,7 @@ public class Quants2D1080p extends Quants2DBase8 {
 
     @Test
     public void image6bit() throws IOException {
-        FrameBuffer fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
+        var fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
         generate(fb, new Args("PNG", 16, true));
 
         write(fb, "Quants6bit.png",
@@ -55,7 +55,7 @@ public class Quants2D1080p extends Quants2DBase8 {
 
     @Test
     public void image7bit() throws IOException {
-        FrameBuffer fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
+        var fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
         generate(fb, new Args("PNG", 16, true));
 
         write(fb, "Quants7bit.png",
@@ -64,7 +64,7 @@ public class Quants2D1080p extends Quants2DBase8 {
 
     @Test
     public void image8bit() throws IOException {
-        FrameBuffer fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
+        var fb = new FrameBuffer(STD_720p, FULLHD_MAIN8.matrix);
         generate(fb, new Args("PNG", 16, true));
 
         write(fb, "Quants8bit.png",

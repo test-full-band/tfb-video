@@ -28,7 +28,7 @@ public class TestYCbCr {
 
     @Test
     public void valuesFull() {
-        YCbCr matrix = new YCbCr(1, TRANSFER, sRGB, 8, FULL);
+        var matrix = new YCbCr(1, TRANSFER, sRGB, 8, FULL);
 
         assertEquals(0, matrix.VMIN);
         assertEquals(255, matrix.VMAX);

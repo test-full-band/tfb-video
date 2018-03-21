@@ -5,7 +5,6 @@ import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -24,14 +23,14 @@ public class EncoderAVC extends EncoderY4M {
 
     @Override
     protected ProcessBuilder createProcessBuilder() {
-        ProcessBuilder builder = new ProcessBuilder(getExecutable(),
+        var builder = new ProcessBuilder(getExecutable(),
                 "--demuxer", "y4m",
                 Y4M.isPipe() ? "-" : y4m.getPath(),
                 "-o", out.getPath())
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
 
-        List<String> command = builder.command();
+        var command = builder.command();
 
         if (LOSSLESS) {
             addAll(command, "--qp", "0");

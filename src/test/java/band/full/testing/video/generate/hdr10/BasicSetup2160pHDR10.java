@@ -1,10 +1,10 @@
 package band.full.testing.video.generate.hdr10;
 
 import static band.full.testing.video.encoder.EncoderParameters.HDR10;
-import static band.full.testing.video.generate.GeneratorFactory.HEVC;
+import static band.full.testing.video.generator.GeneratorFactory.HEVC;
 
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generate.base.BasicSetupHDRBase;
+import band.full.testing.video.generator.BasicSetupHDRBase;
 
 /**
  * @author Igor Malinin

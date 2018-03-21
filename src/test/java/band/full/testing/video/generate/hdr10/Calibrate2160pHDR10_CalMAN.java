@@ -40,11 +40,11 @@ public class Calibrate2160pHDR10_CalMAN {
 
     @Test
     public void red() throws Exception {
-        Matrix3x3 XYZtoRGB = PRIMARIES.XYZtoRGB;
+        var XYZtoRGB = PRIMARIES.XYZtoRGB;
 
         for (double[] dxyY : RxyY) {
             CIExyY xyY = new CIExyY(dxyY[1], dxyY[2], dxyY[3] / 100.0);
-            double[] rgb = XYZtoRGB.multiply(xyY.CIEXYZ().array());
+            var rgb = XYZtoRGB.multiply(xyY.CIEXYZ().array());
 
             // Linear RGB
             System.out.print(format("R%.4f G%6.4f B%.4f | ",
@@ -74,7 +74,7 @@ public class Calibrate2160pHDR10_CalMAN {
                     BT709_8bit.toChromaCode(cb),
                     BT709_8bit.toChromaCode(cr)));
 
-            CIEXYZ xyz = new CIEXYZ(RGBtoXYZ.multiply(rgb));
+            var xyz = new CIEXYZ(RGBtoXYZ.multiply(rgb));
             System.out.println(xyz.CIExyY());
         }
     }

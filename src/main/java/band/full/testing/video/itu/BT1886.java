@@ -3,9 +3,6 @@ package band.full.testing.video.itu;
 import static java.lang.Math.max;
 import static java.lang.Math.pow;
 
-import band.full.testing.video.color.EOTF;
-import band.full.testing.video.color.OETF;
-
 /**
  * Reference electro-optical transfer function for flat panel displays used in
  * HDTV studio production
@@ -15,7 +12,7 @@ import band.full.testing.video.color.OETF;
  *      "https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.1886-0-201103-I!!PDF-E.pdf">
  *      Recommendation ITU-R BT.1886-0 (03/2011)</a>
  */
-public class BT1886 implements EOTF, OETF {
+public class BT1886 {
     public static final BT1886 TRUE_BLACK_TRANSFER = transfer(0.0);
 
     private static final double GAMMA = 2.4;
@@ -50,14 +47,13 @@ public class BT1886 implements EOTF, OETF {
         this.b = b;
     }
 
-    @Override
+    /** Electro-Optical Transfer Function */
     public double eotf(double v) {
-        return pow(max(v + b, 0.), GAMMA);
+        return pow(max(v + b, 0.0), GAMMA);
     }
 
-    /** Inverse EOTF */
-    @Override
-    public double oetf(double l) {
-        return pow(max(l, 0), POWER) - b;
+    /** Inverse Electro-Optical Transfer Function */
+    public double eotfi(double l) {
+        return pow(max(l, 0.0), POWER) - b;
     }
 }

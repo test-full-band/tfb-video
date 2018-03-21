@@ -5,6 +5,7 @@ import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
+import java.util.function.IntBinaryOperator;
 import java.util.stream.IntStream;
 
 /**
@@ -136,10 +137,19 @@ public class Plane {
         return count;
     }
 
-    public void calculate(PointToValue producer) {
+    public void calculate(IntBinaryOperator op) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                set(x, y, producer.get(x, y));
+                set(x, y, op.applyAsInt(x, y));
+            }
+        }
+    }
+
+    public void calculateRect(int x, int y, int w, int h,
+            IntBinaryOperator op) {
+        for (int cy = 0; cy < h; cy++) {
+            for (int cx = 0; cx < w; cx++) {
+                set(cx + x, cy + y, op.applyAsInt(cx, cy));
             }
         }
     }

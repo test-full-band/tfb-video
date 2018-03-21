@@ -25,23 +25,6 @@ public final class HybridLogGamma implements TransferCharacteristics {
 
     private HybridLogGamma() {}
 
-    /** Inverse OETF */
-    @Override
-    public double eotf(double v) {
-        if (v <= 0.0)
-            return 0.0;
-
-        return v <= 0.5 ? v * v / 3.0 : (exp((v - C) / A) + B) / 12.0;
-    }
-
-    @Override
-    public double oetf(double l) {
-        if (l <= 0.0)
-            return 0.0;
-
-        return l <= 1.0 / 12.0 ? sqrt(3.0 * l) : A * log(12.0 * l - B) + C;
-    }
-
     /**
      * transfer_characteristics = 18
      * <ul>
@@ -52,5 +35,41 @@ public final class HybridLogGamma implements TransferCharacteristics {
     @Override
     public int code() {
         return 18;
+    }
+
+    @Override
+    public boolean isDefinedByEOTF() {
+        return false;
+    }
+
+    @Override
+    public double getNominalDisplayPeakLuminance() {
+        return 1_000.0;
+    }
+
+    @Override
+    public double oetf(double l) {
+        if (l <= 0.0)
+            return 0.0;
+
+        return l <= 1.0 / 12.0 ? sqrt(3.0 * l) : A * log(12.0 * l - B) + C;
+    }
+
+    @Override
+    public double oetfi(double v) {
+        if (v <= 0.0)
+            return 0.0;
+
+        return v <= 0.5 ? v * v / 3.0 : (exp((v - C) / A) + B) / 12.0;
+    }
+
+    @Override
+    public double eotf(double v) {
+        return oetfi(v); // TODO
+    }
+
+    @Override
+    public double eotfi(double l) {
+        return oetf(l); // TODO
     }
 }

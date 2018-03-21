@@ -11,7 +11,6 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 
 import band.full.testing.video.core.FrameBuffer;
-import band.full.testing.video.core.Resolution;
 import band.full.testing.video.itu.ColorMatrix;
 
 import java.io.EOFException;
@@ -60,7 +59,7 @@ public class DecoderY4M implements AutoCloseable {
 
         dir = mp4.getParentFile();
 
-        Resolution resolution = parameters.resolution;
+        var resolution = parameters.resolution;
 
         int frameLength = resolution.width * resolution.height * 3
                 / 2 * y4mBytesPerSample();
@@ -68,7 +67,7 @@ public class DecoderY4M implements AutoCloseable {
 
         yuv4mpegIn = open();
 
-        Map<Character, String> headers = readY4Mheader();
+        var headers = readY4Mheader();
 
         verify(headers, 'W', resolution.width);
         verify(headers, 'H', resolution.height);
@@ -104,7 +103,7 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     private InputStream open() throws IOException {
-        ProcessBuilder builder = new ProcessBuilder("ffmpeg",
+        var builder = new ProcessBuilder("ffmpeg",
                 "-flags2", "+showall",
                 "-i", mp4.getPath(),
                 "-pix_fmt", ffmpegPixelFormat(),
@@ -130,7 +129,7 @@ public class DecoderY4M implements AutoCloseable {
         if (!Arrays.equals(frameBuffer, 0, length, YUV4MPEG2, 0, length))
             throw new IOException("Expecting YUV4MPEG2 header");
 
-        StringBuffer buf = new StringBuffer();
+        var buf = new StringBuffer();
         while (true) {
             int ch = yuv4mpegIn.read();
             if (ch < 0)
@@ -171,7 +170,7 @@ public class DecoderY4M implements AutoCloseable {
 
     private void fillPlane(int offset, short[] pixels) {
         int y4mBytesPerSample = y4mBytesPerSample();
-        byte[] buf = frameBuffer;
+        var buf = frameBuffer;
 
         for (int i = 0, j = offset, length = pixels.length; i < length; i++) {
             // LittleEndian
@@ -237,7 +236,7 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     public void read(Consumer<FrameBuffer> consumer) {
-        FrameBuffer fb = newFrameBuffer();
+        var fb = newFrameBuffer();
 
         while (read(fb)) {
             consumer.accept(fb);
@@ -245,7 +244,7 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     public void read(int frames, Consumer<FrameBuffer> consumer) {
-        FrameBuffer fb = newFrameBuffer();
+        var fb = newFrameBuffer();
 
         if (QUICK && parameters.framerate.rate > 1.0) {
             int rate = (int) parameters.framerate.rate;

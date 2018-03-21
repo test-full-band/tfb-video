@@ -10,7 +10,6 @@ import static javafx.scene.paint.Color.TRANSPARENT;
 
 import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.core.Plane;
-import band.full.testing.video.itu.ColorMatrix;
 
 import javax.imageio.ImageIO;
 
@@ -24,7 +23,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.Image;
-import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 
 public class FxImage {
@@ -62,11 +60,11 @@ public class FxImage {
      * used when applying non fully transparent overlay data.
      */
     public static void overlay(Image image, FrameBuffer fb) {
-        PixelReader reader = image.getPixelReader();
+        var reader = image.getPixelReader();
 
         Plane Y = fb.Y, U = fb.U, V = fb.V;
 
-        double[] yuv = new double[3]; // reusable buffer
+        var yuv = new double[3]; // reusable buffer
 
         for (int y = 0; y < fb.Y.height; y++) {
             boolean hasChromaY = (y & 1) == 0;
@@ -82,7 +80,7 @@ public class FxImage {
                     continue; // transparent overlay -> skip math
                 }
 
-                ColorMatrix matrix = fb.matrix;
+                var matrix = fb.matrix;
                 matrix.fromARGB(argb, yuv);
 
                 double opacity = alpha / 255.0;
@@ -119,14 +117,13 @@ public class FxImage {
 
     public static void write(FrameBuffer fb, String file, Transform transform)
             throws IOException {
-        ColorMatrix matrix = fb.matrix;
+        var matrix = fb.matrix;
 
         Plane Y = fb.Y, U = fb.U, V = fb.V;
 
-        BufferedImage image =
-                new BufferedImage(Y.width, Y.height, TYPE_INT_RGB);
+        var image = new BufferedImage(Y.width, Y.height, TYPE_INT_RGB);
 
-        double[] buf = new double[3];
+        var buf = new double[3];
 
         for (int y = 0; y < Y.height; y++) {
             for (int x = 0; x < Y.width; x++) {
