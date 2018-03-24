@@ -46,8 +46,12 @@ public class EncoderHEVC extends EncoderY4M {
                 "--colormatrix", Integer.toString(colormatrix),
                 "--chromaloc", "2"); // chroma_loc_info_present_flag
 
-        parameters.masterDisplay.ifPresent(
-                md -> addAll(command, "--master-display", md));
+        parameters.masterDisplay.ifPresent(md -> {
+            addAll(command, "--master-display", md,
+                    "--repeat-headers", // [ref.1]
+                    "--no-opt-qp-pps", // repeat HDR SEI
+                    "--no-opt-ref-list-length-pps");
+        });
 
         command.addAll(parameters.encoderOptions);
 
@@ -57,8 +61,10 @@ public class EncoderHEVC extends EncoderY4M {
             addAll(command, "--cu-lossless");
         }
 
-        addAll(command, "--repeat-headers",
-                "--no-opt-qp-pps", "--no-opt-ref-list-length-pps", // [ref.1]
+        int rate = (int) (parameters.framerate.rate + 0.5f);
+
+        addAll(command, "--keyint", "" + rate, "--min-keyint", "1",
+                "--no-open-gop", "--hrd",
                 "--range", matrix.range == FULL ? "full" : "limited",
                 "--output-depth", Integer.toString(bitdepth));
 
@@ -96,13 +102,10 @@ public class EncoderHEVC extends EncoderY4M {
 // "--aq-mode=1",
 // "--aq-strength=1.00",
 // "--cutree",
-// "--min-keyint=2",
-// "--keyint=24",
 // "--bframes=0",
 // "--no-amp",
 // "--no-tskip",
 // "--limit-modes",
-// "--repeat-headers",
 // "--no-b-pyramid",
 // "--rd=4",
 // "--rskip",
