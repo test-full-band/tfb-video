@@ -57,7 +57,7 @@ public class ChromaSubsamplingBase
 
     public ChromaSubsamplingBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
-        super(factory, params, folder, pattern);
+        super(factory, params, folder, "ConcentricLogSine-" + pattern);
     }
 
     @Override
@@ -69,11 +69,11 @@ public class ChromaSubsamplingBase
 
     public Stream<Args> args() {
         return Stream.of(
-                new Args("BlackWhiteCodeSineE",
+                new Args("BlackWhiteE",
                         this::concentricBlackWhiteSineE),
-                new Args("BlackWhiteCodeSineO",
+                new Args("BlackWhiteO",
                         this::concentricBlackWhiteSineO),
-                new Args("RedBlueSineE",
+                new Args("RedBlueE",
                         this::concentricRedBlueSineE));
     }
 

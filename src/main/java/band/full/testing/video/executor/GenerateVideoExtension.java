@@ -16,6 +16,8 @@ import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javafx.application.Platform;
 
 /**
@@ -35,14 +37,12 @@ public class GenerateVideoExtension
             disabled("@GenerateVideo disables current encode type");
 
     /** Guarantee that only one JavaFX thread will be started */
-    private static boolean STARTED;
+    private static AtomicBoolean STARTED = new AtomicBoolean();
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        if (!STARTED) {
-            out.println("Starting JavaFX");
-            Platform.startup(() -> {});
-            STARTED = true;
+        if (STARTED.compareAndSet(false, true)) {
+            Platform.startup(() -> out.println("JavaFX started"));
         }
     }
 
