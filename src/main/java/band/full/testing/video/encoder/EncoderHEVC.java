@@ -46,25 +46,30 @@ public class EncoderHEVC extends EncoderY4M {
                 "--colormatrix", Integer.toString(colormatrix),
                 "--chromaloc", "2"); // chroma_loc_info_present_flag
 
-        parameters.masterDisplay.ifPresent(md -> {
-            addAll(command, "--master-display", md,
-                    "--repeat-headers", // [ref.1]
-                    "--no-opt-qp-pps", // repeat HDR SEI
-                    "--no-opt-ref-list-length-pps");
-        });
+        parameters.masterDisplay.ifPresent(
+                md -> addAll(command, "--master-display", md));
 
         command.addAll(parameters.encoderOptions);
 
         if (LOSSLESS) {
             command.add("--lossless");
-        } else if (!QUICK) {
-            addAll(command, "--cu-lossless");
+        } else {
+            if (!QUICK) {
+                command.add("--cu-lossless");
+            }
+
+            addAll(command, // "--tune", "film", "--uhd-bd",
+                    "--level-idc", "5.1", "--high-tier", "--hrd",
+                    "--vbv-maxrate", "160000", "--vbv-bufsize", "160000");
         }
 
         int rate = (int) (parameters.framerate.rate + 0.5f);
 
-        addAll(command, "--keyint", "" + rate, "--min-keyint", "1",
-                "--no-open-gop", "--hrd",
+        addAll(command, "--aud", "--no-open-gop",
+                "--repeat-headers", // [ref.1]
+                "--no-opt-qp-pps", // repeat HDR SEI and
+                "--no-opt-ref-list-length-pps", // avoid MP4Box errors
+                "--keyint", Integer.toString(rate), "--min-keyint", "1",
                 "--range", matrix.range == FULL ? "full" : "limited",
                 "--output-depth", Integer.toString(bitdepth));
 

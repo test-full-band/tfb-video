@@ -153,17 +153,18 @@ public abstract class EncoderY4M implements AutoCloseable {
         if (QUICK) return "ultrafast";
 
         switch (parameters.preset) {
+            // speed-up lossless encode a bit as we do not trade it for quality
             case FAST:
                 return LOSSLESS ? "ultrafast" : "fast";
             case SLOW:
-                return "slow";
+                return LOSSLESS ? "fast" : "slow";
             case VERYSLOW:
                 return "veryslow";
             case PLACEBO:
                 return "placebo";
 
             default:
-                return "slow";
+                throw new IllegalStateException("preset=" + parameters.preset);
         }
     }
 
