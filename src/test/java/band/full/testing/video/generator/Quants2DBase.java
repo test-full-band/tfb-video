@@ -111,7 +111,7 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
     @Override
     protected void verify(DecoderY4M d, Args args) {
         d.read(fb -> range(0, ROWS).forEach(
-                row -> range(0, COLS).parallel().forEach(
+                row -> range(0, COLS).forEach(
                         col -> verify(fb, args, row, col))));
     }
 

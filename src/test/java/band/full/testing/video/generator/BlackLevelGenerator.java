@@ -73,7 +73,7 @@ public class BlackLevelGenerator extends GeneratorBase {
     protected void verify(FrameBuffer fb) {
         var matrix = fb.matrix;
 
-        range(0, COLS).parallel().forEach(col -> {
+        range(0, COLS).forEach(col -> {
             verify(fb.Y, col, getLuma(matrix, col));
             verify(fb.U, col, matrix.ACHROMATIC);
             verify(fb.V, col, matrix.ACHROMATIC);
