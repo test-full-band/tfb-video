@@ -9,48 +9,18 @@ public interface TransferCharacteristics {
 
     double getNominalDisplayPeakLuminance();
 
-    /**
-     * Opto-Electrical Transfer Function.
-     * <p>
-     * Values are normalized in the range [0.0 .. 1.0]
-     */
-    double oetf(double l);
+    /** Values are normalized in the range [0.0 .. 1.0] */
+    double fromLinear(double l);
 
-    /**
-     * Electro-Optical Transfer Function
-     * <p>
-     * Values are normalized in the range [0.0 .. 1.0]
-     */
-    double eotf(double v);
+    /** Values are normalized in the range [0.0 .. 1.0] */
+    double toLinear(double v);
 
-    /**
-     * Inverse Opto-Electrical Transfer Function
-     * <p>
-     * Values are normalized in the range [0.0 .. 1.0]
-     */
-    double oetfi(double v);
-
-    /**
-     * Inverse Electro-Optical Transfer Function
-     * <p>
-     * Values are normalized in the range [0.0 .. 1.0]
-     */
-    double eotfi(double l);
-
-    default double[] oetf(double[] src, double[] dst) {
-        return transfer(this::oetf, src, dst);
+    default double[] fromLinear(double[] src, double[] dst) {
+        return transfer(this::fromLinear, src, dst);
     }
 
-    default double[] eotf(double[] src, double[] dst) {
-        return transfer(this::eotf, src, dst);
-    }
-
-    default double[] oetfi(double[] src, double[] dst) {
-        return transfer(this::oetfi, src, dst);
-    }
-
-    default double[] eotfi(double[] src, double[] dst) {
-        return transfer(this::eotfi, src, dst);
+    default double[] toLinear(double[] src, double[] dst) {
+        return transfer(this::toLinear, src, dst);
     }
 
     static double[] transfer(DoubleUnaryOperator op,

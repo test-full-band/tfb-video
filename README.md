@@ -30,7 +30,8 @@ Required executables can be installed from following sources:
 
  * [x264](http://download.videolan.org/pub/x264/binaries/)
  * [x265 multilib](http://msystem.waw.pl/x265/)
- * [MP4Box](https://www.videohelp.com/software/MP4Box)
+ * [MP4Box](https://www.videohelp.com/software/MP4Box/old-versions) -
+   NB! Use gpac-0.7.0-rev27 version or newer.
  * [ffmpeg](http://ffmpeg.zeranoe.com/builds/)
 
 ### macOS

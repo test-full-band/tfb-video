@@ -44,27 +44,25 @@ public final class ICtCp extends ColorMatrix {
 
     @Override
     public double[] fromRGB(double[] rgb, double[] itp) {
-        transfer.eotf(rgb, itp);
-        return fromLinearRGB(itp, itp);
+        return fromLinearRGB(transfer.toLinear(rgb, itp), itp);
     }
 
     @Override
     public double[] fromLinearRGB(double[] rgb, double[] itp) {
         RGBtoLMS.multiply(rgb, itp);
-        transfer.oetf(itp, itp);
+        transfer.fromLinear(itp, itp);
         return PQLMStoITP.multiply(itp, itp);
     }
 
     @Override
     public double[] toRGB(double[] itp, double[] rgb) {
-        toLinearRGB(itp, rgb);
-        return transfer.oetf(rgb, rgb);
+        return transfer.fromLinear(toLinearRGB(itp, rgb), rgb);
     }
 
     @Override
     public double[] toLinearRGB(double[] itp, double[] rgb) {
         ITPtoPQLMS.multiply(itp, rgb);
-        transfer.eotf(rgb, rgb);
+        transfer.toLinear(rgb, rgb);
         return LMStoRGB.multiply(rgb, rgb);
     }
 }

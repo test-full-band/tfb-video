@@ -1,9 +1,13 @@
 package band.full.testing.video.itu;
 
 import static band.full.testing.video.itu.ColorRange.FULL;
+import static band.full.testing.video.itu.TransferCharacteristics.transfer;
 
 import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.color.Primaries;
+import band.full.testing.video.core.Quantizer;
+
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * Color Matrix
@@ -57,22 +61,56 @@ public abstract class ColorMatrix {
 
     public abstract double[] fromLinearRGB(double[] rgb, double[] yuv);
 
+    public double[] fromLinearRGB(DoubleUnaryOperator fromLinear,
+            double[] rgb, double[] yuv) {
+        return transfer(fromLinear, toRGB(rgb, yuv), yuv);
+    }
+
     public abstract double[] toRGB(double[] yuv, double[] rgb);
 
     public abstract double[] toLinearRGB(double[] yuv, double[] rgb);
 
-    public double[] fromCodes(double[] yuv, double[] codes) {
-        codes[0] = fromLumaCode(yuv[0]);
-        codes[1] = fromChromaCode(yuv[1]);
-        codes[2] = fromChromaCode(yuv[2]);
+    public double[] toLinearRGB(DoubleUnaryOperator toLinear,
+            double[] yuv, double[] rgb) {
+        return transfer(toLinear, toRGB(yuv, rgb), rgb);
+    }
 
-        return codes;
+    public double[] fromCodes(double[] codes, double[] yuv) {
+        yuv[0] = fromLumaCode(codes[0]);
+        yuv[1] = fromChromaCode(codes[1]);
+        yuv[2] = fromChromaCode(codes[2]);
+
+        return yuv;
+    }
+
+    public double[] fromCodes(int[] codes, double[] yuv) {
+        yuv[0] = fromLumaCode(codes[0]);
+        yuv[1] = fromChromaCode(codes[1]);
+        yuv[2] = fromChromaCode(codes[2]);
+
+        return yuv;
     }
 
     public double[] toCodes(double[] yuv, double[] codes) {
         codes[0] = toLumaCode(yuv[0]);
         codes[1] = toChromaCode(yuv[1]);
         codes[2] = toChromaCode(yuv[2]);
+
+        return codes;
+    }
+
+    public double[] toRGBCodes(double[] rgb, double[] codes) {
+        codes[0] = toLumaCode(rgb[0]);
+        codes[1] = toLumaCode(rgb[1]);
+        codes[2] = toLumaCode(rgb[2]);
+
+        return codes;
+    }
+
+    public int[] toCodes(double[] yuv, Quantizer quantizer, int[] codes) {
+        codes[0] = quantizer.quantize(toLumaCode(yuv[0]));
+        codes[1] = quantizer.quantize(toChromaCode(yuv[1]));
+        codes[2] = quantizer.quantize(toChromaCode(yuv[2]));
 
         return codes;
     }
@@ -87,6 +125,10 @@ public abstract class ColorMatrix {
         yuv[2] = ((argb) & 0xff) / 255.0;
 
         return fromRGB(yuv, yuv);
+    }
+
+    public boolean isAchromatic(int[] yuv) {
+        return yuv[1] == ACHROMATIC && yuv[2] == ACHROMATIC;
     }
 
     public boolean isNominal(double[] yuv) {
@@ -130,7 +172,7 @@ public abstract class ColorMatrix {
             rgb[i] = fromLumaCode(src[i]);
         }
 
-        return src;
+        return rgb;
     }
 
     public final double fromChromaCode(double cCode) {

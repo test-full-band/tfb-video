@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.testing.video.encoder.EncoderParameters;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,6 +38,7 @@ public abstract class BasicSetupBase {
     }
 
     @Test
+    @Disabled("TODO")
     public void blackLevel() {
         new BlackLevelGenerator(factory, params, folder, pattern).generate();
     }

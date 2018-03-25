@@ -25,6 +25,10 @@ public class FrameBuffer {
         this.matrix = matrix;
     }
 
+    public void clear() {
+        fill(matrix.YMIN, matrix.ACHROMATIC, matrix.ACHROMATIC);
+    }
+
     public void fill(int[] yuv) {
         fill(yuv[0], yuv[1], yuv[2]);
     }
@@ -66,6 +70,11 @@ public class FrameBuffer {
         Y.verify(expected.Y, deviation, maxMisses);
         U.verify(expected.U, deviation, maxMisses);
         V.verify(expected.V, deviation, maxMisses);
+    }
+
+    public void verifyRect(int x, int y, int w, int h,
+            int[] yuv) {
+        verifyRect(x, y, w, h, yuv[0], yuv[1], yuv[2]);
     }
 
     public void verifyRect(int x, int y, int w, int h,

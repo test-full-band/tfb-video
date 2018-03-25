@@ -21,7 +21,7 @@ public class Calibrate2160pBT709 extends CalibrationBase {
 
     public static void main(String[] args) {
         var instance = new Calibrate2160pBT709();
-        var gray = new Args("X", "X", 10, "10", 128, 128, 128);
+        var gray = new Args("File", "SN", "Set", "Label", 10, 128, 128, 128);
         FxDisplay.show(STD_1080p, () -> instance.overlay(gray));
     }
 }

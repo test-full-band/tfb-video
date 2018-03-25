@@ -61,7 +61,7 @@ public class BT2111Generator extends GeneratorBase {
         }
 
         bt709conv = BT709.PRIMARIES.RGBtoXYZ.multiply(matrix.XYZtoRGB)
-                .multiply(matrix.transfer.eotf(alpha));
+                .multiply(matrix.transfer.toLinear(alpha));
 
         scale = width / STD_1080p.width;
 
@@ -114,7 +114,7 @@ public class BT2111Generator extends GeneratorBase {
         int[] bright = round(
                 matrix.toCodes(matrix.fromLinearRGB(rgb, buf), buf));
 
-        multiply(rgb, matrix.transfer.eotf(alpha));
+        multiply(rgb, matrix.transfer.toLinear(alpha));
 
         int[] dim = round(
                 matrix.toCodes(matrix.fromLinearRGB(rgb, buf), buf));

@@ -120,14 +120,14 @@ public class ChromaSubsamplingBase
         var fb = e.newFrameBuffer();
         int grayY = round(matrix.toLumaCode(0.25));
 
-        double amp = PQ.eotf(0.5) / 2.0;
+        double amp = PQ.toLinear(0.5) / 2.0;
 
         fb.Y.calculate((x, y) -> {
             double radius = r(x, y);
 
             return (radius > MAX_DISTANCE) ? grayY
                     : round(matrix.toLumaCode(
-                            PQ.oetf(amp * (1.0 - cosineSweep(radius)))));
+                            PQ.fromLinear(amp * (1.0 - cosineSweep(radius)))));
         });
 
         short c0 = (short) matrix.ACHROMATIC;

@@ -21,6 +21,10 @@ public class Window {
         return format("Window[%d, %d, %d, %d]", x, y, width, height);
     }
 
+    public static Window screen(Resolution resolution) {
+        return new Window(0, 0, resolution.width, resolution.height);
+    }
+
     public static Window square(Resolution resolution, double area) {
         if (area < 0.0 || area > 1.0) throw new IllegalArgumentException();
 

@@ -24,7 +24,7 @@ public class Calibrate1080pHLG10 extends CalibrationBase {
 
     public static void main(String[] args) {
         var instance = new Calibrate1080pHLG10();
-        var gray = new Args("X", "X", 10, "10", 512, 512, 512);
+        var gray = new Args("File", "SN", "Set", "Label", 10, 0, 512, 512);
         FxDisplay.show(STD_1080p, () -> instance.overlay(gray));
     }
 }

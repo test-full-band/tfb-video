@@ -1,6 +1,5 @@
 package band.full.testing.video.itu;
 
-import static band.full.testing.video.itu.BT1886.TRUE_BLACK_TRANSFER;
 import static java.lang.Math.pow;
 
 /**
@@ -19,14 +18,21 @@ public class Gamma implements TransferCharacteristics {
     private static final double BL = BETA * LINEAR;
 
     private final int code;
+    private final String name;
 
-    Gamma(int code) {
+    Gamma(int code, String name) {
         this.code = code;
+        this.name = name;
     }
 
     @Override
     public int code() {
         return code;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     @Override
@@ -41,23 +47,13 @@ public class Gamma implements TransferCharacteristics {
 
     /** Opto-Electrical Transfer Function */
     @Override
-    public double oetf(double l) {
+    public double fromLinear(double l) {
         return l < BETA ? LINEAR * l : ALPHA * pow(l, POWER) - A1;
     }
 
     /** Inverse Opto-Electrical Transfer Function */
     @Override
-    public double oetfi(double v) {
+    public double toLinear(double v) {
         return v < BL ? v / LINEAR : pow((v + A1) / ALPHA, GAMMA);
-    }
-
-    @Override
-    public double eotf(double v) {
-        return TRUE_BLACK_TRANSFER.eotf(v);
-    }
-
-    @Override
-    public double eotfi(double l) {
-        return TRUE_BLACK_TRANSFER.eotfi(l);
     }
 }

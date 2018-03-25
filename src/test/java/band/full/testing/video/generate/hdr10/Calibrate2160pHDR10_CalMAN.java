@@ -9,6 +9,7 @@ import static java.lang.String.format;
 import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExyY;
 import band.full.testing.video.color.Matrix3x3;
+import band.full.testing.video.core.Quantizer;
 import band.full.testing.video.executor.GenerateVideo;
 
 import org.junit.jupiter.api.Disabled;
@@ -44,37 +45,31 @@ public class Calibrate2160pHDR10_CalMAN {
 
         for (double[] dxyY : RxyY) {
             CIExyY xyY = new CIExyY(dxyY[1], dxyY[2], dxyY[3] / 100.0);
-            var rgb = XYZtoRGB.multiply(xyY.CIEXYZ().array());
+            var linear = XYZtoRGB.multiply(xyY.CIEXYZ().array());
 
             // Linear RGB
             System.out.print(format("R%.4f G%6.4f B%.4f | ",
-                    rgb[0], rgb[1], rgb[2]));
+                    linear[0], linear[1], linear[2]));
 
-            double r = PQ.oetf(rgb[0]);
-            double g = PQ.oetf(rgb[1]);
-            double b = PQ.oetf(rgb[2]);
+            double[] rgb = PQ.fromLinear(linear, new double[3]);
 
             // RGB Codes (video std)
             System.out.print(format("R%05.1f G%05.1f B%05.1f | ",
-                    BT709_8bit.toLumaCode(r),
-                    BT709_8bit.toLumaCode(g),
-                    BT709_8bit.toLumaCode(b)));
+                    rgb[0], rgb[1], rgb[2]));
 
-            double y = BT709_8bit.getY(rgb[0], rgb[1], rgb[2]);
-            double cb = BT709_8bit.getCb(y, rgb[2]);
-            double cr = BT709_8bit.getCb(y, rgb[1]);
+            double[] yuv = BT709_8bit.fromRGB(linear, new double[3]);
 
             // Electrical YCbCr (video std)
             System.out.print(format("Y%.4f Cb%.4f Cr%.4f | ",
-                    y, cb, cr));
+                    yuv[0], yuv[1], yuv[2]));
+
+            int[] codes = BT709_8bit.toCodes(yuv, Quantizer::round, new int[3]);
 
             // YCbCr Codes (video std)
             System.out.print(format("Y%05.1f Cb%05.1f Cr%05.1f | ",
-                    BT709_8bit.toLumaCode(y),
-                    BT709_8bit.toChromaCode(cb),
-                    BT709_8bit.toChromaCode(cr)));
+                    codes[0], codes[1], codes[2]));
 
-            var xyz = new CIEXYZ(RGBtoXYZ.multiply(rgb));
+            var xyz = new CIEXYZ(RGBtoXYZ.multiply(linear));
             System.out.println(xyz.CIExyY());
         }
     }

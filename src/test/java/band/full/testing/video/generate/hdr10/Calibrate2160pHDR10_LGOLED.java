@@ -76,30 +76,30 @@ public class Calibrate2160pHDR10_LGOLED {
         }
 
         @Override
-        protected String getBottomLeftText(Args args) {
+        protected String getTopLeftText(Args args) {
             String suffix = version == 6 && args.sequence.equals("$$")
                     ? "; set TV to max of 540 nit!"
                     : "";
 
-            return format("LG OLED%d HDR10 %d grayscale Y%d%s",
-                    version, display, args.y, suffix);
+            return format("LG OLED 201%d HDR10 %d%s",
+                    version, display, suffix);
         }
 
         @Override
         protected String getFileName(Args args) {
-            boolean v2016 = version == 6;
+            boolean v6 = version == 6;
 
             String dirRange = matrix.range == FULL ? "FR" : "LR";
 
-            String versionDir = v2016 ? "OLED6"
+            String versionDir = v6 ? "OLED6"
                     : format("OLED%d%s_%04d", version, dirRange, display);
 
             String fileRange = matrix.range == FULL ? "10FR" : "10";
-            String fileSuffix = v2016 ? "" : format("_%d", display);
+            String fileSuffix = v6 ? "" : format("_%d", display);
 
             return factory.folder + '/' + folder + '/' + versionDir + '/' +
                     format("GrayHDR%s_LGOLED%d%s-%s-Y%03d", fileRange,
-                            version, fileSuffix, args.sequence, args.y);
+                            version, fileSuffix, args.sequence, args.yuv[0]);
         }
     }
 

@@ -1,7 +1,6 @@
 package band.full.testing.video.generator;
 
 import static band.full.testing.video.core.Quantizer.round;
-import static band.full.testing.video.core.Window.proportional;
 import static band.full.testing.video.itu.ColorRange.FULL;
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
@@ -76,11 +75,9 @@ public class CheckerboardGenerator
     @Override
     protected void encode(EncoderY4M e, Args args) {
         var fb = e.newFrameBuffer();
-        var matrix = fb.matrix;
-        var w = proportional(resolution, 0.9);
 
-        fb.Y.calculateRect(w.x, w.y, w.width, w.height,
-                (x, y) -> (x + y) % 2 == 0 ? matrix.YMIN : matrix.YMAX);
+        fb.Y.calculate(
+                (x, y) -> (x + y) % 2 == 0 ? args.yMin : args.yMax);
 
         e.render(DURATION, () -> fb);
     }

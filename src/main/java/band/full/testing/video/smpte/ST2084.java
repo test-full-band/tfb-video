@@ -51,6 +51,11 @@ public class ST2084 implements TransferCharacteristics {
     }
 
     @Override
+    public String toString() {
+        return "PQ";
+    }
+
+    @Override
     public boolean isDefinedByEOTF() {
         return true;
     }
@@ -61,17 +66,7 @@ public class ST2084 implements TransferCharacteristics {
     }
 
     @Override
-    public double oetf(double l) {
-        return eotfi(l); // TODO
-    }
-
-    @Override
-    public double oetfi(double v) {
-        return eotf(v); // TODO
-    }
-
-    @Override
-    public double eotf(double v) {
+    public double toLinear(double v) {
         if (v <= 0.0)
             return 0.0;
 
@@ -89,7 +84,7 @@ public class ST2084 implements TransferCharacteristics {
     }
 
     @Override
-    public double eotfi(double l) {
+    public double fromLinear(double l) {
         if (l <= 0.0)
             return 0.0;
 

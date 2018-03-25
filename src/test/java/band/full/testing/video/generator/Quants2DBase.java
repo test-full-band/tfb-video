@@ -1,13 +1,11 @@
 package band.full.testing.video.generator;
 
+import static band.full.testing.video.itu.BT1886.TRUE_BLACK_TRANSFER;
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 import static javafx.scene.layout.Background.EMPTY;
-import static javafx.scene.paint.Color.BLACK;
-import static javafx.scene.paint.Color.color;
-import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
 
 import band.full.testing.video.core.FrameBuffer;
@@ -18,6 +16,7 @@ import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.executor.FxImage;
 
 import java.time.Duration;
+import java.util.function.DoubleUnaryOperator;
 
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -32,7 +31,8 @@ import javafx.scene.text.TextAlignment;
  * @author Igor Malinin
  */
 class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
-    protected static final Duration DURATION = ofSeconds(30);
+    protected static final Duration DURATION_INTRO = ofSeconds(5);
+    protected static final Duration DURATION = ofSeconds(25);
 
     /** Number of rows have to be an odd number - center row is neutral. */
     public static final int ROWS = 17;
@@ -72,6 +72,12 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
     protected void encode(EncoderY4M e, Args args) {
         var fb = e.newFrameBuffer();
         generate(fb, args);
+        e.render(DURATION_INTRO, () -> fb);
+
+        fb.clear();
+        var chroma = args.redChroma ? fb.V : fb.U;
+        bandsY(fb.Y, args.yMin);
+        bandsC(chroma, matrix.ACHROMATIC - ROWS / 2);
         e.render(DURATION, () -> fb);
     }
 
@@ -181,8 +187,7 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
         int cMin = cMid - midRow;
         int cMax = cMid + midRow;
 
-        var color = yMin > matrix.YMIN * 3 ? BLACK
-                : gray(matrix.fromLumaCode(yMin + matrix.YMIN * 6));
+        var color = getTextFill(yMax);
 
         String cName = redChroma ? "C'r" : "C'b";
 
@@ -196,7 +201,7 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
                 text("↓", color, midCol, ROWS - 2),
                 text(cName + "\nC" + cMax, color, midCol, ROWS - 1));
 
-        color = color(0.125, 0.0, 0.0);
+        color = Color.color(0.125, 0.0, 0.0);
 
         for (int yCode = yMin; yCode <= yMax; yCode++) {
             for (int cCode = cMin; cCode <= cMax; cCode++) {
@@ -212,6 +217,19 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
         grid.setBackground(EMPTY);
 
         return grid;
+    }
+
+    protected Color getTextFill(int y) {
+        double ye = matrix.fromLumaCode(y);
+
+        DoubleUnaryOperator eotfi = matrix.transfer.isDefinedByEOTF()
+                ? matrix.transfer::fromLinear
+                : TRUE_BLACK_TRANSFER::eotfi;
+
+        double peak = matrix.transfer.getNominalDisplayPeakLuminance();
+        double minY = eotfi.applyAsDouble(1.0 / peak);
+
+        return ye > minY ? Color.BLACK : Color.gray(ye + minY);
     }
 
     private static boolean isMarked(int col, int row) {

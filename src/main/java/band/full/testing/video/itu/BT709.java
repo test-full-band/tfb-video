@@ -38,7 +38,8 @@ public class BT709 {
      * (functionally the same as the values 6, 14 and 15)
      * </ul>
      */
-    public static final TransferCharacteristics TRANSFER = new Gamma(1);
+    public static final TransferCharacteristics TRANSFER =
+            new Gamma(1, "BT.709");
 
     /**
      * <p>

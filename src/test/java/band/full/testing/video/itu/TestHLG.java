@@ -18,41 +18,35 @@ public class TestHLG {
         assertEquals(0.55991073, HybridLogGamma.C, 5e-10);
     }
 
-    /**
-     * Opto-Electrical Transfer Function<br>
-     * key known points and out-of-range clamping
-     */
+    /** Key known points and out-of-range clamping */
     @Test
-    public void checkOETF() {
-        assertEquals(0.0, HLG.oetf(-MAX_VALUE));
-        assertEquals(0.0, HLG.oetf(-1.0));
-        assertEquals(0.0, HLG.oetf(0.0));
-        assertEquals(1.0, HLG.oetf(1.0), 5e-9);
-        assertEquals(POSITIVE_INFINITY, HLG.oetf(MAX_VALUE));
+    public void checkFromLinear() {
+        assertEquals(0.0, HLG.fromLinear(-MAX_VALUE));
+        assertEquals(0.0, HLG.fromLinear(-1.0));
+        assertEquals(0.0, HLG.fromLinear(0.0));
+        assertEquals(1.0, HLG.fromLinear(1.0), 5e-9);
+        assertEquals(POSITIVE_INFINITY, HLG.fromLinear(MAX_VALUE));
     }
 
-    /**
-     * Electro-Optical Transfer Function<br>
-     * key known points and out-of-range clamping
-     */
+    /** Key known points and out-of-range clamping */
     @Test
-    public void checkEOTF() {
-        assertEquals(0.0, HLG.eotf(-MAX_VALUE));
-        assertEquals(0.0, HLG.eotf(-1.0));
-        assertEquals(0.0, HLG.eotf(0.0));
-        assertEquals(1.0, HLG.eotf(1.0), 5e-8);
-        assertEquals(262.0, HLG.eotf(2.0), 0.5);
-        assertEquals(POSITIVE_INFINITY, HLG.eotf(MAX_VALUE));
+    public void checkToLinear() {
+        assertEquals(0.0, HLG.toLinear(-MAX_VALUE));
+        assertEquals(0.0, HLG.toLinear(-1.0));
+        assertEquals(0.0, HLG.toLinear(0.0));
+        assertEquals(1.0, HLG.toLinear(1.0), 5e-8);
+        assertEquals(262.0, HLG.toLinear(2.0), 0.5);
+        assertEquals(POSITIVE_INFINITY, HLG.toLinear(MAX_VALUE));
     }
 
     /** Symmetry in working range */
     @Test
     public void symmetry() {
-        assertEquals(0.0, HLG.eotf(HLG.oetf(0.0)));
-        assertEquals(0.01, HLG.eotf(HLG.oetf(0.01)), 1e-14);
-        assertEquals(0.1, HLG.eotf(HLG.oetf(0.1)), 1e-14);
-        assertEquals(0.5, HLG.eotf(HLG.oetf(0.5)), 1e-14);
-        assertEquals(0.9, HLG.eotf(HLG.oetf(0.9)), 1e-14);
-        assertEquals(1.0, HLG.eotf(HLG.oetf(1.0)), 1e-14);
+        assertEquals(0.0, HLG.toLinear(HLG.fromLinear(0.0)));
+        assertEquals(0.01, HLG.toLinear(HLG.fromLinear(0.01)), 1e-14);
+        assertEquals(0.1, HLG.toLinear(HLG.fromLinear(0.1)), 1e-14);
+        assertEquals(0.5, HLG.toLinear(HLG.fromLinear(0.5)), 1e-14);
+        assertEquals(0.9, HLG.toLinear(HLG.fromLinear(0.9)), 1e-14);
+        assertEquals(1.0, HLG.toLinear(HLG.fromLinear(1.0)), 1e-14);
     }
 }

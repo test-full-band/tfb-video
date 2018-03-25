@@ -40,7 +40,8 @@ public class BT2020 {
      * (functionally the same as the values 1, 6 and 15)
      * </ul>
      */
-    public static final TransferCharacteristics TRANSFER_10bit = new Gamma(14);
+    public static final TransferCharacteristics TRANSFER_10bit =
+            new Gamma(14, "BT.2020-10");
 
     /**
      * Uses precise definition of the formula.
@@ -51,7 +52,8 @@ public class BT2020 {
      * (functionally the same as the values 1, 6 and 14)
      * </ul>
      */
-    public static final TransferCharacteristics TRANSFER_12bit = new Gamma(15);
+    public static final TransferCharacteristics TRANSFER_12bit =
+            new Gamma(15, "BT.2020-12");
 
     /**
      * <p>

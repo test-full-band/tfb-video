@@ -38,6 +38,11 @@ public final class HybridLogGamma implements TransferCharacteristics {
     }
 
     @Override
+    public String toString() {
+        return "HLG";
+    }
+
+    @Override
     public boolean isDefinedByEOTF() {
         return false;
     }
@@ -48,7 +53,7 @@ public final class HybridLogGamma implements TransferCharacteristics {
     }
 
     @Override
-    public double oetf(double l) {
+    public double fromLinear(double l) {
         if (l <= 0.0)
             return 0.0;
 
@@ -56,20 +61,10 @@ public final class HybridLogGamma implements TransferCharacteristics {
     }
 
     @Override
-    public double oetfi(double v) {
+    public double toLinear(double v) {
         if (v <= 0.0)
             return 0.0;
 
         return v <= 0.5 ? v * v / 3.0 : (exp((v - C) / A) + B) / 12.0;
-    }
-
-    @Override
-    public double eotf(double v) {
-        return oetfi(v); // TODO
-    }
-
-    @Override
-    public double eotfi(double l) {
-        return oetf(l); // TODO
     }
 }
