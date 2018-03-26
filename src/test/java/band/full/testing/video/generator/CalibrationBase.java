@@ -232,7 +232,7 @@ public class CalibrationBase
 
         CIExyY xyY = getColor(args, eotf);
 
-        return format("OETF: %s %s", name, formatCIE(xyY));
+        return format("EOTF: %s %s", name, formatCIE(xyY));
     }
 
     protected String getTopCenterText(Args args) {
