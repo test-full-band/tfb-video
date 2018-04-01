@@ -6,7 +6,7 @@ and/or processing video.
 There are also files useful for calibrating TV sets.
 
 For user documentations and downloading compiled test video files
-see our [Wiki](https://github.com/testing-av/testing-video/wiki).
+see our web site: [test.full.band](https://test.full.band).
 
 ## Development environment
 
