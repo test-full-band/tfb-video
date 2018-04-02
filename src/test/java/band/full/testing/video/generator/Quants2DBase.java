@@ -30,7 +30,9 @@ import javafx.scene.text.TextAlignment;
  *
  * @author Igor Malinin
  */
-class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
+// TODO Dynamic sweep for non-near black/white patterns (->less files)
+// TODO Color sweeps
+public class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
     protected static final Duration DURATION_INTRO = ofSeconds(5);
     protected static final Duration DURATION = ofSeconds(25);
 
@@ -51,7 +53,7 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
     }
 
     /** only package private direct children are allowed */
-    Quants2DBase(GeneratorFactory factory,
+    protected Quants2DBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
         super(factory, params, folder, "Quants2D-" + pattern);
     }
@@ -81,7 +83,7 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
         e.render(DURATION, () -> fb);
     }
 
-    protected void generate(FrameBuffer fb, Args args) {
+    public void generate(FrameBuffer fb, Args args) {
         var chroma = args.redChroma ? fb.V : fb.U;
         bandsY(fb.Y, args.yMin);
         bandsC(chroma, matrix.ACHROMATIC - ROWS / 2);
@@ -141,11 +143,11 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
 
     // Cut 1 pixel around block to exclude markings from calculations
     private void verify(Plane plane, int col, int row, int expected) {
+        // near-lossless target, allow up to 1% tiny single-step misses
         plane.verifyRect(
                 getColX(plane.width, col) + 1, getRowY(plane.height, row) + 1,
                 getColW(plane.width, col) - 2, getRowH(plane.height, row) - 2,
                 expected, 1, 0.01);
-        // near-lossless target, allow up to 1% tiny single-step misses
     }
 
     /**
@@ -222,11 +224,11 @@ class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
     protected Color getTextFill(int y) {
         double ye = matrix.fromLumaCode(y);
 
-        DoubleUnaryOperator eotfi = matrix.transfer.isDefinedByEOTF()
-                ? matrix.transfer::fromLinear
+        DoubleUnaryOperator eotfi = transfer.isDefinedByEOTF()
+                ? transfer::fromLinear
                 : TRUE_BLACK_TRANSFER::eotfi;
 
-        double peak = matrix.transfer.getNominalDisplayPeakLuminance();
+        double peak = transfer.getNominalDisplayPeakLuminance();
         double minY = eotfi.applyAsDouble(1.0 / peak);
 
         return ye > minY ? Color.BLACK : Color.gray(ye + minY);

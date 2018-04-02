@@ -6,6 +6,7 @@ import band.full.testing.video.encoder.DecoderY4M;
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.encoder.EncoderY4M;
 import band.full.testing.video.itu.ColorMatrix;
+import band.full.testing.video.itu.TransferCharacteristics;
 
 /**
  * @author Igor Malinin
@@ -16,6 +17,7 @@ public abstract class ParametrizedGeneratorBase<A> {
     public final Resolution resolution;
     public final ColorMatrix matrix;
     public final Framerate framerate;
+    public final TransferCharacteristics transfer;
     public final int width, height;
 
     public final String folder, pattern;
@@ -30,6 +32,8 @@ public abstract class ParametrizedGeneratorBase<A> {
         resolution = params.resolution;
         matrix = params.matrix;
         framerate = params.framerate;
+
+        transfer = matrix.transfer;
 
         width = resolution.width;
         height = resolution.height;

@@ -9,7 +9,7 @@ import static java.lang.String.format;
 
 import band.full.testing.video.encoder.EncoderParameters;
 import band.full.testing.video.executor.GenerateVideo;
-import band.full.testing.video.generator.CalibrationBase;
+import band.full.testing.video.generator.GrayscalePatchesGenerator;
 
 import org.junit.jupiter.api.Test;
 
@@ -62,7 +62,7 @@ public class Calibrate2160pHDR10_LGOLED {
         608, 625, 640, 658, 673, 690, 704, 718, 749, // 831.56 nit
     };
 
-    private static class LG extends CalibrationBase {
+    private static class LG extends GrayscalePatchesGenerator {
         private final int version;
         private final int display;
 

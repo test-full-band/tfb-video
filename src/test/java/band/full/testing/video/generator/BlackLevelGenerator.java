@@ -84,11 +84,11 @@ public class BlackLevelGenerator extends GeneratorBase {
     private void verify(Plane plane, int col, int expected) {
         int h = getLabelH(plane.height);
 
+        // near-lossless target, allow up to 0.1% tiny single-step misses
         plane.verifyRect(
                 getX(plane.width, col) + 1, h,
                 getW(plane.width, col) - 2, plane.height - h * 2,
-                expected, 1, 0.01);
-        // near-lossless target, allow up to 1% tiny single-step misses
+                expected, 1, 0.001);
     }
 
     /**

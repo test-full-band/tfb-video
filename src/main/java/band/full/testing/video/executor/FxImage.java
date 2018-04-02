@@ -1,15 +1,15 @@
 package band.full.testing.video.executor;
 
-import static band.full.testing.video.core.Quantizer.round;
 import static band.full.testing.video.executor.FxDisplay.runAndWait;
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
-import static java.lang.Math.floor;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static javafx.scene.paint.Color.TRANSPARENT;
 
+import band.full.testing.video.core.Dither;
 import band.full.testing.video.core.FrameBuffer;
 import band.full.testing.video.core.Plane;
+import band.full.testing.video.core.Quantizer;
 
 import javax.imageio.ImageIO;
 
@@ -165,9 +165,23 @@ public class FxImage {
         return rgb;
     }
 
-    public static double[] truncate(double[] rgb, int base) {
+    private static int round(double value) {
+        return Quantizer.round(value);
+    }
+
+    public static double[] round(double[] rgb, int base) {
         for (int i = 0; i < rgb.length; i++) {
-            rgb[i] = floor(rgb[i] * base) / base;
+            double q = round(rgb[i] * base);
+            rgb[i] = q / base;
+        }
+
+        return rgb;
+    }
+
+    public static double[] round(double[] rgb, int base, Dither dither) {
+        for (int i = 0; i < rgb.length; i++) {
+            double q = dither.quantize(rgb[i] * base);
+            rgb[i] = q / base;
         }
 
         return rgb;

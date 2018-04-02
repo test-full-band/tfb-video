@@ -1,6 +1,5 @@
 package band.full.testing.video.generate.hdr10;
 
-import static band.full.testing.video.executor.GenerateVideo.Type.LOSSLESS;
 import static band.full.testing.video.itu.BT2020.PRIMARIES;
 import static band.full.testing.video.itu.BT709.BT709_8bit;
 import static band.full.testing.video.smpte.ST2084.PQ;
@@ -10,7 +9,6 @@ import band.full.testing.video.color.CIEXYZ;
 import band.full.testing.video.color.CIExyY;
 import band.full.testing.video.color.Matrix3x3;
 import band.full.testing.video.core.Quantizer;
-import band.full.testing.video.executor.GenerateVideo;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -20,7 +18,6 @@ import org.junit.jupiter.api.Test;
  *
  * @author Igor Malinin
  */
-@GenerateVideo(LOSSLESS)
 @Disabled("Investigate chromacity percentage")
 public class Calibrate2160pHDR10_CalMAN {
     private static final Matrix3x3 RGBtoXYZ = PRIMARIES.RGBtoXYZ;
@@ -41,6 +38,24 @@ public class Calibrate2160pHDR10_CalMAN {
 
     @Test
     public void red() throws Exception {
+        for (var x : RxyY) {
+            System.out.println(x[1]);
+        }
+
+        System.out.println();
+
+        for (var y : RxyY) {
+            System.out.println(y[2]);
+        }
+
+        System.out.println();
+
+        for (var y : RxyY) {
+            System.out.println(y[3]);
+        }
+
+        System.out.println();
+
         var XYZtoRGB = PRIMARIES.XYZtoRGB;
 
         for (double[] dxyY : RxyY) {
@@ -66,7 +81,7 @@ public class Calibrate2160pHDR10_CalMAN {
             int[] codes = BT709_8bit.toCodes(yuv, Quantizer::round, new int[3]);
 
             // YCbCr Codes (video std)
-            System.out.print(format("Y%05.1f Cb%05.1f Cr%05.1f | ",
+            System.out.print(format("Y%d Cb%d Cr%d | ",
                     codes[0], codes[1], codes[2]));
 
             var xyz = new CIEXYZ(RGBtoXYZ.multiply(linear));

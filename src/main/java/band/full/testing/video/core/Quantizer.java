@@ -1,5 +1,10 @@
 package band.full.testing.video.core;
 
+import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Integer.MIN_VALUE;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 @FunctionalInterface
 public interface Quantizer {
     int quantize(double value);
@@ -7,9 +12,7 @@ public interface Quantizer {
     static int round(double value) {
         long round = Math.round(value);
 
-        return round > Integer.MAX_VALUE ? Integer.MAX_VALUE
-                : round < Integer.MIN_VALUE ? Integer.MIN_VALUE
-                        : (int) round;
+        return (int) min(max(round, MIN_VALUE), MAX_VALUE);
     }
 
     static int[] round(double[] values) {

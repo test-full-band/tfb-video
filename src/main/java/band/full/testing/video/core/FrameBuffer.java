@@ -73,18 +73,54 @@ public class FrameBuffer {
     }
 
     public void verifyRect(int x, int y, int w, int h,
-            int[] yuv) {
-        verifyRect(x, y, w, h, yuv[0], yuv[1], yuv[2]);
+            int[] yuvExpected) {
+        verifyRect(x, y, w, h, yuvExpected[0], yuvExpected[1], yuvExpected[2]);
     }
 
     public void verifyRect(int x, int y, int w, int h,
-            int yValue, int uValue, int vValue) {
-        Y.verifyRect(x, y, w, h, yValue);
+            int[] yuvExpected, int deviation, double maxMisses) {
+        verifyRect(x, y, w, h, yuvExpected[0], yuvExpected[1], yuvExpected[2],
+                deviation, maxMisses);
+    }
+
+    public void verifyRect(int x, int y, int w, int h,
+            int[] yuvExpected, int deviation, int maxMisses) {
+        verifyRect(x, y, w, h, yuvExpected[0], yuvExpected[1], yuvExpected[2],
+                deviation, maxMisses);
+    }
+
+    public void verifyRect(int x, int y, int w, int h,
+            int yExpected, int uExpected, int vExpected) {
+        Y.verifyRect(x, y, w, h, yExpected);
 
         // FIXME: precise cw, ch
         int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
 
-        U.verifyRect(cx, cy, cw, ch, uValue);
-        V.verifyRect(cx, cy, cw, ch, vValue);
+        U.verifyRect(cx, cy, cw, ch, uExpected);
+        V.verifyRect(cx, cy, cw, ch, vExpected);
+    }
+
+    public void verifyRect(int x, int y, int w, int h,
+            int yExpected, int uExpected, int vExpected,
+            int deviation, double maxMisses) {
+        Y.verifyRect(x, y, w, h, yExpected, deviation, maxMisses);
+
+        // FIXME: precise cw, ch
+        int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+
+        U.verifyRect(cx, cy, cw, ch, uExpected, deviation, maxMisses);
+        V.verifyRect(cx, cy, cw, ch, vExpected, deviation, maxMisses);
+    }
+
+    public void verifyRect(int x, int y, int w, int h,
+            int yExpected, int uExpected, int vExpected,
+            int deviation, int maxMisses) {
+        Y.verifyRect(x, y, w, h, yExpected, deviation, maxMisses);
+
+        // FIXME: precise cw, ch
+        int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+
+        U.verifyRect(cx, cy, cw, ch, uExpected, deviation, maxMisses);
+        V.verifyRect(cx, cy, cw, ch, vExpected, deviation, maxMisses);
     }
 }

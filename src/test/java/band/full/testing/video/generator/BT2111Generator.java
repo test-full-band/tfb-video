@@ -46,7 +46,7 @@ public class BT2111Generator extends GeneratorBase {
             throw new IllegalArgumentException(
                     "Unsupported resolution: " + resolution);
 
-        switch (matrix.transfer.code()) {
+        switch (transfer.code()) {
             case 16: // PQ
                 alpha = 0.58;
                 break;
@@ -114,7 +114,7 @@ public class BT2111Generator extends GeneratorBase {
         int[] bright = round(
                 matrix.toCodes(matrix.fromLinearRGB(rgb, buf), buf));
 
-        multiply(rgb, matrix.transfer.toLinear(alpha));
+        multiply(rgb, transfer.toLinear(alpha));
 
         int[] dim = round(
                 matrix.toCodes(matrix.fromLinearRGB(rgb, buf), buf));
