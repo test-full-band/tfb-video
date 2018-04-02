@@ -138,7 +138,7 @@ public class FxImage {
             }
         }
 
-        File dir = new File("target/testing-video-sample/");
+        File dir = new File("target/video-sample/");
         dir.mkdirs();
 
         ImageIO.write(image, "png", new File(dir, file));

@@ -8,7 +8,7 @@ public class PrintNALU {
     public static void main(String[] args)
             throws FileNotFoundException, IOException {
         try (FileInputStream in = new FileInputStream(
-                "target/testing-video/HEVC/FullHD/Quantization/Quants3D1080pHEVC-2.hevc")) {
+                "target/video-main/HEVC/FullHD/Quantization/Quants3D1080pHEVC-2.hevc")) {
             NALUnitParser parser = new NALUnitParser(in);
             while (true) {
                 NALUnit nalu = parser.read();

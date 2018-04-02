@@ -2,11 +2,11 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>band.full.testing.video</groupId>
+  <groupId>band.full.test</groupId>
   <artifactId>testing-video</artifactId>
   <version>0.0.4-SNAPSHOT</version>
 
-  <name>TestingAV test-videos generator</name>
+  <name>test.full.band testing video generator</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -163,7 +163,7 @@
             <configuration>
               <skipTests>${skipMain}</skipTests>
               <includes>
-                <include>band/full/testing/video/generate/**/*.java</include>
+                <include>band/full/test/video/generate/**/*.java</include>
               </includes>
               <useFile>false</useFile>
               <properties>
@@ -187,7 +187,7 @@
             <configuration>
               <skipTests>${skipLossless}</skipTests>
               <includes>
-                <include>band/full/testing/video/generate/**/*.java</include>
+                <include>band/full/test/video/generate/**/*.java</include>
               </includes>
               <useFile>false</useFile>
               <properties>

@@ -52,7 +52,9 @@ public class DecoderY4M implements AutoCloseable {
 
         matrix = parameters.matrix;
 
-        String root = "target/testing-video" + (LOSSLESS ? "-lossless" : "");
+        String root = "target/video-"
+                + (LOSSLESS ? "lossless" : "main");
+
         String prefix = root + "/" + name;
 
         mp4 = new File(prefix + ".mp4");

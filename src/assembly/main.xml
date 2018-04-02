@@ -13,7 +13,7 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.build.directory}/testing-video</directory>
+      <directory>${project.build.directory}/video-main</directory>
       <outputDirectory>main</outputDirectory>
     </fileSet>
   </fileSets>
