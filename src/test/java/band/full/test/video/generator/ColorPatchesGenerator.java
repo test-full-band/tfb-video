@@ -78,9 +78,6 @@ public class ColorPatchesGenerator extends PatchesGenerator {
                 ret.append(toUpperCase(word.charAt(0)));
                 ret.append(word.substring(1));
             }
-            if (!(ret.length() == init.length())) {
-                ret.append(" ");
-            }
         }
 
         return ret.toString();
