@@ -106,7 +106,6 @@ public class DecoderY4M implements AutoCloseable {
 
     private InputStream open() throws IOException {
         var builder = new ProcessBuilder("ffmpeg",
-                "-flags2", "+showall",
                 "-i", mp4.getPath(),
                 "-pix_fmt", ffmpegPixelFormat(),
                 "-f", "yuv4mpegpipe",
