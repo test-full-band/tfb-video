@@ -180,6 +180,11 @@ public class EncoderAVC extends EncoderY4M {
         return "h264";
     }
 
+    @Override
+    public String getBrand() {
+        return "isom"; // H.264 avc1
+    }
+
     public static void encode(String name, EncoderParameters parameters,
             Consumer<EncoderY4M> consumer) {
         try (EncoderAVC encoder = new EncoderAVC(name, parameters)) {

@@ -86,6 +86,11 @@ public class EncoderHEVC extends EncoderY4M {
         return "hevc";
     }
 
+    @Override
+    public String getBrand() {
+        return "hvc1";
+    }
+
     public static void encode(String name, EncoderParameters parameters,
             Consumer<EncoderY4M> consumer) {
         try (EncoderHEVC encoder = new EncoderHEVC(name, parameters)) {

@@ -2,10 +2,9 @@ package band.full.test.video.generator;
 
 import static band.full.core.Quantizer.round;
 import static java.lang.String.format;
+import static java.util.function.Function.identity;
 import static java.util.stream.IntStream.concat;
 import static java.util.stream.IntStream.iterate;
-import static java.util.stream.IntStream.range;
-import static java.util.stream.Stream.concat;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.video.encoder.EncoderParameters;
@@ -13,6 +12,7 @@ import band.full.video.encoder.EncoderParameters;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.function.IntFunction;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -29,14 +29,15 @@ public class GrayscalePatchesGenerator extends PatchesGenerator {
     }
 
     public Stream<Args> grayscale(int window) {
-        var percents = concat(range(0, 5),
-                iterate(5, i -> i < 100, i -> i + 5));
+        var percents = concat(IntStream.of(0, 1, 2, 3, 4, 5, 7),
+                iterate(10, i -> i < 100, i -> i + 5));
 
         // show brightest and darkest patterns in the beginning
         var first = Stream.of(gray(window, "$$", matrix.YMAX));
         var steps = percents.mapToObj(grayArgs(window));
         var white = grayscaleWhite(window);
-        return concat(concat(first, steps), white);
+
+        return Stream.of(first, steps, white).flatMap(identity());
     }
 
     /** White and Whiter than White (WtW) for narrow range encodes */

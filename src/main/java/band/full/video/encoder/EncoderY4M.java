@@ -148,6 +148,8 @@ public abstract class EncoderY4M implements AutoCloseable {
 
     public abstract String getFormat();
 
+    public abstract String getBrand();
+
     protected abstract ProcessBuilder createProcessBuilder();
 
     protected String getPresetParam() {
@@ -193,7 +195,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         var builder = new ProcessBuilder("MP4Box",
                 "-add", out.getPath(),
-                "-brand", "hvc1", mp4.getPath())
+                "-brand", getBrand(), mp4.getPath())
                         .redirectOutput(INHERIT)
                         .redirectError(INHERIT);
 
