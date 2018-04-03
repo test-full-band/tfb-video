@@ -3,14 +3,12 @@ package band.full.test.video.generator;
 import static band.full.core.Quantizer.round;
 import static band.full.video.itu.ColorRange.FULL;
 import static java.lang.String.format;
-import static java.time.Duration.ofSeconds;
 import static java.util.stream.Stream.concat;
 
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
 
-import java.time.Duration;
 import java.util.stream.Stream;
 
 /**
@@ -19,9 +17,7 @@ import java.util.stream.Stream;
  * @author Igor Malinin
  */
 public class CheckerboardGenerator
-        extends ParametrizedGeneratorBase<CheckerboardGenerator.Args> {
-    protected static final Duration DURATION = ofSeconds(30);
-
+        extends ParameterizedGeneratorBase<CheckerboardGenerator.Args> {
     public static class Args {
         public final String suffix;
         public final int yMin, yMax;
@@ -79,7 +75,7 @@ public class CheckerboardGenerator
         fb.Y.calculate(
                 (x, y) -> (x + y) % 2 == 0 ? args.yMin : args.yMax);
 
-        e.render(DURATION, () -> fb);
+        e.render(DURATION_STATIC, () -> fb);
     }
 
     @Override

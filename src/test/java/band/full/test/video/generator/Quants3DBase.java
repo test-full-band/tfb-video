@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  *
  * @author Igor Malinin
  */
-public class Quants3DBase extends ParametrizedGeneratorBase<Quants3DBase.Args> {
+public class Quants3DBase extends ParameterizedGeneratorBase<Quants3DBase.Args> {
     public static class Args {
         public final String speed;
         public final int frames;

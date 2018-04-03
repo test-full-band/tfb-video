@@ -30,17 +30,21 @@ public class Window {
 
         int totalPixels = resolution.width * resolution.height;
         double windowPixels = totalPixels * area;
-        int side = ((int) sqrt(windowPixels)) & ~0x1; // even number
+
+        // assume screen sides are divisible by 4, make patch size
+        // divisible by 8 -> align to 4 pixels, only reducing size
+        int side = ((int) sqrt(windowPixels)) & ~0x7;
 
         return center(resolution, side, side);
     }
 
     public static Window proportional(Resolution resolution, double area) {
-        if (area < 0.0 || area > 1.0) throw new IllegalArgumentException();
+        if (area < 0.0 || area > 1.0)
+            throw new IllegalArgumentException("area = " + area);
 
         double mult = sqrt(area);
-        int width = ((int) (resolution.width * mult)) & ~0x1; // even number
-        int height = ((int) (resolution.height * mult)) & ~0x1; // even number
+        int width = ((int) (resolution.width * mult)) & ~0x7;
+        int height = ((int) (resolution.height * mult)) & ~0x7;
 
         return center(resolution, width, height);
     }

@@ -9,7 +9,6 @@ import static java.lang.Math.log10;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.String.format;
-import static java.time.Duration.ofSeconds;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.text.Font.font;
 import static javafx.scene.text.TextAlignment.CENTER;
@@ -31,7 +30,6 @@ import band.full.video.itu.ICtCp;
 import org.junit.jupiter.api.TestInstance;
 
 import java.text.DecimalFormat;
-import java.time.Duration;
 import java.util.function.DoubleUnaryOperator;
 
 import javafx.geometry.Insets;
@@ -53,10 +51,7 @@ import javafx.scene.text.TextFlow;
  */
 @TestInstance(PER_CLASS)
 public abstract class PatchesGenerator
-        extends ParametrizedGeneratorBase<PatchesGenerator.Args> {
-    protected static final Duration DURATION_INTRO = ofSeconds(5);
-    protected static final Duration DURATION = ofSeconds(25);
-
+        extends ParameterizedGeneratorBase<PatchesGenerator.Args> {
     public static class Args {
         public final String file;
         public final String sequence;
@@ -174,7 +169,7 @@ public abstract class PatchesGenerator
 
         fb.clear();
         fb.fillRect(win.x, win.y, win.width, win.height, args.yuv);
-        e.render(DURATION, () -> fb);
+        e.render(DURATION_BODY, () -> fb);
     }
 
     @Override
@@ -185,9 +180,9 @@ public abstract class PatchesGenerator
     protected void verify(FrameBuffer fb, Args args) {
         var win = getUnmarkedWindow(args.window);
 
-        // near-lossless target, allow up to 0.1% tiny single-step misses
-        fb.verifyRect(win.x + 1, win.y + 1, win.width - 2, win.height - 2,
-                args.yuv, 1, 0.001);
+        // near-lossless target, allow a few single-step misses
+        fb.verifyRect(win.x, win.y, win.width, win.height,
+                args.yuv, 1, (win.x + win.y) / 100);
     }
 
     private Window getWindow(int window) {
@@ -203,7 +198,7 @@ public abstract class PatchesGenerator
     private Window getUnmarkedWindow(int window) {
         if (window > 0) return getWindow(window);
 
-        int height = resolution.height - resolution.height / 12;
+        int height = resolution.height - resolution.height / 10;
         return Window.center(resolution, resolution.width, height);
     }
 

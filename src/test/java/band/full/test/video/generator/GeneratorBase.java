@@ -1,5 +1,7 @@
 package band.full.test.video.generator;
 
+import static java.time.Duration.ofSeconds;
+
 import band.full.core.Resolution;
 import band.full.video.buffer.Framerate;
 import band.full.video.encoder.DecoderY4M;
@@ -8,10 +10,14 @@ import band.full.video.encoder.EncoderY4M;
 import band.full.video.itu.ColorMatrix;
 import band.full.video.itu.TransferCharacteristics;
 
+import java.time.Duration;
+
 /**
  * @author Igor Malinin
  */
 public abstract class GeneratorBase {
+    protected static final Duration DURATION_STATIC = ofSeconds(30);
+
     public final GeneratorFactory factory;
     public final EncoderParameters params;
     public final String folder, pattern;

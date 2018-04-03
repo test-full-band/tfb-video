@@ -6,12 +6,18 @@ import static band.full.video.encoder.EncoderParameters.HDR10FR;
 import static band.full.video.encoder.EncoderParameters.MASTER_DISPLAY_PRIMARIES;
 import static band.full.video.itu.ColorRange.FULL;
 import static java.lang.String.format;
+import static java.util.function.Function.identity;
 
 import band.full.test.video.executor.GenerateVideo;
 import band.full.test.video.generator.GrayscalePatchesGenerator;
+import band.full.test.video.generator.PatchesGenerator.Args;
 import band.full.video.encoder.EncoderParameters;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Calibration patterns for LG OLED TVs.
@@ -103,45 +109,95 @@ public class Calibrate2160pHDR10_LGOLED {
         }
     }
 
-    /** 2016 TVs */
-    @Test
-    public void oled6grayscale() {
-        grayscale(6, 540, HDR10, OLED6_CODES);
+    // 2016 TVs
+
+    @ParameterizedTest
+    @MethodSource("oled6grayscale")
+    public void oled6grayscale(Args args) {
+        new LG(HDR10, 6, 540).generate(args);
     }
 
-    /** 2017 TVs, Full Range signal */
-    @Test
-    public void oled7grayscaleFR() {
-        grayscale(7, 540, HDR10FR, OLED7_CODES_FR540);
-        grayscale(7, 1000, HDR10FR, OLED7_CODES_FR1000);
-        grayscale(7, 4000, HDR10FR, OLED7_CODES_FR4000);
+    public static Stream<Args> oled6grayscale() {
+        return grayscale(HDR10, OLED6_CODES);
     }
 
-    /** 2017 TVs, Limited Range signal */
-    @Test
-    public void oled7grayscaleLR() {
-        grayscale(7, 540, HDR10, OLED7_CODES_LR540);
-        grayscale(7, 1000, HDR10, OLED7_CODES_LR1000);
-        grayscale(7, 4000, HDR10, OLED7_CODES_LR4000);
+    // 2017 TVs, Full Range signal
+
+    @ParameterizedTest
+    @MethodSource("oled7grayscaleLR540")
+    public void oled7grayscaleFR540(Args args) {
+        new LG(HDR10FR, 7, 540).generate(args);
     }
 
-    public void grayscale(int version, int display,
-            EncoderParameters ep, int[] codes) {
-        var lg = new LG(ep, version, display);
-
-        // show brightest and darkest patterns in the beginning
-        generate(lg, "$$", codes[codes.length - 1]);
-        generate(lg, "00", ep.matrix.YMIN);
-
-        for (int i = 0; i < codes.length; i++) {
-            generate(lg, format("%02d", i + 1), codes[i]);
-        }
-
-        // test clipping of 10000 nit
-        generate(lg, format("%02d", codes.length + 1), ep.matrix.YMAX);
+    public static Stream<Args> oled7grayscaleFR540() {
+        return grayscale(HDR10FR, OLED7_CODES_FR540);
     }
 
-    private void generate(LG lg, String sequence, int y) {
-        lg.generate(lg.gray(10, sequence, y));
+    @ParameterizedTest
+    @MethodSource("oled7grayscaleFR1000")
+    public void oled7grayscaleFR1000(Args args) {
+        new LG(HDR10FR, 7, 1000).generate(args);
+    }
+
+    public static Stream<Args> oled7grayscaleFR1000() {
+        return grayscale(HDR10FR, OLED7_CODES_FR1000);
+    }
+
+    @ParameterizedTest
+    @MethodSource("oled7grayscaleFR4000")
+    public void oled7grayscaleFR4000(Args args) {
+        new LG(HDR10FR, 7, 4000).generate(args);
+    }
+
+    public static Stream<Args> oled7grayscaleFR4000() {
+        return grayscale(HDR10FR, OLED7_CODES_FR4000);
+    }
+
+    // 2017 TVs, Limited Range signal
+
+    @ParameterizedTest
+    @MethodSource("oled7grayscaleLR540")
+    public void oled7grayscaleLR540(Args args) {
+        new LG(HDR10, 7, 540).generate(args);
+    }
+
+    public static Stream<Args> oled7grayscaleLR540() {
+        return grayscale(HDR10, OLED7_CODES_LR540);
+    }
+
+    @ParameterizedTest
+    @MethodSource("oled7grayscaleLR1000")
+    public void oled7grayscaleLR1000(Args args) {
+        new LG(HDR10, 7, 1000).generate(args);
+    }
+
+    public static Stream<Args> oled7grayscaleLR1000() {
+        return grayscale(HDR10, OLED7_CODES_LR1000);
+    }
+
+    @ParameterizedTest
+    @MethodSource("oled7grayscaleLR4000")
+    public void oled7grayscaleLR4000(Args args) {
+        new LG(HDR10, 7, 4000).generate(args);
+    }
+
+    public static Stream<Args> oled7grayscaleLR4000() {
+        return grayscale(HDR10, OLED7_CODES_LR4000);
+    }
+
+    private static Stream<Args> grayscale(EncoderParameters ep, int[] codes) {
+        var lg = new GrayscalePatchesGenerator(HEVC, ep, null, null);
+
+        var start = Stream.of(
+                lg.gray(10, "$$", codes[codes.length - 1]),
+                lg.gray(10, "00", ep.matrix.YMIN));
+
+        var mid = IntStream.range(0, codes.length)
+                .mapToObj(i -> lg.gray(10, format("%02d", i + 1), codes[i]));
+
+        var clip = Stream.of(
+                lg.gray(10, format("%02d", codes.length + 1), ep.matrix.YMAX));
+
+        return Stream.of(start, mid, clip).flatMap(identity());
     }
 }

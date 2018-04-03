@@ -15,6 +15,7 @@ import band.full.video.buffer.FrameBuffer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 /**
  * Generates amplified example PNGs for testing color bands separation /
@@ -28,6 +29,14 @@ public class Quants2DPNG extends Quants2DBase {
 
     public Quants2DPNG() {
         super(null, HD_MAIN, null, null);
+    }
+
+    @Override // disable parameterization
+    public void generate(Args args) {}
+
+    @Override
+    protected Stream<Args> args() {
+        return Stream.empty(); // prevent video generation
     }
 
     @Test
@@ -49,6 +58,16 @@ public class Quants2DPNG extends Quants2DBase {
     }
 
     @Test
+    public void image5tpdf() throws IOException {
+        var dither = new Dither.TPDF();
+        var fb = newFrameBuffer();
+        generate(fb, new Args("PNG", 16, true));
+
+        write(fb, "Quants5tpdf.png",
+                rgb -> transform(amplify(round(rgb, 32, dither), AMP)));
+    }
+
+    @Test
     public void image6round() throws IOException {
         var fb = newFrameBuffer();
         generate(fb, new Args("PNG", 16, true));
@@ -58,12 +77,32 @@ public class Quants2DPNG extends Quants2DBase {
     }
 
     @Test
+    public void image6tpdf() throws IOException {
+        var dither = new Dither.TPDF();
+        var fb = newFrameBuffer();
+        generate(fb, new Args("PNG", 16, true));
+
+        write(fb, "Quants6tpdf.png",
+                rgb -> transform(amplify(round(rgb, 64, dither), AMP)));
+    }
+
+    @Test
     public void image7round() throws IOException {
         var fb = newFrameBuffer();
         generate(fb, new Args("PNG", 16, true));
 
         write(fb, "Quants7round.png",
                 rgb -> transform(amplify(round(rgb, 128), AMP)));
+    }
+
+    @Test
+    public void image7tpdf() throws IOException {
+        var dither = new Dither.TPDF();
+        var fb = newFrameBuffer();
+        generate(fb, new Args("PNG", 16, true));
+
+        write(fb, "Quants7tpdf.png",
+                rgb -> transform(amplify(round(rgb, 128, dither), AMP)));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package band.full.video.buffer;
 
 import static java.lang.Math.abs;
+import static java.lang.String.format;
 import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -109,28 +110,37 @@ public class Plane {
         int y2 = limit(y + h, height);
 
         IntStream range = range(y1, y2);
-        if (x2 - x1 > 64) { // TODO measure when to switch
-            range = range.parallel();
-        }
+        // if (x2 - x1 > 64) { // TODO measure when to switch
+        // range = range.parallel();
+        // }
 
         int count = range.map(iy -> {
             int base = iy * width;
             return verify(base + x1, base + x2, expected, deviation);
         }).sum();
 
-        assertFalse(count + maxMisses < (y2 - y1) * (x2 - x1));
+        int total = (y2 - y1) * (x2 - x1);
+
+        assertFalse(count + maxMisses < total, () -> format(
+                "Encountered %d misses, allowed maximum is %d of %d!",
+                total - count, maxMisses, total));
     }
 
+    /** @return amount of matched subpixels */
     private int verify(int from, int to, int expected, int deviation) {
         int count = 0;
 
         for (int i = from; i < to; i++) {
-            int delta = pixels[i] - expected;
+            var value = pixels[i];
+            int delta = value - expected;
 
             if (delta == 0) {
                 ++count;
             } else {
-                assertFalse(abs(delta) > deviation);
+                assertFalse(abs(delta) > deviation, () -> format(
+                        "Encountered deviation %+d,"
+                                + " allowed maximum is mod(%d)!",
+                        delta, deviation));
             }
         }
 

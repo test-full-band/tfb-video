@@ -2,7 +2,6 @@ package band.full.test.video.generator;
 
 import static band.full.core.Quantizer.round;
 import static java.lang.String.format;
-import static java.time.Duration.ofSeconds;
 import static java.util.stream.IntStream.concat;
 import static java.util.stream.IntStream.iterate;
 import static java.util.stream.IntStream.range;
@@ -13,7 +12,6 @@ import band.full.video.encoder.EncoderParameters;
 
 import org.junit.jupiter.api.TestInstance;
 
-import java.time.Duration;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
@@ -25,9 +23,6 @@ import java.util.stream.Stream;
  */
 @TestInstance(PER_CLASS)
 public class GrayscalePatchesGenerator extends PatchesGenerator {
-    protected static final Duration DURATION_INTRO = ofSeconds(5);
-    protected static final Duration DURATION = ofSeconds(25);
-
     public GrayscalePatchesGenerator(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
         super(factory, params, folder, pattern);
@@ -101,9 +96,5 @@ public class GrayscalePatchesGenerator extends PatchesGenerator {
                 format("/Win%02d/%s/%s%d-%s-%s-" + fmt,
                         args.window, args.file, args.file, args.window,
                         pattern, args.sequence, y);
-    }
-
-    public static void main(String[] args) {
-        System.out.println(String.format("X%02d", 1080));
     }
 }

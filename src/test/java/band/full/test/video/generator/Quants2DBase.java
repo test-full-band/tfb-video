@@ -2,11 +2,11 @@ package band.full.test.video.generator;
 
 import static band.full.video.itu.BT1886.TRUE_BLACK_TRANSFER;
 import static java.lang.String.format;
-import static java.time.Duration.ofSeconds;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.text.Font.font;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.test.video.executor.FxImage;
 import band.full.video.buffer.FrameBuffer;
@@ -15,8 +15,12 @@ import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
 
-import java.time.Duration;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.util.function.DoubleUnaryOperator;
+import java.util.stream.Stream;
 
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -27,15 +31,19 @@ import javafx.scene.text.TextAlignment;
 
 /**
  * Testing color bands separation / quantization step uniformity.
+ * <p>
+ * Use one of specialized versions.
  *
  * @author Igor Malinin
+ * @see Quants2DBase8
+ * @see Quants2DBase10
+ * @see Quants2DBase10HDR
  */
 // TODO Dynamic sweep for non-near black/white patterns (->less files)
 // TODO Color sweeps
-public class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
-    protected static final Duration DURATION_INTRO = ofSeconds(5);
-    protected static final Duration DURATION = ofSeconds(25);
-
+@TestInstance(PER_CLASS)
+public abstract class Quants2DBase
+        extends ParameterizedGeneratorBase<Quants2DBase.Args> {
     /** Number of rows have to be an odd number - center row is neutral. */
     public static final int ROWS = 17;
     public static final int COLS = 32;
@@ -50,6 +58,12 @@ public class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
             this.yMin = yMin;
             this.redChroma = redChroma;
         }
+
+        @Override
+        public String toString() {
+            return format("Y%03d%s %s",
+                    yMin, redChroma ? "Cr" : "Cb", suffix);
+        }
     }
 
     /** only package private direct children are allowed */
@@ -59,15 +73,33 @@ public class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
     }
 
     @Override
+    @ParameterizedTest(name = "{arguments}")
+    @MethodSource("args")
+    public void generate(Args args) {
+        super.generate(args);
+    }
+
+    protected abstract Stream<Args> args();
+
+    protected Stream<Args> quants(String suffix, int yMin) {
+        return Stream.of(
+                new Args(suffix, yMin, false),
+                new Args(suffix, yMin, true));
+    }
+
+    protected Stream<Args> quants(String suffix, int yMin1, int yMin2) {
+        return Stream.of(
+                new Args(suffix, yMin1, false),
+                new Args(suffix, yMin1, true),
+                new Args(suffix, yMin2, false),
+                new Args(suffix, yMin2, true));
+    }
+
+    @Override
     protected String getFileName(Args args) {
         return factory.folder + '/' + folder + '/' + pattern +
                 format("-Y%03d%s-%s", args.yMin,
                         args.redChroma ? "Cr" : "Cb", args.suffix);
-    }
-
-    protected void quants(String suffix, int yMin) {
-        generate(new Args(suffix, yMin, false));
-        generate(new Args(suffix, yMin, true));
     }
 
     @Override
@@ -80,7 +112,7 @@ public class Quants2DBase extends ParametrizedGeneratorBase<Quants2DBase.Args> {
         var chroma = args.redChroma ? fb.V : fb.U;
         bandsY(fb.Y, args.yMin);
         bandsC(chroma, matrix.ACHROMATIC - ROWS / 2);
-        e.render(DURATION, () -> fb);
+        e.render(DURATION_BODY, () -> fb);
     }
 
     public void generate(FrameBuffer fb, Args args) {

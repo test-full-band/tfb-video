@@ -1,7 +1,6 @@
 package band.full.test.video.generator;
 
 import static java.lang.Math.max;
-import static java.time.Duration.ofSeconds;
 import static java.util.stream.IntStream.range;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.paint.Color.gray;
@@ -17,8 +16,6 @@ import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
 import band.full.video.itu.ColorMatrix;
 
-import java.time.Duration;
-
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
@@ -31,7 +28,6 @@ import javafx.scene.text.TextAlignment;
  * @author Igor Malinin
  */
 public class BlackLevelGenerator extends GeneratorBase {
-    protected static final Duration DURATION = ofSeconds(30);
     protected static final int COLS = 16;
 
     public BlackLevelGenerator(GeneratorFactory factory,
@@ -46,7 +42,7 @@ public class BlackLevelGenerator extends GeneratorBase {
         patches(fb);
         marks(fb);
 
-        e.render(DURATION, () -> fb);
+        e.render(DURATION_STATIC, () -> fb);
     }
 
     /**

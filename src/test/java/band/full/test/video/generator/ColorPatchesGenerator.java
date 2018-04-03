@@ -7,7 +7,6 @@ import static band.full.test.video.generator.ColorChecker.CLASSIC_24;
 import static band.full.test.video.generator.ColorChecker.CLASSIC_24_NAMES;
 import static java.lang.Character.toUpperCase;
 import static java.lang.String.format;
-import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.video.encoder.EncoderParameters;
@@ -18,7 +17,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.text.DecimalFormat;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
@@ -30,9 +28,6 @@ import java.util.stream.Stream;
  */
 @TestInstance(PER_CLASS)
 public class ColorPatchesGenerator extends PatchesGenerator {
-    protected static final Duration DURATION_INTRO = ofSeconds(5);
-    protected static final Duration DURATION = ofSeconds(25);
-
     public ColorPatchesGenerator(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
         super(factory, params, folder, pattern);

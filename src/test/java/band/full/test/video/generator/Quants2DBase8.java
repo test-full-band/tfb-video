@@ -1,13 +1,16 @@
 package band.full.test.video.generator;
 
+import static java.util.function.Function.identity;
+
 import band.full.test.video.executor.GenerateVideo;
 import band.full.video.encoder.EncoderParameters;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import java.util.stream.Stream;
 
 /**
  * Testing color bands separation / quantization step uniformity.
+ * <p>
+ * SDR 8bit specialized version.
  *
  * @author Igor Malinin
  */
@@ -18,39 +21,15 @@ public class Quants2DBase8 extends Quants2DBase {
         super(factory, params, folder, pattern);
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = {16, 32})
-    public void quantsNearBlack(int yCode) {
-        quants("NearBlack", yCode); // 16
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {48, 64})
-    public void quantsDarkGray(int yCode) {
-        quants("DarkGray", yCode); // 16
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {96, 128})
-    public void quantsGray(int yCode) {
-        quants("Gray", yCode); // 32
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {160, 192})
-    public void quantsLightGray(int yCode) {
-        quants("LightGray", yCode); // 32
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = 204)
-    public void quantsNearWhite(int yCode) {
-        quants("NearWhite", yCode); // 20
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = 224)
-    public void quantsBright(int yCode) {
-        quants("Bright", yCode); // 20
+    @Override
+    protected Stream<Args> args() {
+        return Stream.of(
+                quants("NearBlack", 16),
+                quants("DarkGray", 40, 64),
+                quants("Gray", 96, 128),
+                quants("LightGray", 160, 192),
+                // NB! The last video data range code is 254!
+                quants("NearWhite", 223) // 254-32+1
+        ).flatMap(identity());
     }
 }

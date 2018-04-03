@@ -100,7 +100,6 @@ public class EncoderHEVC extends EncoderY4M {
 // 1. https://bitbucket.org/multicoreware/x265/issues/309/mp4box-incompatibility
 // 2. https://forum.doom9.org/showthread.php?p=1803907#post1803907
 
-// "--level-idc=51",
 // "--ref=5",
 // "--limit-refs=0",
 // "--sao",

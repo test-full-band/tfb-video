@@ -4,7 +4,6 @@ import static band.full.core.Quantizer.round;
 import static band.full.core.Resolution.STD_1080p;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.time.Duration.ofSeconds;
 
 import band.full.core.color.Matrix3x3;
 import band.full.video.buffer.FrameBuffer;
@@ -14,14 +13,11 @@ import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
 import band.full.video.itu.BT709;
 
-import java.time.Duration;
-
 /**
  * @author Igor Malinin
  */
+// TODO output file type and test.full.band branding
 public class BT2111Generator extends GeneratorBase {
-    protected static final Duration DURATION = ofSeconds(30);
-
     private final double alpha;
     private final Matrix3x3 bt709conv;
 
@@ -78,19 +74,22 @@ public class BT2111Generator extends GeneratorBase {
 
     @Override
     protected void encode(EncoderY4M e) {
-        var fb = e.newFrameBuffer();
-
-        fillBigBars(fb);
-        fillStair(fb);
-        fillRamp(fb);
-        fillBottomBars(fb);
-
-        e.render(DURATION, () -> fb);
+        var fb = draw(e.newFrameBuffer());
+        e.render(DURATION_STATIC, () -> fb);
     }
 
     @Override
     protected void verify(DecoderY4M d) {
-        d.read(fb -> {}); // TODO
+        var expected = draw(d.newFrameBuffer());
+        d.read(fb -> fb.verify(expected, 2, 0.00001));
+    }
+
+    private FrameBuffer draw(FrameBuffer fb) {
+        fillBigBars(fb);
+        fillStair(fb);
+        fillRamp(fb);
+        fillBottomBars(fb);
+        return fb;
     }
 
     private void fillBigBars(FrameBuffer fb) {
