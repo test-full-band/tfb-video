@@ -96,10 +96,9 @@ public abstract class Quants2DBase
     }
 
     @Override
-    protected String getFileName(Args args) {
-        return factory.folder + '/' + folder + '/' + pattern +
-                format("-Y%03d%s-%s", args.yMin,
-                        args.redChroma ? "Cr" : "Cb", args.suffix);
+    protected String getPattern(Args args) {
+        return pattern + format("-Y%03d%s-%s",
+                args.yMin, args.redChroma ? "Cr" : "Cb", args.suffix);
     }
 
     @Override

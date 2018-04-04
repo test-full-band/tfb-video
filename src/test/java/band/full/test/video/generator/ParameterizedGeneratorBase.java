@@ -48,11 +48,15 @@ public abstract class ParameterizedGeneratorBase<A> {
     }
 
     public void generate(A args) {
-        factory.generate(getFileName(args), params, args,
+        factory.generate(getFolder(args), getPattern(args), params, args,
                 this::encode, this::verify);
     }
 
-    protected abstract String getFileName(A args);
+    protected String getFolder(A args) {
+        return factory.folder + '/' + folder;
+    }
+
+    protected abstract String getPattern(A args);
 
     protected abstract void encode(EncoderY4M e, A args);
 

@@ -4,6 +4,7 @@ import static band.full.video.itu.ColorRange.FULL;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -11,9 +12,11 @@ import java.util.function.Consumer;
  * @author Igor Malinin
  */
 public class EncoderHEVC extends EncoderY4M {
-    protected EncoderHEVC(String name, EncoderParameters parameters)
+    public static final String HEVC_SUFFIX = ".hevc";
+
+    protected EncoderHEVC(File dir, String name, EncoderParameters parameters)
             throws IOException {
-        super(name, parameters);
+        super(dir, name, parameters);
     }
 
     @Override
@@ -23,11 +26,10 @@ public class EncoderHEVC extends EncoderY4M {
 
     @Override
     protected ProcessBuilder createProcessBuilder() {
-        var builder = new ProcessBuilder(getExecutable(),
-                Y4M.isPipe() ? "-" : y4m.getPath(),
-                out.getPath())
-                        .redirectOutput(INHERIT)
-                        .redirectError(INHERIT);
+        var builder = new ProcessBuilder(
+                getExecutable(),
+                Y4M.isPipe() ? "-" : name + ".y4m", name + HEVC_SUFFIX
+        ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
 
         int bitdepth = matrix.bitdepth;
         int colorprim = matrix.primaries.code;
@@ -77,22 +79,12 @@ public class EncoderHEVC extends EncoderY4M {
         return "x265";
     }
 
-    @Override
-    public String getFormat() {
-        return "hevc";
-    }
-
-    @Override
-    public String getBrand() {
-        return "hvc1";
-    }
-
-    public static void encode(String name, EncoderParameters parameters,
-            Consumer<EncoderY4M> consumer) {
-        try (EncoderHEVC encoder = new EncoderHEVC(name, parameters)) {
+    public static String encode(File dir, String name,
+            EncoderParameters parameters, Consumer<EncoderY4M> consumer)
+            throws IOException, InterruptedException {
+        try (EncoderHEVC encoder = new EncoderHEVC(dir, name, parameters)) {
             consumer.accept(encoder);
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            return name + HEVC_SUFFIX;
         }
     }
 }

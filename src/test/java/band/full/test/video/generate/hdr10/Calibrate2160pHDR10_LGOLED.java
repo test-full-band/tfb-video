@@ -92,20 +92,22 @@ public class Calibrate2160pHDR10_LGOLED {
         }
 
         @Override
-        protected String getFileName(Args args) {
-            boolean v6 = version == 6;
-
+        protected String getFolder(Args args) {
             String dirRange = matrix.range == FULL ? "FR" : "LR";
 
-            String versionDir = v6 ? "OLED6"
+            String versionDir = version == 6 ? "OLED6"
                     : format("OLED%d%s_%04d", version, dirRange, display);
 
-            String fileRange = matrix.range == FULL ? "10FR" : "10";
-            String fileSuffix = v6 ? "" : format("_%d", display);
+            return factory.folder + '/' + folder + '/' + versionDir;
+        }
 
-            return factory.folder + '/' + folder + '/' + versionDir + '/' +
-                    format("GrayHDR%s_LGOLED%d%s-%s-Y%03d", fileRange,
-                            version, fileSuffix, args.sequence, args.yuv[0]);
+        @Override
+        protected String getPattern(Args args) {
+            String fileRange = matrix.range == FULL ? "10FR" : "10";
+            String fileSuffix = version == 6 ? "" : format("_%d", display);
+
+            return format("GrayHDR%s_LGOLED%d%s-%s-Y%03d", fileRange,
+                    version, fileSuffix, args.sequence, args.yuv[0]);
         }
     }
 

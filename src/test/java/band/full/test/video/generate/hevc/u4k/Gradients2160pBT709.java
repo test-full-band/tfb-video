@@ -2,12 +2,12 @@ package band.full.test.video.generate.hevc.u4k;
 
 import static band.full.core.Resolution.STD_2160p;
 import static band.full.test.video.executor.GenerateVideo.Type.LOSSLESS;
+import static band.full.test.video.generator.GeneratorFactory.HEVC;
 import static band.full.video.encoder.EncoderParameters.UHD4K_MAIN8;
 import static java.time.Duration.ofSeconds;
 
 import band.full.test.video.executor.GenerateVideo;
 import band.full.video.buffer.FrameBuffer;
-import band.full.video.encoder.EncoderHEVC;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -25,14 +25,15 @@ import java.util.Random;
 public class Gradients2160pBT709 {
     @Test
     public void gradients() {
-        gradients("HEVC/Gradients-06"); // 6 bit demo
+        gradients("Gradients-06"); // 6 bit demo
     }
 
     public void gradients(String name) {
-        EncoderHEVC.encode(name, UHD4K_MAIN8, e -> {
-            FrameBuffer fb = e.newFrameBuffer();
-            e.render(ofSeconds(30), () -> gradients(fb));
-        });
+        HEVC.generate("Gradients", name, UHD4K_MAIN8,
+                e -> {
+                    FrameBuffer fb = e.newFrameBuffer();
+                    e.render(ofSeconds(30), () -> gradients(fb));
+                }, d -> {});
     }
 
     /** Render with new dither per frame */

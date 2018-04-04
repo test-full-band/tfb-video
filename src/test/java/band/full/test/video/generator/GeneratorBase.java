@@ -47,11 +47,12 @@ public abstract class GeneratorBase {
     }
 
     public void generate() {
-        factory.generate(getFileName(), params, this::encode, this::verify);
+        factory.generate(getFolder(), pattern, params,
+                this::encode, this::verify);
     }
 
-    protected String getFileName() {
-        return factory.folder + '/' + folder + '/' + pattern;
+    protected String getFolder() {
+        return factory.folder + '/' + folder;
     }
 
     protected abstract void encode(EncoderY4M e);

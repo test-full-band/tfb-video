@@ -98,14 +98,21 @@ public class ColorPatchesGenerator extends PatchesGenerator {
     }
 
     @Override
-    protected String getFileName(Args args) {
+    protected String getFolder(Args args) {
         if (args.window == 0) return factory.folder + '/' + folder +
-                format("/Fill/%s/%s-%s-%s",
-                        args.file, args.file, pattern, args.sequence);
+                format("/Fill/%s", args.file);
 
         return factory.folder + '/' + folder +
-                format("/Win%02d/%s/%s%d-%s-%s",
-                        args.window, args.file, args.file, args.window,
-                        pattern, args.sequence);
+                format("/Win%02d/%s", args.window, args.file);
+    }
+
+    @Override
+    protected String getPattern(Args args) {
+        if (args.window == 0)
+            return format("%s-%s-%s",
+                    args.file, pattern, args.sequence);
+
+        return format("%s%d-%s-%s",
+                args.file, args.window, pattern, args.sequence);
     }
 }

@@ -1,7 +1,6 @@
 package band.full.video.encoder;
 
 import static band.full.video.buffer.Framerate.toFrames;
-import static band.full.video.encoder.EncoderY4M.LOSSLESS;
 import static band.full.video.encoder.EncoderY4M.QUICK;
 import static java.lang.Math.min;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
@@ -45,21 +44,15 @@ public class DecoderY4M implements AutoCloseable {
     private Process process;
     private final InputStream yuv4mpegIn;
 
-    protected DecoderY4M(String name, EncoderParameters parameters)
+    protected DecoderY4M(File dir, String name, EncoderParameters parameters)
             throws IOException {
+        this.dir = dir;
         this.name = name;
         this.parameters = parameters;
 
         matrix = parameters.matrix;
 
-        String root = "target/video-"
-                + (LOSSLESS ? "lossless" : "main");
-
-        String prefix = root + "/" + name;
-
-        mp4 = new File(prefix + ".mp4");
-
-        dir = mp4.getParentFile();
+        mp4 = new File(dir, name + ".mp4");
 
         var resolution = parameters.resolution;
 
@@ -105,13 +98,15 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     private InputStream open() throws IOException {
-        var builder = new ProcessBuilder("ffmpeg",
-                "-i", mp4.getPath(),
+        var builder = new ProcessBuilder(
+                "ffmpeg", "-i", name,
                 "-pix_fmt", ffmpegPixelFormat(),
                 "-f", "yuv4mpegpipe",
-                "-strict", "-1",
-                "-").redirectError(INHERIT);
+                "-strict", "-1", "-"
+        ).directory(dir).redirectError(INHERIT);
 
+        System.out.println();
+        System.out.println("> " + dir);
         System.out.println(builder.command());
 
         process = builder.start();
@@ -303,9 +298,9 @@ public class DecoderY4M implements AutoCloseable {
         return new FrameBuffer(parameters.resolution, matrix);
     }
 
-    public static void decode(String name, EncoderParameters parameters,
-            Consumer<DecoderY4M> consumer) {
-        try (DecoderY4M decoder = new DecoderY4M(name, parameters)) {
+    public static void decode(File dir, String name,
+            EncoderParameters parameters, Consumer<DecoderY4M> consumer) {
+        try (DecoderY4M decoder = new DecoderY4M(dir, name, parameters)) {
             consumer.accept(decoder);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);

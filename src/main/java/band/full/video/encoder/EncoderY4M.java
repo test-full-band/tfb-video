@@ -3,7 +3,6 @@ package band.full.video.encoder;
 import static band.full.video.buffer.Framerate.toFrames;
 import static java.lang.Boolean.getBoolean;
 import static java.lang.Math.min;
-import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -22,6 +21,9 @@ import java.util.function.Supplier;
  * @author Igor Malinin
  */
 public abstract class EncoderY4M implements AutoCloseable {
+    // TODO: remove from here to test/java
+    public static final boolean LOSSLESS = getBoolean("encoder.lossless");
+
     enum IO {
         PIPE, TEMP_FILE, KEEP_FILE;
 
@@ -46,11 +48,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
     static final IO Y4M = IO.get("encoder.file.y4m");
 
-    final IO OUT = IO.get("encoder.file." + getFormat());
-
     private static final byte[] FRAME_HEADER = "FRAME\n".getBytes(US_ASCII);
-
-    public static final boolean LOSSLESS = getBoolean("encoder.lossless");
 
     /**
      * Quick mode limits duration of render calls to 15 frames and frame rate to
@@ -67,37 +65,25 @@ public abstract class EncoderY4M implements AutoCloseable {
     public final ColorMatrix matrix;
 
     public final File dir;
-    public final File y4m;
-    public final File out;
-    public final File mp4;
+    private final File y4m;
 
     private final byte[] frameBuffer;
 
     private Process process;
     private final OutputStream yuv4mpegOut;
 
-    protected EncoderY4M(String name, EncoderParameters parameters)
+    protected EncoderY4M(File dir, String name, EncoderParameters parameters)
             throws IOException {
+        this.dir = dir;
         this.name = name;
         this.parameters = parameters;
 
+        y4m = new File(dir, name + ".y4m");
+
         matrix = parameters.matrix;
 
-        String root = "target/video-"
-                + (LOSSLESS ? "lossless" : "main");
-
-        String prefix = root + "/" + name;
-
-        y4m = new File(prefix + ".y4m");
-        out = new File(prefix + "." + getFormat());
-        mp4 = new File(prefix + ".mp4");
-
-        dir = mp4.getParentFile();
-
-        if (!dir.isDirectory()) {
-            if (!dir.mkdirs()) throw new IOException(
-                    "Cannot create directory: " + dir);
-        }
+        if (!dir.isDirectory() && !dir.mkdirs())
+            throw new IOException("Cannot create directory: " + dir);
 
         var resolution = parameters.resolution;
 
@@ -125,14 +111,10 @@ public abstract class EncoderY4M implements AutoCloseable {
                     + "resulting files will not be fully usable!");
         }
 
-        if (LOSSLESS) {
-            System.out.println("Generating lossless encode...");
-        } else {
-            System.out.println("Generating normal encode...");
-        }
-
         var builder = createProcessBuilder();
 
+        System.out.println();
+        System.out.println("> " + dir);
         System.out.println(builder.command());
 
         process = builder.start();
@@ -145,10 +127,6 @@ public abstract class EncoderY4M implements AutoCloseable {
 
     public abstract String getExecutable();
 
-    public abstract String getFormat();
-
-    public abstract String getBrand();
-
     protected abstract ProcessBuilder createProcessBuilder();
 
     protected String getPresetParam() {
@@ -156,7 +134,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         switch (parameters.preset) {
             // speed-up lossless encode a bit as we do not trade it for quality
-            case FAST:
+            case FAST: // TODO move to GeneratorFactory
                 return LOSSLESS ? "ultrafast" : "fast";
             case SLOW:
                 return LOSSLESS ? "fast" : "slow";
@@ -188,25 +166,6 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         if (!Y4M.isKeepFile()) {
             y4m.delete();
-        }
-
-        mp4.delete(); // force overwrite
-
-        var builder = new ProcessBuilder("MP4Box",
-                "-add", out.getPath(),
-                "-brand", getBrand(), mp4.getPath())
-                        .redirectOutput(INHERIT)
-                        .redirectError(INHERIT);
-
-        builder.command().addAll(parameters.muxerOptions);
-
-        System.out.println();
-        System.out.println(builder.command());
-
-        builder.start().waitFor();
-
-        if (!OUT.isKeepFile()) {
-            out.delete();
         }
     }
 

@@ -4,6 +4,7 @@ import static band.full.video.itu.ColorRange.FULL;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.util.Collections.addAll;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -11,9 +12,11 @@ import java.util.function.Consumer;
  * @author Igor Malinin
  */
 public class EncoderAVC extends EncoderY4M {
-    private EncoderAVC(String name, EncoderParameters parameters)
+    public static final String AVC_SUFFIX = ".h264";
+
+    private EncoderAVC(File dir, String name, EncoderParameters parameters)
             throws IOException {
-        super(name, parameters);
+        super(dir, name, parameters);
     }
 
     @Override
@@ -23,12 +26,10 @@ public class EncoderAVC extends EncoderY4M {
 
     @Override
     protected ProcessBuilder createProcessBuilder() {
-        var builder = new ProcessBuilder(getExecutable(),
-                "--demuxer", "y4m",
-                Y4M.isPipe() ? "-" : y4m.getPath(),
-                "-o", out.getPath())
-                        .redirectOutput(INHERIT)
-                        .redirectError(INHERIT);
+        var builder = new ProcessBuilder(
+                getExecutable(), "--demuxer", "y4m",
+                Y4M.isPipe() ? "-" : name + ".y4m", "-o", name + AVC_SUFFIX
+        ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
 
         var command = builder.command();
 
@@ -175,22 +176,12 @@ public class EncoderAVC extends EncoderY4M {
         return "x264";
     }
 
-    @Override
-    public String getFormat() {
-        return "h264";
-    }
-
-    @Override
-    public String getBrand() {
-        return "isom"; // H.264 avc1
-    }
-
-    public static void encode(String name, EncoderParameters parameters,
-            Consumer<EncoderY4M> consumer) {
-        try (EncoderAVC encoder = new EncoderAVC(name, parameters)) {
+    public static String encode(File dir, String name,
+            EncoderParameters parameters, Consumer<EncoderY4M> consumer)
+            throws IOException, InterruptedException {
+        try (EncoderAVC encoder = new EncoderAVC(dir, name, parameters)) {
             consumer.accept(encoder);
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            return name + AVC_SUFFIX;
         }
     }
 }

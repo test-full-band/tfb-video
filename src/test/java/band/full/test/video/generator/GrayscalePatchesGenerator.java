@@ -76,7 +76,17 @@ public class GrayscalePatchesGenerator extends PatchesGenerator {
     }
 
     @Override
-    protected String getFileName(Args args) {
+    protected String getFolder(Args args) {
+        if (args.window == 0)
+            return factory.folder + '/' + folder +
+                    format("/Fill/%s", args.file);
+
+        return factory.folder + '/' + folder +
+                format("/Win%02d/%s", args.window, args.file);
+    }
+
+    @Override
+    protected String getPattern(Args args) {
         int y = args.yuv[0];
         String fmt;
 
@@ -89,13 +99,12 @@ public class GrayscalePatchesGenerator extends PatchesGenerator {
             fmt = "%03d";
         }
 
-        if (args.window == 0) return factory.folder + '/' + folder +
-                format("/Fill/%s/%s-%s-%s-" + fmt,
-                        args.file, args.file, pattern, args.sequence, y);
+        if (args.window == 0)
+            return format("%s-%s-%s-" + fmt,
+                    args.file, pattern, args.sequence, y);
 
-        return factory.folder + '/' + folder +
-                format("/Win%02d/%s/%s%d-%s-%s-" + fmt,
-                        args.window, args.file, args.file, args.window,
-                        pattern, args.sequence, y);
+        return format("%s%d-%s-%s-" + fmt,
+                args.file, args.window,
+                pattern, args.sequence, y);
     }
 }

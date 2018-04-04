@@ -63,9 +63,8 @@ public class CheckerboardGenerator
     }
 
     @Override
-    protected String getFileName(Args args) {
-        return factory.folder + '/' + folder + '/'
-                + pattern + '-' + args.suffix;
+    protected String getPattern(Args args) {
+        return pattern + '-' + args.suffix;
     }
 
     @Override
