@@ -51,10 +51,6 @@ public enum GeneratorFactory {
 
     public static final boolean LOSSLESS = getBoolean("encoder.lossless");
 
-    // File y4m = new File(prefix + ".y4m");
-    // File out = new File(prefix + "." + getFormat());
-    // File mp4 = new File(prefix + ".mp4");
-
     GeneratorFactory(Encoder encoder, String brand, String folder) {
         this.encoder = encoder;
         this.brand = brand;
@@ -67,8 +63,8 @@ public enum GeneratorFactory {
                 : "Generating normal encode...");
 
         return new File("target/video-"
-                + (LOSSLESS ? "lossless" : "main")
-                + "/" + folder + "/" + name).getParentFile();
+                + (LOSSLESS ? "lossless/" : "main/")
+                + folder);
     }
 
     public void generate(String folder, String name, EncoderParameters ep,
@@ -78,6 +74,7 @@ public enum GeneratorFactory {
             String out = encoder.encode(dir, name, ep, ec);
             String mp4 = new MuxerMP4(dir, name, brand, ep.muxerOptions)
                     .addInput(out).mux();
+            new File(dir, out).delete();
             DecoderY4M.decode(dir, mp4, ep, dc);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -93,6 +90,7 @@ public enum GeneratorFactory {
             String out = encoder.encode(dir, name, ep, e -> ec.accept(e, args));
             String mp4 = new MuxerMP4(dir, name, brand, ep.muxerOptions)
                     .addInput(out).mux();
+            new File(dir, out).delete();
             DecoderY4M.decode(dir, mp4, ep, d -> dc.accept(d, args));
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);

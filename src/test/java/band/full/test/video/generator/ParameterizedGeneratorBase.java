@@ -22,13 +22,14 @@ public abstract class ParameterizedGeneratorBase<A> {
 
     public final GeneratorFactory factory;
     public final EncoderParameters params;
+    public final String folder, pattern;
+
+    // direct access to commonly used parameters
     public final Resolution resolution;
     public final ColorMatrix matrix;
     public final Framerate framerate;
     public final TransferCharacteristics transfer;
     public final int width, height;
-
-    public final String folder, pattern;
 
     public ParameterizedGeneratorBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
@@ -48,8 +49,8 @@ public abstract class ParameterizedGeneratorBase<A> {
     }
 
     public void generate(A args) {
-        factory.generate(getFolder(args), getPattern(args), params, args,
-                this::encode, this::verify);
+        factory.generate(getFolder(args), getPattern(args),
+                params, args, this::encode, this::verify);
     }
 
     protected String getFolder(A args) {

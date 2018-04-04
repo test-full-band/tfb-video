@@ -47,8 +47,8 @@ public abstract class GeneratorBase {
     }
 
     public void generate() {
-        factory.generate(getFolder(), pattern, params,
-                this::encode, this::verify);
+        factory.generate(getFolder(), pattern,
+                params, this::encode, this::verify);
     }
 
     protected String getFolder() {
