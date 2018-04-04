@@ -1,5 +1,6 @@
 package band.full.core;
 
+import static band.full.core.Resolution.STD_1080p;
 import static java.lang.Math.sqrt;
 import static java.lang.String.format;
 
@@ -33,7 +34,8 @@ public class Window {
 
         // assume screen sides are divisible by 4, make patch size
         // divisible by 8 -> align to 4 pixels, only reducing size
-        int side = ((int) sqrt(windowPixels)) & ~0x7;
+        int mask = resolution.height <= STD_1080p.height ? ~0x7 : ~0xF;
+        int side = ((int) sqrt(windowPixels)) & mask;
 
         return center(resolution, side, side);
     }
@@ -42,9 +44,10 @@ public class Window {
         if (area < 0.0 || area > 1.0)
             throw new IllegalArgumentException("area = " + area);
 
+        int mask = resolution.height <= STD_1080p.height ? ~0x7 : ~0xF;
         double mult = sqrt(area);
-        int width = ((int) (resolution.width * mult)) & ~0x7;
-        int height = ((int) (resolution.height * mult)) & ~0x7;
+        int width = ((int) (resolution.width * mult)) & mask;
+        int height = ((int) (resolution.height * mult)) & mask;
 
         return center(resolution, width, height);
     }
