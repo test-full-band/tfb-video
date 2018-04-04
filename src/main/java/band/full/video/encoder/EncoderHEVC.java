@@ -59,6 +59,10 @@ public class EncoderHEVC extends EncoderY4M {
             addAll(command, // "--uhd-bd",
                     "--level-idc", "5.1", "--high-tier", "--hrd",
                     "--vbv-maxrate", "160000", "--vbv-bufsize", "160000");
+
+            if (!QUICK) {
+                addAll(command, "--crf", "1");
+            }
         }
 
         int rate = (int) (parameters.framerate.rate + 0.5f);
