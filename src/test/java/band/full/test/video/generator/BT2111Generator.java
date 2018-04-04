@@ -36,7 +36,8 @@ public class BT2111Generator extends GeneratorBase {
 
     public BT2111Generator(GeneratorFactory factory,
             EncoderParameters params, String folder, String suffix) {
-        super(factory, params, folder, "BT2111" + suffix);
+        super(factory, params.withEncoderOptions("--qpmax", "6"),
+                folder, "BT2111" + suffix);
 
         if (width % STD_1080p.width != 0)
             throw new IllegalArgumentException(
@@ -81,7 +82,7 @@ public class BT2111Generator extends GeneratorBase {
     @Override
     protected void verify(DecoderY4M d) {
         var expected = draw(d.newFrameBuffer());
-        d.read(fb -> fb.verify(expected, 2, 0.00001));
+        d.read(fb -> fb.verify(expected, 2, 0.001));
     }
 
     private FrameBuffer draw(FrameBuffer fb) {

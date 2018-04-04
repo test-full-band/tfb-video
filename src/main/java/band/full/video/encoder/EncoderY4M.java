@@ -21,7 +21,6 @@ import java.util.function.Supplier;
 /**
  * @author Igor Malinin
  */
-// XXX hvc1 avc1 brand
 public abstract class EncoderY4M implements AutoCloseable {
     enum IO {
         PIPE, TEMP_FILE, KEEP_FILE;

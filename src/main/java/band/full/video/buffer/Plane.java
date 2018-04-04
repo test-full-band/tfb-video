@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
 import java.util.function.IntBinaryOperator;
-import java.util.stream.IntStream;
 
 /**
  * @author Igor Malinin
@@ -49,12 +48,12 @@ public class Plane {
     }
 
     public void verify(Plane expected, int deviation, int maxMisses) {
-        int count = range(0, height).parallel().map(iy -> {
+        int count = range(0, height).map(iy -> {
             int base = iy * width;
             return verify(base, base + width, expected.pixels, deviation);
         }).sum();
 
-        assertFalse(count + maxMisses < width * height);
+        assertTotal(width * height, count, maxMisses);
     }
 
     private int verify(int from, int to, short[] expected, int deviation) {
@@ -66,7 +65,7 @@ public class Plane {
             if (delta == 0) {
                 ++count;
             } else {
-                assertFalse(abs(delta) > deviation);
+                assertDelta(delta, deviation);
             }
         }
 
@@ -109,21 +108,12 @@ public class Plane {
         int x2 = limit(x + w, width);
         int y2 = limit(y + h, height);
 
-        IntStream range = range(y1, y2);
-        // if (x2 - x1 > 64) { // TODO measure when to switch
-        // range = range.parallel();
-        // }
-
-        int count = range.map(iy -> {
+        int count = range(y1, y2).map(iy -> {
             int base = iy * width;
             return verify(base + x1, base + x2, expected, deviation);
         }).sum();
 
-        int total = (y2 - y1) * (x2 - x1);
-
-        assertFalse(count + maxMisses < total, () -> format(
-                "Encountered %d misses, allowed maximum is %d of %d!",
-                total - count, maxMisses, total));
+        assertTotal((y2 - y1) * (x2 - x1), count, maxMisses);
     }
 
     /** @return amount of matched subpixels */
@@ -137,14 +127,24 @@ public class Plane {
             if (delta == 0) {
                 ++count;
             } else {
-                assertFalse(abs(delta) > deviation, () -> format(
-                        "Encountered deviation %+d,"
-                                + " allowed maximum is mod(%d)!",
-                        delta, deviation));
+                assertDelta(delta, deviation);
             }
         }
 
         return count;
+    }
+
+    private void assertTotal(int total, int count, int maxMisses) {
+        assertFalse(count + maxMisses < total, () -> format(
+                "Encountered %d misses, allowed maximum is %d of %d!",
+                total - count, maxMisses, total));
+    }
+
+    private void assertDelta(int delta, int deviation) {
+        assertFalse(abs(delta) > deviation, () -> format(
+                "Encountered deviation %+d,"
+                        + " allowed maximum is ±%d!",
+                delta, deviation));
     }
 
     public void calculate(IntBinaryOperator op) {

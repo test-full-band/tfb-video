@@ -54,11 +54,7 @@ public class EncoderHEVC extends EncoderY4M {
         if (LOSSLESS) {
             command.add("--lossless");
         } else {
-            if (!QUICK) {
-                command.add("--cu-lossless");
-            }
-
-            addAll(command, // "--tune", "film", "--uhd-bd",
+            addAll(command, // "--uhd-bd",
                     "--level-idc", "5.1", "--high-tier", "--hrd",
                     "--vbv-maxrate", "160000", "--vbv-bufsize", "160000");
         }
@@ -128,5 +124,3 @@ public class EncoderHEVC extends EncoderY4M {
 // "--ipratio=1.40",
 // "--qg-size=32",
 // "--max-cll", "1000,400",
-
-// "--tune=grain",
