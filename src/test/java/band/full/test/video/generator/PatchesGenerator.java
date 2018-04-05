@@ -3,6 +3,7 @@ package band.full.test.video.generator;
 import static band.full.core.Window.proportional;
 import static band.full.core.Window.screen;
 import static band.full.core.Window.square;
+import static band.full.test.video.generator.GeneratorFactory.HEVC;
 import static band.full.video.itu.BT1886.TRUE_BLACK_TRANSFER;
 import static java.lang.Math.floor;
 import static java.lang.Math.log10;
@@ -84,7 +85,10 @@ public abstract class PatchesGenerator
 
     public PatchesGenerator(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
-        super(factory, params, folder, pattern);
+        super(factory, factory == HEVC
+                ? params.withEncoderOptions("--qpmax", "6")
+                : params,
+                folder, pattern);
     }
 
     protected String formatCIE(CIExyY xyY) {
@@ -196,7 +200,7 @@ public abstract class PatchesGenerator
     }
 
     private Window getUnmarkedWindow(int window) {
-        if (window > 0) return getWindow(window);
+        if (window > 0) return getWindow(window).shrink(2);
 
         int height = resolution.height - resolution.height / 10;
         return Window.center(resolution, resolution.width, height);
