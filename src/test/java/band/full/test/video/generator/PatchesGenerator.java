@@ -186,7 +186,7 @@ public abstract class PatchesGenerator
 
         // near-lossless target, allow a few single-step misses
         fb.verifyRect(win.x, win.y, win.width, win.height,
-                args.yuv, 1, (win.x + win.y) / 100);
+                args.yuv, 2, (win.x + win.y) / 100);
     }
 
     private Window getWindow(int window) {
@@ -200,7 +200,7 @@ public abstract class PatchesGenerator
     }
 
     private Window getUnmarkedWindow(int window) {
-        if (window > 0) return getWindow(window).shrink(2);
+        if (window > 0) return getWindow(window).shrink(4);
 
         int height = resolution.height - resolution.height / 10;
         return Window.center(resolution, resolution.width, height);
