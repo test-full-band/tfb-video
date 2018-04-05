@@ -1,9 +1,7 @@
 package band.full.video.buffer;
 
-import static java.lang.Math.abs;
-import static java.lang.String.format;
-import static java.util.stream.IntStream.range;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import java.util.Arrays;
 import java.util.function.IntBinaryOperator;
@@ -37,41 +35,6 @@ public class Plane {
         pixels[y * width + x] = (short) value;
     }
 
-    public void verify(Plane expected) {
-        verify(expected, 0, 0);
-    }
-
-    public void verify(Plane expected, int deviation, double maxMisses) {
-        int intMisses = (int) (width * height * maxMisses);
-
-        verify(expected, deviation, intMisses);
-    }
-
-    public void verify(Plane expected, int deviation, int maxMisses) {
-        int count = range(0, height).map(iy -> {
-            int base = iy * width;
-            return verify(base, base + width, expected.pixels, deviation);
-        }).sum();
-
-        assertTotal(width * height, count, maxMisses);
-    }
-
-    private int verify(int from, int to, short[] expected, int deviation) {
-        int count = 0;
-
-        for (int i = from; i < to; i++) {
-            int delta = pixels[i] - expected[i];
-
-            if (delta == 0) {
-                ++count;
-            } else {
-                assertDelta(delta, deviation);
-            }
-        }
-
-        return count;
-    }
-
     public void fillRect(int x, int y, int w, int h, int value) {
         int x1 = limit(x, width);
         int y1 = limit(y, height);
@@ -82,69 +45,6 @@ public class Plane {
             int base = iy * width;
             Arrays.fill(pixels, base + x1, base + x2, (short) value);
         }
-    }
-
-    /** Lossless target, verify 100% matching with intent. */
-    public void verifyRect(int x, int y, int w, int h, int expected) {
-        verifyRect(x, y, w, h, expected, 0, 0);
-    }
-
-    public void verifyRect(int x, int y, int w, int h, int expected,
-            int deviation, double maxMisses) {
-        int x1 = limit(x, width);
-        int y1 = limit(y, height);
-        int x2 = limit(x + w, width);
-        int y2 = limit(y + h, height);
-
-        int intMisses = (int) ((x2 - x1) * (y2 - y1) * maxMisses);
-
-        verifyRect(x, y, w, h, expected, deviation, intMisses);
-    }
-
-    public void verifyRect(int x, int y, int w, int h, int expected,
-            int deviation, int maxMisses) {
-        int x1 = limit(x, width);
-        int y1 = limit(y, height);
-        int x2 = limit(x + w, width);
-        int y2 = limit(y + h, height);
-
-        int count = range(y1, y2).map(iy -> {
-            int base = iy * width;
-            return verify(base + x1, base + x2, expected, deviation);
-        }).sum();
-
-        assertTotal((y2 - y1) * (x2 - x1), count, maxMisses);
-    }
-
-    /** @return amount of matched subpixels */
-    private int verify(int from, int to, int expected, int deviation) {
-        int count = 0;
-
-        for (int i = from; i < to; i++) {
-            var value = pixels[i];
-            int delta = value - expected;
-
-            if (delta == 0) {
-                ++count;
-            } else {
-                assertDelta(delta, deviation);
-            }
-        }
-
-        return count;
-    }
-
-    private void assertTotal(int total, int count, int maxMisses) {
-        assertFalse(count + maxMisses < total, () -> format(
-                "Encountered %d misses, allowed maximum is %d of %d!",
-                total - count, maxMisses, total));
-    }
-
-    private void assertDelta(int delta, int deviation) {
-        assertFalse(abs(delta) > deviation, () -> format(
-                "Encountered deviation %+d,"
-                        + " allowed maximum is ±%d!",
-                delta, deviation));
     }
 
     public void calculate(IntBinaryOperator op) {
@@ -168,7 +68,7 @@ public class Plane {
         Arrays.fill(pixels, (short) value);
     }
 
-    private int limit(int value, int limit) {
-        return (value < 0) ? 0 : (value >= limit) ? limit : value;
+    private static int limit(int value, int limit) {
+        return min(max(value, 0), limit);
     }
 }

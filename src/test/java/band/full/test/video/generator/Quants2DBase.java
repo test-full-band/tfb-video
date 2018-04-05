@@ -8,6 +8,7 @@ import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.text.Font.font;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.buffer.Plane;
@@ -175,10 +176,10 @@ public abstract class Quants2DBase
     // Cut 1 pixel around block to exclude markings from calculations
     private void verify(Plane plane, int col, int row, int expected) {
         // near-lossless target, allow up to 1% tiny single-step misses
-        plane.verifyRect(
+        FrameVerifier.verifyRect(expected, plane,
                 getColX(plane.width, col) + 1, getRowY(plane.height, row) + 1,
                 getColW(plane.width, col) - 2, getRowH(plane.height, row) - 2,
-                expected, matrix.bitdepth > 8 ? 2 : 1, 0.01);
+                matrix.bitdepth > 8 ? 4 : 1, 0.02);
     }
 
     /**

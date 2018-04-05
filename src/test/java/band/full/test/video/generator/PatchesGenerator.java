@@ -21,6 +21,7 @@ import band.full.core.Window;
 import band.full.core.color.CIEXYZ;
 import band.full.core.color.CIExy;
 import band.full.core.color.CIExyY;
+import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.encoder.DecoderY4M;
@@ -182,11 +183,11 @@ public abstract class PatchesGenerator
     }
 
     protected void verify(FrameBuffer fb, Args args) {
-        var win = getUnmarkedWindow(args.window);
+        var win = getVerifyWindow(args.window);
 
         // near-lossless target, allow a few single-step misses
-        fb.verifyRect(win.x, win.y, win.width, win.height,
-                args.yuv, 2, (win.x + win.y) / 100);
+        FrameVerifier.verifyRect(args.yuv, fb,
+                win, 2, (win.x + win.y) / 10);
     }
 
     private Window getWindow(int window) {
@@ -199,9 +200,11 @@ public abstract class PatchesGenerator
                 : proportional(resolution, area);
     }
 
-    private Window getUnmarkedWindow(int window) {
+    private Window getVerifyWindow(int window) {
+        // remove patch edges
         if (window > 0) return getWindow(window).shrink(4);
 
+        // remove areas with labels
         int height = resolution.height - resolution.height / 10;
         return Window.center(resolution, resolution.width, height);
     }

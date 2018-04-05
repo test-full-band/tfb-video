@@ -4,6 +4,7 @@ import static band.full.video.encoder.EncoderY4M.QUICK;
 import static java.lang.String.format;
 import static java.util.stream.IntStream.rangeClosed;
 
+import band.full.test.video.executor.FrameVerifier;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
@@ -82,7 +83,10 @@ public class Quants3DBase
 
         rangeClosed(matrix.YMIN, matrix.YMAX).forEach(yCode -> {
             draw(expected, yCode, uCode, vCode, args.lsb);
-            d.read(args.frames, fb -> fb.verify(expected, 1, 0.00001));
+
+            // TODO more precise individual box verification
+            d.read(args.frames,
+                    fb -> FrameVerifier.verify(expected, fb, 2, 0.00001));
         });
     }
 

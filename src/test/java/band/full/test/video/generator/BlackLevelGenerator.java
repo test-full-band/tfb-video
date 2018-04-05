@@ -7,6 +7,7 @@ import static javafx.scene.paint.Color.gray;
 import static javafx.scene.text.Font.font;
 
 import band.full.core.Resolution;
+import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxDisplay;
 import band.full.test.video.executor.FxImage;
 import band.full.video.buffer.FrameBuffer;
@@ -81,10 +82,10 @@ public class BlackLevelGenerator extends GeneratorBase {
         int h = getLabelH(plane.height);
 
         // near-lossless target, allow up to 0.1% tiny single-step misses
-        plane.verifyRect(
+        FrameVerifier.verifyRect(expected, plane,
                 getX(plane.width, col) + 1, h,
                 getW(plane.width, col) - 2, plane.height - h * 2,
-                expected, 1, 0.001);
+                1, 0.001);
     }
 
     /**

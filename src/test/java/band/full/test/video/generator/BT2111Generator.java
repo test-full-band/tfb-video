@@ -6,6 +6,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import band.full.core.color.Matrix3x3;
+import band.full.test.video.executor.FrameVerifier;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.buffer.Plane;
 import band.full.video.encoder.DecoderY4M;
@@ -82,7 +83,7 @@ public class BT2111Generator extends GeneratorBase {
     @Override
     protected void verify(DecoderY4M d) {
         var expected = draw(d.newFrameBuffer());
-        d.read(fb -> fb.verify(expected, 2, 0.001));
+        d.read(fb -> FrameVerifier.verify(expected, fb, 4, 0.001));
     }
 
     private FrameBuffer draw(FrameBuffer fb) {
