@@ -178,7 +178,7 @@ public abstract class Quants2DBase
         plane.verifyRect(
                 getColX(plane.width, col) + 1, getRowY(plane.height, row) + 1,
                 getColW(plane.width, col) - 2, getRowH(plane.height, row) - 2,
-                expected, 1, 0.01);
+                expected, matrix.bitdepth > 8 ? 2 : 1, 0.01);
     }
 
     /**
