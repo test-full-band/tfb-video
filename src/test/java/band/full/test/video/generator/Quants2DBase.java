@@ -8,10 +8,10 @@ import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.text.Font.font;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+import band.full.core.Window;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
 import band.full.video.buffer.FrameBuffer;
-import band.full.video.buffer.Plane;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
@@ -109,77 +109,50 @@ public abstract class Quants2DBase
         e.render(DURATION_INTRO, () -> fb);
 
         fb.clear();
-        var chroma = args.redChroma ? fb.V : fb.U;
-        bandsY(fb.Y, args.yMin);
-        bandsC(chroma, matrix.ACHROMATIC - ROWS / 2);
+        fill(fb, args);
         e.render(DURATION_BODY, () -> fb);
     }
 
     public void generate(FrameBuffer fb, Args args) {
-        var chroma = args.redChroma ? fb.V : fb.U;
-        bandsY(fb.Y, args.yMin);
-        bandsC(chroma, matrix.ACHROMATIC - ROWS / 2);
+        fill(fb, args);
         marks(fb, args);
     }
 
     /**
-     * Fills passed Y plane so that each vertical column has individual luma
-     * code value starting from <code>yMin</code> and increment of 1 for every
-     * next column.
-     */
-    private void bandsY(Plane luma, int yMin) {
-        range(0, COLS).forEach(col -> {
-            int x = getColX(width, col);
-            int w = getColW(width, col);
-            luma.fillRect(x, 0, w, height, yMin + col);
-        });
-    }
-
-    /**
-     * Fills passed Cr or Cb plane so that each horizontal row has individual
-     * chroma code value centered around <code>ACHROMATIC</code> code point and
+     * <p>
+     * Fills Y plane so that each vertical column has individual luma code value
+     * starting from <code>yMin</code> and increment of 1 for every next column.
+     * <p>
+     * Fills Cr or Cb plane so that each horizontal row has individual chroma
+     * code value centered around <code>ACHROMATIC</code> code point and
      * increment of 1 for every next row.
      */
-    private static void bandsC(Plane chroma, int cMin) {
-        range(0, ROWS).forEach(row -> {
-            int y = getRowY(chroma.height, row);
-            int h = getRowH(chroma.height, row);
-            chroma.fillRect(0, y, chroma.width, h, cMin + row);
-        });
+    private void fill(FrameBuffer fb, Args args) {
+        range(0, ROWS).forEach(
+                row -> range(0, COLS).forEach(
+                        col -> fill(fb, args, row, col)));
     }
 
     @Override
     protected void verify(DecoderY4M d, Args args) {
-        d.read(fb -> range(0, ROWS).forEach(
-                row -> range(0, COLS).forEach(
+        d.read(fb -> range(1, ROWS - 1).forEach(
+                row -> range(1, COLS - 1).forEach(
                         col -> verify(fb, args, row, col))));
+    }
+
+    private void fill(FrameBuffer fb, Args args, int row, int col) {
+        fb.fillRect(getWindow(row, col), getYUV(args, row, col));
     }
 
     protected void verify(FrameBuffer fb, Args args, int row, int col) {
         if (isMarked(col, row)) return; // do not verify cells with markings
 
-        int yCode = args.yMin + col;
-        int cCode = matrix.ACHROMATIC - ROWS / 2 + row;
+        int[] yuv = getYUV(args, row, col);
 
-        boolean redChroma = args.redChroma;
-        int uCode = redChroma ? matrix.ACHROMATIC : cCode;
-        int vCode = redChroma ? cCode : matrix.ACHROMATIC;
-
-        // do not verify cells with markings
-        if (matrix.isNominal(yCode, uCode, vCode)) {
-            verify(fb.Y, col, row, yCode);
-            verify(fb.U, col, row, redChroma ? matrix.ACHROMATIC : cCode);
-            verify(fb.V, col, row, redChroma ? cCode : matrix.ACHROMATIC);
+        if (matrix.isNominal(yuv)) { // do not verify cells with markings
+            FrameVerifier.verifyRect(yuv, fb,
+                    getWindow(row, col).shrink(2), 1, 0.005);
         }
-    }
-
-    // Cut 1 pixel around block to exclude markings from calculations
-    private void verify(Plane plane, int col, int row, int expected) {
-        // near-lossless target, allow up to 1% tiny single-step misses
-        FrameVerifier.verifyRect(expected, plane,
-                getColX(plane.width, col) + 1, getRowY(plane.height, row) + 1,
-                getColW(plane.width, col) - 2, getRowH(plane.height, row) - 2,
-                matrix.bitdepth > 8 ? 4 : 1, 0.02);
     }
 
     /**
@@ -190,12 +163,12 @@ public abstract class Quants2DBase
     private void marks(FrameBuffer fb, Args args) {
         int c0 = matrix.ACHROMATIC;
 
-        int markY = args.yMin + matrix.YMIN * 3;
+        int markY = (int) matrix.toLumaCode(getMarksLuma(args.yMin));
         int markLength = width / 480;
 
         // luma marks: top / bottom
         rangeClosed(0, COLS).forEach(i -> {
-            int x = getColX(width, i) - 1;
+            int x = getColX(i) - 1;
             int y = height - markLength;
             fb.fillRect(x, 0, 2, markLength, markY, c0, c0);
             fb.fillRect(x, y, 2, markLength, markY, c0, c0);
@@ -204,7 +177,7 @@ public abstract class Quants2DBase
         // chroma marks: left / right
         rangeClosed(0, ROWS).forEach(i -> {
             int x = width - markLength;
-            int y = getRowY(height, i) - 1;
+            int y = getRowY(i) - 1;
             fb.fillRect(0, y, markLength, 2, markY, c0, c0);
             fb.fillRect(x, y, markLength, 2, markY, c0, c0);
         });
@@ -221,7 +194,7 @@ public abstract class Quants2DBase
         int cMin = cMid - midRow;
         int cMax = cMid + midRow;
 
-        var color = getTextFill(yMax);
+        var color = Color.gray(getMarksLuma(yMin));
 
         String cName = redChroma ? "C'r" : "C'b";
 
@@ -253,8 +226,9 @@ public abstract class Quants2DBase
         return grid;
     }
 
-    protected Color getTextFill(int y) {
-        double ye = matrix.fromLumaCode(y);
+    protected double getMarksLuma(int yMin) {
+        int yMax = yMin + COLS - 1;
+        double ye = matrix.fromLumaCode(yMax);
 
         DoubleUnaryOperator eotfi = transfer.isDefinedByEOTF()
                 ? transfer::fromLinear
@@ -263,7 +237,7 @@ public abstract class Quants2DBase
         double peak = transfer.getNominalDisplayPeakLuminance();
         double minY = eotfi.applyAsDouble(1.0 / peak);
 
-        return ye > minY ? Color.BLACK : Color.gray(ye + minY);
+        return ye > minY ? 0 : ye + minY;
     }
 
     private static boolean isMarked(int col, int row) {
@@ -278,25 +252,42 @@ public abstract class Quants2DBase
         l.setTextFill(color);
         l.setTextAlignment(TextAlignment.CENTER);
         l.setAlignment(Pos.CENTER);
-        l.relocate(getColX(width, col), getRowY(height, row));
-        l.setPrefSize(getColW(width, col), getRowH(height, row));
+        l.relocate(getColX(col), getRowY(row));
+        l.setPrefSize(getColW(col), getRowH(row));
 
         return l;
     }
 
-    private static int getColX(int width, int col) {
+    private int[] getYUV(Args args, int row, int col) {
+        boolean redChroma = args.redChroma;
+        int cCode = matrix.ACHROMATIC - ROWS / 2 + row;
+
+        return new int[] {
+            args.yMin + col,
+            redChroma ? matrix.ACHROMATIC : cCode,
+            redChroma ? cCode : matrix.ACHROMATIC
+        };
+    }
+
+    private Window getWindow(int row, int col) {
+        return new Window(
+                getColX(col), getRowY(row),
+                getColW(col), getRowH(row));
+    }
+
+    private int getColX(int col) {
         return width * col / COLS;
     }
 
-    private static int getColW(int width, int col) {
-        return getColX(width, col + 1) - getColX(width, col);
+    private int getColW(int col) {
+        return getColX(col + 1) - getColX(col);
     }
 
-    private static int getRowY(int height, int row) {
+    private int getRowY(int row) {
         return height * row / ROWS;
     }
 
-    private static int getRowH(int height, int row) {
-        return getRowY(height, row + 1) - getRowY(height, row);
+    private int getRowH(int row) {
+        return getRowY(row + 1) - getRowY(row);
     }
 }

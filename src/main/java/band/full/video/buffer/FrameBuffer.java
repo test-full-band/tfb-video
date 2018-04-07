@@ -1,6 +1,7 @@
 package band.full.video.buffer;
 
 import band.full.core.Resolution;
+import band.full.core.Window;
 import band.full.video.itu.ColorMatrix;
 
 /**
@@ -40,18 +41,33 @@ public class FrameBuffer {
         V.fill(vValue);
     }
 
+    public void fillRect(Window win, int[] yuv) {
+        fillRect(win.x, win.y, win.width, win.height, yuv[0], yuv[1], yuv[2]);
+    }
+
     public void fillRect(int x, int y, int w, int h, int[] yuv) {
         fillRect(x, y, w, h, yuv[0], yuv[1], yuv[2]);
+    }
+
+    public void fillRect(Window win, int yValue, int uValue, int vValue) {
+        fillRect(win.x, win.y, win.width, win.height, yValue, uValue, vValue);
     }
 
     public void fillRect(int x, int y, int w, int h,
             int yValue, int uValue, int vValue) {
         Y.fillRect(x, y, w, h, yValue);
 
-        // FIXME: precise cw, ch
-        int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+        int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
+        int x2 = x + w >> 1, y2 = y + h >> 1;
+        int cw = x2 - x1, ch = y2 - y1;
 
-        U.fillRect(cx, cy, cw, ch, uValue);
-        V.fillRect(cx, cy, cw, ch, vValue);
+        U.fillRect(x1, y1, cw, ch, uValue);
+        V.fillRect(x1, y1, cw, ch, vValue);
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 5; i++) {
+            System.out.println(i + 1 >> 1);
+        }
     }
 }

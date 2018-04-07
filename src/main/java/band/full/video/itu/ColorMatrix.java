@@ -141,10 +141,13 @@ public abstract class ColorMatrix {
         return val >= 0.0 && val <= 1.0;
     }
 
+    public boolean isNominal(int[] yuv) {
+        return isNominal(fromCodes(yuv, new double[3]));
+    }
+
     public boolean isNominal(int yCode, int uCode, int vCode) {
         double[] yuv = {yCode, uCode, vCode};
-        fromCodes(yuv, yuv);
-        return isNominal(yuv);
+        return isNominal(fromCodes(yuv, yuv));
     }
 
     public final double toLumaCode(double y) {

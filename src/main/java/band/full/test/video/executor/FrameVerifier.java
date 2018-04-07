@@ -1,11 +1,12 @@
 package band.full.test.video.executor;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.ceil;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.stream.IntStream.range;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import band.full.core.Window;
 import band.full.video.buffer.FrameBuffer;
@@ -44,6 +45,14 @@ public class FrameVerifier {
                 actual, x, y, w, h);
     }
 
+    public static void verifyRect(int[] yuvExpected,
+            FrameBuffer actual, Window window,
+            int deviation, double maxMisses) {
+        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
+                actual, window.x, window.y, window.width, window.height,
+                deviation, maxMisses);
+    }
+
     public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
             int x, int y, int w, int h,
             int deviation, double maxMisses) {
@@ -70,11 +79,12 @@ public class FrameVerifier {
             FrameBuffer actual, int x, int y, int w, int h) {
         verifyRect(yExpected, actual.Y, x, y, w, h);
 
-        // FIXME: precise cw, ch
-        int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+        int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
+        int x2 = x + w >> 1, y2 = y + h >> 1;
+        int cw = x2 - x1, ch = y2 - y1;
 
-        verifyRect(uExpected, actual.U, cx, cy, cw, ch);
-        verifyRect(vExpected, actual.V, cx, cy, cw, ch);
+        verifyRect(uExpected, actual.U, x1, y1, cw, ch);
+        verifyRect(vExpected, actual.V, x1, y1, cw, ch);
     }
 
     public static void verifyRect(int yExpected, int uExpected, int vExpected,
@@ -82,11 +92,12 @@ public class FrameVerifier {
             int deviation, double maxMisses) {
         verifyRect(yExpected, actual.Y, x, y, w, h, deviation, maxMisses);
 
-        // FIXME: precise cw, ch
-        int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+        int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
+        int x2 = x + w >> 1, y2 = y + h >> 1;
+        int cw = x2 - x1, ch = y2 - y1;
 
-        verifyRect(uExpected, actual.U, cx, cy, cw, ch, deviation, maxMisses);
-        verifyRect(vExpected, actual.V, cx, cy, cw, ch, deviation, maxMisses);
+        verifyRect(uExpected, actual.U, x1, y1, cw, ch, deviation, maxMisses);
+        verifyRect(vExpected, actual.V, x1, y1, cw, ch, deviation, maxMisses);
     }
 
     public static void verifyRect(int yExpected, int uExpected, int vExpected,
@@ -94,11 +105,13 @@ public class FrameVerifier {
             int deviation, int maxMisses) {
         verifyRect(yExpected, actual.Y, x, y, w, h, deviation, maxMisses);
 
-        // FIXME: precise cw, ch
-        int cx = x >> 1, cy = y >> 1, cw = (w + 1) >> 1, ch = (h + 1) >> 1;
+        int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
+        int x2 = x + w >> 1, y2 = y + h >> 1;
+        int cw = x2 - x1, ch = y2 - y1;
+        int cMisses = (maxMisses + 3) / 4;
 
-        verifyRect(uExpected, actual.U, cx, cy, cw, ch, deviation, maxMisses);
-        verifyRect(vExpected, actual.V, cx, cy, cw, ch, deviation, maxMisses);
+        verifyRect(uExpected, actual.U, x1, y1, cw, ch, deviation, cMisses);
+        verifyRect(vExpected, actual.V, x1, y1, cw, ch, deviation, cMisses);
     }
 
     // Verifiers for Plane
@@ -109,7 +122,7 @@ public class FrameVerifier {
 
     public static void verify(Plane expected, Plane actual,
             int deviation, double maxMisses) {
-        int intMisses = (int) (actual.width * actual.height * maxMisses);
+        int intMisses = (int) ceil(actual.width * actual.height * maxMisses);
 
         verify(expected, actual, deviation, intMisses);
     }
@@ -135,7 +148,7 @@ public class FrameVerifier {
             if (delta == 0) {
                 ++count;
             } else {
-                assertDelta(delta, deviation);
+                assertDelta(expected[i], delta, deviation);
             }
         }
 
@@ -143,16 +156,19 @@ public class FrameVerifier {
     }
 
     private static void assertTotal(int total, int count, int maxMisses) {
-        assertFalse(count + maxMisses < total, () -> format(
-                "Encountered %d misses, allowed maximum is %d of %d!",
-                total - count, maxMisses, total));
+        if (count + maxMisses < total) {
+            fail(format(
+                    "Encountered %d misses, allowed maximum is %d of %d!",
+                    total - count, maxMisses, total));
+        }
     }
 
-    private static void assertDelta(int delta, int deviation) {
-        assertFalse(abs(delta) > deviation, () -> format(
-                "Encountered deviation %+d,"
-                        + " allowed maximum is ±%d!",
-                delta, deviation));
+    private static void assertDelta(int expected, int delta, int deviation) {
+        if (abs(delta) > deviation) {
+            fail(format(
+                    "Encountered deviation %d%+d, allowed maximum is ±%d!",
+                    expected, delta, deviation));
+        }
     }
 
     /** Lossless target, verify 100% matching with intent. */
@@ -169,7 +185,7 @@ public class FrameVerifier {
         int x2 = limit(x + w, actual.width);
         int y2 = limit(y + h, actual.height);
 
-        int intMisses = (int) ((x2 - x1) * (y2 - y1) * maxMisses);
+        int intMisses = (int) ceil((x2 - x1) * (y2 - y1) * maxMisses);
 
         verifyRect(expected, actual, x, y, w, h, deviation, intMisses);
     }
@@ -182,9 +198,12 @@ public class FrameVerifier {
         int x2 = limit(x + w, actual.width);
         int y2 = limit(y + h, actual.height);
 
+        if (x1 >= x2 || y1 >= y2) return;
+
         int count = range(y1, y2).map(iy -> {
             int base = iy * actual.width;
-            return verify(expected, actual, base + x1, base + x2, deviation);
+            return verify(expected, actual, base + x1, base + x2,
+                    deviation);
         }).sum();
 
         assertTotal((y2 - y1) * (x2 - x1), count, maxMisses);
@@ -202,7 +221,7 @@ public class FrameVerifier {
             if (delta == 0) {
                 ++count;
             } else {
-                assertDelta(delta, deviation);
+                assertDelta(expected, delta, deviation);
             }
         }
 

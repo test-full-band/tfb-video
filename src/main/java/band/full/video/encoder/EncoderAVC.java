@@ -2,7 +2,6 @@ package band.full.video.encoder;
 
 import static band.full.video.itu.ColorRange.FULL;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
-import static java.util.Collections.addAll;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,39 +25,25 @@ public class EncoderAVC extends EncoderY4M {
 
     @Override
     protected ProcessBuilder createProcessBuilder() {
-        var builder = new ProcessBuilder(
-                getExecutable(), "--demuxer", "y4m",
-                Y4M.isPipe() ? "-" : name + ".y4m", "-o", name + AVC_SUFFIX
-        ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
-
-        var command = builder.command();
-
-        if (LOSSLESS) {
-            addAll(command, "--qp", "0");
-        } else {
-            int rate = (int) (parameters.framerate.rate + 0.5f);
-
-            addAll(command, "--tune", "film", "--slices", "4",
-                    "--bluray-compat", "--level", "4.1",
-                    "--keyint", "" + rate, "--open-gop", "bluray",
-                    "--vbv-maxrate", "40000", "--vbv-bufsize", "30000");
-
-            if (!QUICK) {
-                addAll(command, "--crf", "1");
-            }
-        }
-
+        int rate = (int) (parameters.framerate.rate + 0.5f);
         int colorprim = matrix.primaries.code;
         int transfer = matrix.transfer.code();
         int colormatrix = matrix.code;
 
-        // TODO: passing/detecting chromaloc; avoid hardcoding
-        addAll(command, "--preset", getPresetParam(),
+        var builder = new ProcessBuilder(
+                getExecutable(), "--demuxer", "y4m",
+                Y4M.isPipe() ? "-" : name + ".y4m", "-o", name + AVC_SUFFIX,
+                "--preset", getPresetParam(),
+                "--keyint", Integer.toString(rate), "--open-gop", "bluray",
                 "--range", matrix.range == FULL ? "pc" : "tv",
                 "--colorprim", getColorPrimString(colorprim),
                 "--transfer", getTransferString(transfer),
                 "--colormatrix", getColorMatrixString(colormatrix),
-                "--chromaloc", "2"); // chroma_loc_info_present_flag
+                "--chromaloc", "2" // chroma_loc_info_present_flag
+        ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
+        // TODO: passing/detecting chromaloc; avoid hardcoding
+
+        builder.command().addAll(parameters.encoderOptions);
 
         return builder;
     }

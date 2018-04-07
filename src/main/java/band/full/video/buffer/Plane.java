@@ -41,9 +41,11 @@ public class Plane {
         int x2 = limit(x + w, width);
         int y2 = limit(y + h, height);
 
-        for (int iy = y1; iy < y2; iy++) {
-            int base = iy * width;
-            Arrays.fill(pixels, base + x1, base + x2, (short) value);
+        if (x1 < x2) {
+            for (int iy = y1; iy < y2; iy++) {
+                int base = iy * width;
+                Arrays.fill(pixels, base + x1, base + x2, (short) value);
+            }
         }
     }
 

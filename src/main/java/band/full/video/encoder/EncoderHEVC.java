@@ -26,54 +26,36 @@ public class EncoderHEVC extends EncoderY4M {
 
     @Override
     protected ProcessBuilder createProcessBuilder() {
-        var builder = new ProcessBuilder(
-                getExecutable(),
-                Y4M.isPipe() ? "-" : name + ".y4m", name + HEVC_SUFFIX
-        ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
-
+        int rate = (int) (parameters.framerate.rate + 0.5f);
         int bitdepth = matrix.bitdepth;
         int colorprim = matrix.primaries.code;
         int transfer = matrix.transfer.code();
         int colormatrix = matrix.code;
 
-        var command = builder.command();
-
-        addAll(command, "--y4m", "--preset", getPresetParam(),
-                "--profile", bitdepth == 8 ? "main" : "main" + bitdepth);
-
-        // TODO: passing/detecting chromaloc; avoid hardcoding
-        addAll(builder.command(),
+        var builder = new ProcessBuilder(
+                getExecutable(),
+                Y4M.isPipe() ? "-" : name + ".y4m", name + HEVC_SUFFIX,
+                "--y4m", "--preset", getPresetParam(),
+                "--profile", bitdepth == 8 ? "main" : "main" + bitdepth,
                 "--colorprim", Integer.toString(colorprim),
                 "--transfer", Integer.toString(transfer),
                 "--colormatrix", Integer.toString(colormatrix),
-                "--chromaloc", "2"); // chroma_loc_info_present_flag
+                "--chromaloc", "2", // chroma_loc_info_present_flag
+                "--repeat-headers", // [ref.1]
+                "--no-opt-qp-pps", // repeat HDR SEI and
+                "--no-opt-ref-list-length-pps", // avoid MP4Box errors
+                "--keyint", Integer.toString(rate), "--no-open-gop", "--aud",
+                "--range", matrix.range == FULL ? "full" : "limited",
+                "--output-depth", Integer.toString(bitdepth)
+        ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
+        // TODO: passing/detecting chromaloc; avoid hardcoding
+
+        var command = builder.command();
 
         parameters.masterDisplay.ifPresent(
                 md -> addAll(command, "--master-display", md));
 
         command.addAll(parameters.encoderOptions);
-
-        if (LOSSLESS) {
-            command.add("--lossless");
-        } else {
-            addAll(command, // "--uhd-bd",
-                    "--level-idc", "5.1", "--high-tier", "--hrd",
-                    "--vbv-maxrate", "160000", "--vbv-bufsize", "160000");
-
-            if (!QUICK) {
-                addAll(command, "--crf", "1");
-            }
-        }
-
-        int rate = (int) (parameters.framerate.rate + 0.5f);
-
-        addAll(command, "--aud", "--no-open-gop",
-                "--repeat-headers", // [ref.1]
-                "--no-opt-qp-pps", // repeat HDR SEI and
-                "--no-opt-ref-list-length-pps", // avoid MP4Box errors
-                "--keyint", Integer.toString(rate), "--min-keyint", "1",
-                "--range", matrix.range == FULL ? "full" : "limited",
-                "--output-depth", Integer.toString(bitdepth));
 
         return builder;
     }
@@ -97,26 +79,13 @@ public class EncoderHEVC extends EncoderY4M {
 // 1. https://bitbucket.org/multicoreware/x265/issues/309/mp4box-incompatibility
 // 2. https://forum.doom9.org/showthread.php?p=1803907#post1803907
 
-// "--ref=5",
-// "--limit-refs=0",
-// "--sao",
-// "--aq-mode=1",
-// "--aq-strength=1.00",
-// "--cutree",
+// "--ref=5", "--limit-refs=0",
 // "--bframes=0",
 // "--no-amp",
 // "--no-tskip",
 // "--limit-modes",
 // "--no-b-pyramid",
-// "--rd=4",
 // "--rskip",
-// "--psy-rd=2.00",
-// "--psy-rdoq=1.00",
-// "--qpstep=4",
-// "--bitrate=40000",
-// "--vbv-maxrate=40000",
-// "--vbv-bufsize=40000",
-// "--vbv-init=0.9",
 // "--ipratio=1.40",
 // "--qg-size=32",
 // "--max-cll", "1000,400",

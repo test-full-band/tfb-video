@@ -63,7 +63,6 @@ public class EncoderParameters {
     public final Preset preset;
     public final Optional<String> masterDisplay; // HEVC HDR only
     public final List<String> encoderOptions;
-    public final List<String> muxerOptions;
 
     public EncoderParameters(Resolution resolution, ColorMatrix matrix,
             Framerate framerate) {
@@ -72,37 +71,34 @@ public class EncoderParameters {
 
     public EncoderParameters(Resolution resolution, ColorMatrix matrix,
             Framerate framerate, Preset preset) {
-        this(resolution, matrix, framerate, preset, empty(),
-                emptyList(), emptyList());
+        this(resolution, matrix, framerate, preset, empty(), emptyList());
     }
 
     private EncoderParameters(Resolution resolution, ColorMatrix matrix,
             Framerate framerate, Preset preset,
             Optional<String> masterDisplay,
-            List<String> encoderOptions, List<String> muxerOptions) {
+            List<String> encoderOptions) {
         this.resolution = resolution;
         this.matrix = matrix;
         this.framerate = framerate;
         this.preset = preset;
         this.masterDisplay = masterDisplay;
         this.encoderOptions = encoderOptions;
-        this.muxerOptions = muxerOptions;
     }
 
     public EncoderParameters withFramerate(Framerate framerate) {
         return new EncoderParameters(resolution, matrix,
-                framerate, preset, masterDisplay, encoderOptions, muxerOptions);
+                framerate, preset, masterDisplay, encoderOptions);
     }
 
     public EncoderParameters withPreset(Preset preset) {
         return new EncoderParameters(resolution, matrix,
-                framerate, preset, masterDisplay, encoderOptions, muxerOptions);
+                framerate, preset, masterDisplay, encoderOptions);
     }
 
     public EncoderParameters withMasterDisplay(String masterDisplay) {
         return new EncoderParameters(resolution, matrix,
-                framerate, preset, ofNullable(masterDisplay),
-                encoderOptions, muxerOptions);
+                framerate, preset, ofNullable(masterDisplay), encoderOptions);
     }
 
     public EncoderParameters withEncoderOptions(String... options) {
@@ -111,15 +107,6 @@ public class EncoderParameters {
 
     public EncoderParameters withEncoderOptions(List<String> options) {
         return new EncoderParameters(resolution, matrix,
-                framerate, preset, masterDisplay, options, muxerOptions);
-    }
-
-    public EncoderParameters withFfmpegOptions(String... options) {
-        return withFfmpegOptions(asList(options));
-    }
-
-    public EncoderParameters withFfmpegOptions(List<String> options) {
-        return new EncoderParameters(resolution, matrix,
-                framerate, preset, masterDisplay, encoderOptions, options);
+                framerate, preset, masterDisplay, options);
     }
 }
