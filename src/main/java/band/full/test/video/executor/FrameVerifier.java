@@ -24,23 +24,21 @@ public class FrameVerifier {
     }
 
     public static void verify(FrameBuffer expected, FrameBuffer actual,
-            int deviation,
-            double maxMisses) {
+            int deviation, double maxMisses) {
         verify(expected.Y, actual.Y, deviation, maxMisses);
         verify(expected.U, actual.U, deviation, maxMisses);
         verify(expected.V, actual.V, deviation, maxMisses);
     }
 
     public static void verify(FrameBuffer expected, FrameBuffer actual,
-            int deviation,
-            int maxMisses) {
-        verify(expected.Y, actual.Y, deviation, maxMisses);
-        verify(expected.U, actual.U, deviation, maxMisses);
-        verify(expected.V, actual.V, deviation, maxMisses);
+            int deviation, int maxLumaMisses, int maxChromaMisses) {
+        verify(expected.Y, actual.Y, deviation, maxLumaMisses);
+        verify(expected.U, actual.U, deviation, maxChromaMisses);
+        verify(expected.V, actual.V, deviation, maxChromaMisses);
     }
 
-    public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
-            int x, int y, int w, int h) {
+    public static void verifyRect(int[] yuvExpected,
+            FrameBuffer actual, int x, int y, int w, int h) {
         verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
                 actual, x, y, w, h);
     }
@@ -53,8 +51,8 @@ public class FrameVerifier {
                 deviation, maxMisses);
     }
 
-    public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
-            int x, int y, int w, int h,
+    public static void verifyRect(int[] yuvExpected,
+            FrameBuffer actual, int x, int y, int w, int h,
             int deviation, double maxMisses) {
         verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
                 actual, x, y, w, h, deviation, maxMisses);
@@ -62,17 +60,17 @@ public class FrameVerifier {
 
     public static void verifyRect(int[] yuvExpected,
             FrameBuffer actual, Window window,
-            int deviation, int maxMisses) {
+            int deviation, int maxLumaMisses, int maxChromaMisses) {
         verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
                 actual, window.x, window.y, window.width, window.height,
-                deviation, maxMisses);
+                deviation, maxLumaMisses, maxChromaMisses);
     }
 
     public static void verifyRect(int[] yuvExpected,
             FrameBuffer actual, int x, int y, int w, int h,
-            int deviation, int maxMisses) {
+            int deviation, int maxLumaMisses, int maxChromaMisses) {
         verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
-                actual, x, y, w, h, deviation, maxMisses);
+                actual, x, y, w, h, deviation, maxLumaMisses, maxChromaMisses);
     }
 
     public static void verifyRect(int yExpected, int uExpected, int vExpected,
@@ -102,16 +100,19 @@ public class FrameVerifier {
 
     public static void verifyRect(int yExpected, int uExpected, int vExpected,
             FrameBuffer actual, int x, int y, int w, int h,
-            int deviation, int maxMisses) {
-        verifyRect(yExpected, actual.Y, x, y, w, h, deviation, maxMisses);
+            int deviation, int maxLumaMisses, int maxChromaMisses) {
+        verifyRect(yExpected, actual.Y, x, y, w, h,
+                deviation, maxLumaMisses);
 
         int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
         int x2 = x + w >> 1, y2 = y + h >> 1;
         int cw = x2 - x1, ch = y2 - y1;
-        int cMisses = (maxMisses + 3) / 4;
 
-        verifyRect(uExpected, actual.U, x1, y1, cw, ch, deviation, cMisses);
-        verifyRect(vExpected, actual.V, x1, y1, cw, ch, deviation, cMisses);
+        verifyRect(uExpected, actual.U, x1, y1, cw, ch,
+                deviation, maxChromaMisses);
+
+        verifyRect(vExpected, actual.V, x1, y1, cw, ch,
+                deviation, maxChromaMisses);
     }
 
     // Verifiers for Plane

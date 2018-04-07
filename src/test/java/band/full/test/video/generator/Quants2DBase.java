@@ -151,7 +151,7 @@ public abstract class Quants2DBase
 
         if (matrix.isNominal(yuv)) { // do not verify cells with markings
             FrameVerifier.verifyRect(yuv, fb,
-                    getWindow(row, col).shrink(2), 1, 0.005);
+                    getWindow(row, col).shrink(2), 1, 0.01);
         }
     }
 

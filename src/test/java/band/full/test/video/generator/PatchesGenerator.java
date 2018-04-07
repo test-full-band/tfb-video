@@ -3,7 +3,6 @@ package band.full.test.video.generator;
 import static band.full.core.Window.proportional;
 import static band.full.core.Window.screen;
 import static band.full.core.Window.square;
-import static band.full.test.video.generator.GeneratorFactory.HEVC;
 import static band.full.video.itu.BT1886.TRUE_BLACK_TRANSFER;
 import static java.lang.Math.floor;
 import static java.lang.Math.log10;
@@ -86,10 +85,7 @@ public abstract class PatchesGenerator
 
     public PatchesGenerator(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
-        super(factory, factory == HEVC
-                ? params.withEncoderOptions("--qpmax", "6")
-                : params,
-                folder, pattern);
+        super(factory, params, folder, pattern);
     }
 
     protected String formatCIE(CIExyY xyY) {
@@ -184,10 +180,11 @@ public abstract class PatchesGenerator
 
     protected void verify(FrameBuffer fb, Args args) {
         var win = getVerifyWindow(args.window);
+        int perimeter = win.x + win.y;
 
         // near-lossless target, allow a few single-step misses
         FrameVerifier.verifyRect(args.yuv, fb,
-                win, 2, (win.x + win.y) / 10);
+                win, 2, perimeter / 10, perimeter / 20);
     }
 
     private Window getWindow(int window) {

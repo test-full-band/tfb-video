@@ -5,6 +5,9 @@ import static band.full.video.encoder.EncoderParameters.HDR10;
 
 import band.full.test.video.executor.GenerateVideo;
 import band.full.test.video.generator.CalibrationBase;
+import band.full.test.video.generator.PatchesGenerator;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Calibration box fills.
