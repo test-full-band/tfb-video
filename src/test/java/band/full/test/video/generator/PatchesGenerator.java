@@ -199,7 +199,7 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
 
         // near-lossless target, allow a few single-step misses
         FrameVerifier.verifyRect(args.yuv, fb,
-                win, 2, perimeter / 10, perimeter / 20);
+                win, 2, perimeter / 5, perimeter / 10);
     }
 
     private Window getWindow(int window) {
