@@ -56,6 +56,12 @@ public class ColorPatchesGenerator extends PatchesGenerator {
                 String name = names.get(j);
 
                 double[] buf = column.get(j).CIEXYZ().array();
+
+                double peak = transfer.getNominalDisplayPeakLuminance();
+                if (peak > 100.0) { // Scale to 100 nit for HDR
+                    multiply(buf, 100.0 / peak);
+                }
+
                 matrix.XYZtoRGB.multiply(adaptation.multiply(buf, buf), buf);
 
                 int[] yuv = round(
@@ -114,5 +120,11 @@ public class ColorPatchesGenerator extends PatchesGenerator {
 
         return format("%s%d-%s-%s",
                 args.file, args.window, pattern, args.sequence);
+    }
+
+    private static void multiply(double[] buf, double mult) {
+        for (int i = 0; i < buf.length; i++) {
+            buf[i] *= mult;
+        }
     }
 }
