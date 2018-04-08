@@ -42,7 +42,7 @@ public class MuxerMP4 {
             throw new IllegalStateException("No inputs specified!");
 
         var builder = new ProcessBuilder(
-                "MP4Box", "-new", name + MP4_SUFFIX, "-brand", brand
+                "MP4Box", "-noprog", "-new", name + MP4_SUFFIX, "-brand", brand
         ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
 
         List<String> command = builder.command();
