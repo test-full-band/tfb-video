@@ -5,11 +5,15 @@ import static java.lang.String.format;
 import static java.util.stream.IntStream.rangeClosed;
 
 import band.full.test.video.executor.FrameVerifier;
+import band.full.test.video.generator.Quants3DBase.Args;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
+import band.full.video.encoder.MuxerMP4;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -18,8 +22,7 @@ import java.util.stream.Stream;
  *
  * @author Igor Malinin
  */
-public class Quants3DBase
-        extends ParameterizedGeneratorBase<Quants3DBase.Args> {
+public class Quants3DBase extends GeneratorBase<Args> {
     public static class Args {
         public final String speed;
         public final int frames;
@@ -58,7 +61,13 @@ public class Quants3DBase
     }
 
     @Override
-    protected void encode(EncoderY4M e, Args args) {
+    public void generate(MuxerMP4 muxer, File dir, Args args)
+            throws IOException, InterruptedException {
+        encode(muxer, dir, args, null, 1);
+    }
+
+    @Override
+    protected void encode(EncoderY4M e, Args args, String phase) {
         int uCode = matrix.ACHROMATIC;
         int vCode = matrix.ACHROMATIC;
 

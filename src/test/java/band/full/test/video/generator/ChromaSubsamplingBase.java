@@ -12,6 +12,7 @@ import static java.lang.Math.sqrt;
 import static java.util.Arrays.fill;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+import band.full.test.video.generator.ChromaSubsamplingBase.Args;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
@@ -29,8 +30,7 @@ import java.util.stream.Stream;
  * @author Igor Malinin
  */
 @TestInstance(PER_CLASS)
-public class ChromaSubsamplingBase
-        extends ParameterizedGeneratorBase<ChromaSubsamplingBase.Args> {
+public class ChromaSubsamplingBase extends GeneratorBase<Args> {
     private static final int CENTER_X = STD_2160p.width / 2;
     private static final int CENTER_Y = STD_2160p.height / 2;
     private static final double MAX_DISTANCE = CENTER_Y;
@@ -74,7 +74,7 @@ public class ChromaSubsamplingBase
     }
 
     @Override
-    protected void encode(EncoderY4M e, Args args) {
+    protected void encode(EncoderY4M e, Args args, String phase) {
         args.generator.accept(e);
     }
 
@@ -108,7 +108,7 @@ public class ChromaSubsamplingBase
         fill(fb.U.pixels, c0);
         fill(fb.V.pixels, c0);
 
-        e.render(DURATION_STATIC, () -> fb);
+        e.render(gop, () -> fb);
     }
 
     public void concentricBlackWhiteSineO(EncoderY4M e) {
@@ -130,7 +130,7 @@ public class ChromaSubsamplingBase
         fill(fb.U.pixels, c0);
         fill(fb.V.pixels, c0);
 
-        e.render(DURATION_STATIC, () -> fb);
+        e.render(gop, () -> fb);
     }
 
     /**
@@ -185,7 +185,7 @@ public class ChromaSubsamplingBase
             }
         }
 
-        e.render(DURATION_STATIC, () -> fb);
+        e.render(gop, () -> fb);
     }
 
     /** luma log sine sweep */

@@ -1,22 +1,28 @@
 package band.full.test.video.generator;
 
-import static java.time.Duration.ofSeconds;
+import static java.lang.Math.round;
+import static java.util.Collections.emptyList;
+import static java.util.stream.IntStream.range;
 
 import band.full.core.Resolution;
 import band.full.video.buffer.Framerate;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
+import band.full.video.encoder.MuxerMP4;
 import band.full.video.itu.ColorMatrix;
 import band.full.video.itu.TransferCharacteristics;
 
-import java.time.Duration;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author Igor Malinin
  */
-public abstract class GeneratorBase {
-    protected static final Duration DURATION_STATIC = ofSeconds(30);
+public abstract class GeneratorBase<A> {
+    protected static final int PATTERN_SECONDS = 30;
+    protected static final int INTRO_SECONDS = 5;
+    protected static final int BODY_SECONDS = PATTERN_SECONDS - INTRO_SECONDS;
 
     public final GeneratorFactory factory;
     public final EncoderParameters params;
@@ -27,7 +33,7 @@ public abstract class GeneratorBase {
     public final ColorMatrix matrix;
     public final Framerate framerate;
     public final TransferCharacteristics transfer;
-    public final int width, height;
+    public final int width, height, gop;
 
     public GeneratorBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
@@ -44,18 +50,52 @@ public abstract class GeneratorBase {
 
         width = resolution.width;
         height = resolution.height;
+
+        gop = round(framerate.rate);
     }
 
-    public void generate() {
-        factory.generate(getFolder(), pattern,
-                params, this::encode, this::verify);
+    public void generate(A args) {
+        String pattern = getPattern(args);
+        File dir = factory.greet(getFolder(args), pattern);
+        try {
+            MuxerMP4 muxer = new MuxerMP4(dir,
+                    pattern, factory.brand, emptyList());
+
+            generate(muxer, dir, args);
+            String mp4 = muxer.mux();
+            muxer.deleteInputs();
+            DecoderY4M.decode(dir, mp4, params, d -> verify(d, args));
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    protected String getFolder() {
+    public void generate(MuxerMP4 muxer, File dir, A args)
+            throws IOException, InterruptedException {
+        encode(muxer, dir, args, null, PATTERN_SECONDS);
+    }
+
+    public void encode(MuxerMP4 muxer, File dir,
+            A args, String phase, int repeat)
+            throws IOException, InterruptedException {
+        String pattern = getPattern(args);
+        String name = phase == null ? pattern : pattern + "-" + phase;
+
+        String out = factory.encode(dir, name, params,
+                e -> encode(e, args, phase));
+
+        range(0, repeat).forEach(i -> muxer.addInput(out));
+    }
+
+    protected String getFolder(A args) {
         return factory.folder + '/' + folder;
     }
 
-    protected abstract void encode(EncoderY4M e);
+    protected String getPattern(A args) {
+        return pattern;
+    }
 
-    protected abstract void verify(DecoderY4M d);
+    protected abstract void encode(EncoderY4M e, A args, String phase);
+
+    protected abstract void verify(DecoderY4M d, A args);
 }

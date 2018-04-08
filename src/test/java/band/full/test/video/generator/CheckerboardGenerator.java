@@ -5,6 +5,7 @@ import static band.full.video.itu.ColorRange.FULL;
 import static java.lang.String.format;
 import static java.util.stream.Stream.concat;
 
+import band.full.test.video.generator.CheckerboardGenerator.Args;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
@@ -16,8 +17,7 @@ import java.util.stream.Stream;
  *
  * @author Igor Malinin
  */
-public class CheckerboardGenerator
-        extends ParameterizedGeneratorBase<CheckerboardGenerator.Args> {
+public class CheckerboardGenerator extends GeneratorBase<Args> {
     public static class Args {
         public final String suffix;
         public final int yMin, yMax;
@@ -68,13 +68,13 @@ public class CheckerboardGenerator
     }
 
     @Override
-    protected void encode(EncoderY4M e, Args args) {
+    protected void encode(EncoderY4M e, Args args, String phase) {
         var fb = e.newFrameBuffer();
 
         fb.Y.calculate(
                 (x, y) -> (x + y) % 2 == 0 ? args.yMin : args.yMax);
 
-        e.render(DURATION_STATIC, () -> fb);
+        e.render(gop, () -> fb);
     }
 
     @Override

@@ -22,14 +22,18 @@ import band.full.core.color.CIExy;
 import band.full.core.color.CIExyY;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
+import band.full.test.video.generator.PatchesGenerator.Args;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
+import band.full.video.encoder.MuxerMP4;
 import band.full.video.itu.ICtCp;
 
 import org.junit.jupiter.api.TestInstance;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.function.DoubleUnaryOperator;
 
@@ -51,8 +55,7 @@ import javafx.scene.text.TextFlow;
  * @see ColorPatchesGenerator
  */
 @TestInstance(PER_CLASS)
-public abstract class PatchesGenerator
-        extends ParameterizedGeneratorBase<PatchesGenerator.Args> {
+public abstract class PatchesGenerator extends GeneratorBase<Args> {
     public static class Args {
         public final String file;
         public final String sequence;
@@ -159,18 +162,24 @@ public abstract class PatchesGenerator
     }
 
     @Override
-    protected void encode(EncoderY4M e, Args args) {
+    public void generate(MuxerMP4 muxer, File dir, Args args)
+            throws IOException, InterruptedException {
+        encode(muxer, dir, args, "intro", INTRO_SECONDS);
+        encode(muxer, dir, args, null, BODY_SECONDS);
+    }
+
+    @Override
+    protected void encode(EncoderY4M e, Args args, String phase) {
         var win = getWindow(args.window);
 
         var fb = e.newFrameBuffer();
         fb.fillRect(win.x, win.y, win.width, win.height, args.yuv);
 
-        FxImage.overlay(overlay(args), fb);
-        e.render(DURATION_INTRO, () -> fb);
+        if (phase != null) {
+            FxImage.overlay(overlay(args), fb);
+        }
 
-        fb.clear();
-        fb.fillRect(win.x, win.y, win.width, win.height, args.yuv);
-        e.render(DURATION_BODY, () -> fb);
+        e.render(gop, () -> fb);
     }
 
     @Override

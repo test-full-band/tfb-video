@@ -28,7 +28,7 @@ import javafx.scene.text.TextAlignment;
  *
  * @author Igor Malinin
  */
-public class BlackLevelGenerator extends GeneratorBase {
+public class BlackLevelGenerator extends GeneratorBase<Void> {
     protected static final int COLS = 16;
 
     public BlackLevelGenerator(GeneratorFactory factory,
@@ -37,13 +37,13 @@ public class BlackLevelGenerator extends GeneratorBase {
     }
 
     @Override
-    protected void encode(EncoderY4M e) {
+    protected void encode(EncoderY4M e, Void args, String phase) {
         var fb = e.newFrameBuffer();
 
         patches(fb);
         marks(fb);
 
-        e.render(DURATION_STATIC, () -> fb);
+        e.render(gop, () -> fb);
     }
 
     /**
@@ -63,7 +63,7 @@ public class BlackLevelGenerator extends GeneratorBase {
     }
 
     @Override
-    protected void verify(DecoderY4M d) {
+    protected void verify(DecoderY4M d, Void args) {
         d.read(fb -> verify(fb));
     }
 

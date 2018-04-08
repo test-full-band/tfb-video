@@ -12,6 +12,8 @@ import band.full.video.buffer.FrameBuffer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -24,16 +26,17 @@ import java.util.Random;
 @Disabled("Requires lossless encode and  reducing bitrate to at least 100Mb/s")
 public class Gradients2160pBT709 {
     @Test
-    public void gradients() {
+    public void gradients() throws IOException, InterruptedException {
         gradients("Gradients-06"); // 6 bit demo
     }
 
-    public void gradients(String name) {
-        HEVC.generate("Gradients", name, UHD4K_MAIN8,
-                e -> {
-                    FrameBuffer fb = e.newFrameBuffer();
-                    e.render(ofSeconds(30), () -> gradients(fb));
-                }, d -> {});
+    public void gradients(String name)
+            throws IOException, InterruptedException {
+        File dir = HEVC.greet("Gradients", name);
+        HEVC.encode(dir, name, UHD4K_MAIN8, e -> {
+            FrameBuffer fb = e.newFrameBuffer();
+            e.render(ofSeconds(30), () -> gradients(fb));
+        });
     }
 
     /** Render with new dither per frame */

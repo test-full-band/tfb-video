@@ -67,4 +67,8 @@ public class MuxerMP4 {
 
         return name + MP4_SUFFIX;
     }
+
+    public void deleteInputs() {
+        inputs.forEach(in -> new File(dir, in).delete());
+    }
 }

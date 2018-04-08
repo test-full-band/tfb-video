@@ -18,7 +18,7 @@ import band.full.video.itu.BT709;
  * @author Igor Malinin
  */
 // TODO output file type and test.full.band branding
-public class BT2111Generator extends GeneratorBase {
+public class BT2111Generator extends GeneratorBase<Void> {
     private final double alpha;
     private final Matrix3x3 bt709conv;
 
@@ -37,8 +37,7 @@ public class BT2111Generator extends GeneratorBase {
 
     public BT2111Generator(GeneratorFactory factory,
             EncoderParameters params, String folder, String suffix) {
-        super(factory, params.withEncoderOptions("--qpmax", "6"),
-                folder, "BT2111" + suffix);
+        super(factory, params, folder, "BT2111" + suffix);
 
         if (width % STD_1080p.width != 0)
             throw new IllegalArgumentException(
@@ -75,13 +74,13 @@ public class BT2111Generator extends GeneratorBase {
     }
 
     @Override
-    protected void encode(EncoderY4M e) {
+    protected void encode(EncoderY4M e, Void args, String phase) {
         var fb = draw(e.newFrameBuffer());
-        e.render(DURATION_STATIC, () -> fb);
+        e.render(gop, () -> fb);
     }
 
     @Override
-    protected void verify(DecoderY4M d) {
+    protected void verify(DecoderY4M d, Void args) {
         var expected = draw(d.newFrameBuffer());
         d.read(fb -> FrameVerifier.verify(expected, fb, 4, 0.001));
     }

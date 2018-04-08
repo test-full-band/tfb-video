@@ -40,7 +40,8 @@ public abstract class BasicSetupBase {
     @Test
     @Disabled("TODO")
     public void blackLevel() {
-        new BlackLevelGenerator(factory, params, folder, pattern).generate();
+        new BlackLevelGenerator(factory, params, folder, pattern)
+                .generate(null);
     }
 
     @ParameterizedTest

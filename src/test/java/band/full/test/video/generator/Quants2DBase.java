@@ -11,15 +11,19 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import band.full.core.Window;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
+import band.full.test.video.generator.Quants2DBase.Args;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
+import band.full.video.encoder.MuxerMP4;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Stream;
 
@@ -43,8 +47,7 @@ import javafx.scene.text.TextAlignment;
 // TODO Dynamic sweep for non-near black/white patterns (->less files)
 // TODO Color sweeps
 @TestInstance(PER_CLASS)
-public abstract class Quants2DBase
-        extends ParameterizedGeneratorBase<Quants2DBase.Args> {
+public abstract class Quants2DBase extends GeneratorBase<Args> {
     /** Number of rows have to be an odd number - center row is neutral. */
     public static final int ROWS = 17;
     public static final int COLS = 32;
@@ -103,14 +106,20 @@ public abstract class Quants2DBase
     }
 
     @Override
-    protected void encode(EncoderY4M e, Args args) {
-        var fb = e.newFrameBuffer();
-        generate(fb, args);
-        e.render(DURATION_INTRO, () -> fb);
+    public void generate(MuxerMP4 muxer, File dir, Args args)
+            throws IOException, InterruptedException {
+        encode(muxer, dir, args, "intro", INTRO_SECONDS);
+        encode(muxer, dir, args, null, BODY_SECONDS);
+    }
 
-        fb.clear();
+    @Override
+    protected void encode(EncoderY4M e, Args args, String phase) {
+        var fb = e.newFrameBuffer();
         fill(fb, args);
-        e.render(DURATION_BODY, () -> fb);
+        if (phase != null) {
+            marks(fb, args);
+        }
+        e.render(gop, () -> fb);
     }
 
     public void generate(FrameBuffer fb, Args args) {

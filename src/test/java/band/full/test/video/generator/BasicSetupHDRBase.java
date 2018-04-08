@@ -17,6 +17,6 @@ public abstract class BasicSetupHDRBase extends BasicSetupBase {
 
     @Test
     public void bt2111() {
-        new BT2111Generator(factory, params, folder, pattern).generate();
+        new BT2111Generator(factory, params, folder, pattern).generate(null);
     }
 }
