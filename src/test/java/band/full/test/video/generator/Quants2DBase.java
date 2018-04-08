@@ -144,7 +144,6 @@ public abstract class Quants2DBase extends GeneratorBase<Args> {
 
     @Override
     protected void verify(File dir, String mp4, Args args) {
-        verify(dir, mp4, 0, 1, args);
         verify(dir, mp4, INTRO_SECONDS - 1, 2, args);
     }
 
