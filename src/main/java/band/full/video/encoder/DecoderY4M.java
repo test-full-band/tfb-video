@@ -6,6 +6,7 @@ import static java.lang.Math.min;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.Arrays.stream;
+import static java.util.Collections.addAll;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 
@@ -33,6 +34,13 @@ public class DecoderY4M implements AutoCloseable {
     public final String name;
     public final EncoderParameters parameters;
 
+    /**
+     * @see <a href=
+     *      "https://www.ffmpeg.org/ffmpeg-utils.html#time-duration-syntax">
+     *      Time duration</a>
+     */
+    public final String ss, to;
+
     public final ColorMatrix matrix;
 
     public final File dir;
@@ -44,11 +52,13 @@ public class DecoderY4M implements AutoCloseable {
     private Process process;
     private final InputStream yuv4mpegIn;
 
-    protected DecoderY4M(File dir, String name, EncoderParameters parameters)
-            throws IOException {
+    protected DecoderY4M(File dir, String name, EncoderParameters parameters,
+            String ss, String to) throws IOException {
         this.dir = dir;
         this.name = name;
         this.parameters = parameters;
+        this.ss = ss;
+        this.to = to;
 
         matrix = parameters.matrix;
 
@@ -98,12 +108,21 @@ public class DecoderY4M implements AutoCloseable {
     }
 
     private InputStream open() throws IOException {
-        var builder = new ProcessBuilder(
-                "ffmpeg", "-i", name,
-                "-pix_fmt", ffmpegPixelFormat(),
-                "-f", "yuv4mpegpipe",
-                "-strict", "-1", "-"
-        ).directory(dir).redirectError(INHERIT);
+        var builder = new ProcessBuilder("ffmpeg")
+                .directory(dir).redirectError(INHERIT);
+
+        if (ss != null) {
+            addAll(builder.command(), "-ss", ss);
+        }
+
+        addAll(builder.command(), "-i", name);
+
+        if (to != null) {
+            addAll(builder.command(), "-to", to);
+        }
+
+        addAll(builder.command(), "-pix_fmt", ffmpegPixelFormat(),
+                "-f", "yuv4mpegpipe", "-strict", "-1", "-");
 
         System.out.println();
         System.out.println("> " + dir);
@@ -298,9 +317,14 @@ public class DecoderY4M implements AutoCloseable {
         return new FrameBuffer(parameters.resolution, matrix);
     }
 
-    public static void decode(File dir, String name,
-            EncoderParameters parameters, Consumer<DecoderY4M> consumer) {
-        try (DecoderY4M decoder = new DecoderY4M(dir, name, parameters)) {
+    public static void decode(File dir, String name, EncoderParameters ep,
+            Consumer<DecoderY4M> consumer) {
+        decode(dir, name, ep, null, null, consumer);
+    }
+
+    public static void decode(File dir, String name, EncoderParameters ep,
+            String ss, String to, Consumer<DecoderY4M> consumer) {
+        try (DecoderY4M decoder = new DecoderY4M(dir, name, ep, ss, to)) {
             consumer.accept(decoder);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);

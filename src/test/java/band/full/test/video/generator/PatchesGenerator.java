@@ -162,7 +162,7 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
     }
 
     @Override
-    public void generate(MuxerMP4 muxer, File dir, Args args)
+    public void encode(MuxerMP4 muxer, File dir, Args args)
             throws IOException, InterruptedException {
         encode(muxer, dir, args, "intro", INTRO_SECONDS);
         encode(muxer, dir, args, null, BODY_SECONDS);
@@ -180,6 +180,12 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
         }
 
         e.render(gop, () -> fb);
+    }
+
+    @Override
+    protected void verify(File dir, String mp4, Args args) {
+        verify(dir, mp4, 0, 1, args);
+        verify(dir, mp4, INTRO_SECONDS - 1, 2, args);
     }
 
     @Override

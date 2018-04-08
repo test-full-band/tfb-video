@@ -61,21 +61,22 @@ public abstract class GeneratorBase<A> {
             MuxerMP4 muxer = new MuxerMP4(dir,
                     pattern, factory.brand, emptyList());
 
-            generate(muxer, dir, args);
+            encode(muxer, dir, args);
             String mp4 = muxer.mux();
             muxer.deleteInputs();
-            DecoderY4M.decode(dir, mp4, params, d -> verify(d, args));
+
+            verify(dir, mp4, args);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void generate(MuxerMP4 muxer, File dir, A args)
+    public void encode(MuxerMP4 muxer, File dir, A args)
             throws IOException, InterruptedException {
         encode(muxer, dir, args, null, PATTERN_SECONDS);
     }
 
-    public void encode(MuxerMP4 muxer, File dir,
+    public final void encode(MuxerMP4 muxer, File dir,
             A args, String phase, int repeat)
             throws IOException, InterruptedException {
         String pattern = getPattern(args);
@@ -85,6 +86,18 @@ public abstract class GeneratorBase<A> {
                 e -> encode(e, args, phase));
 
         range(0, repeat).forEach(i -> muxer.addInput(out));
+    }
+
+    protected void verify(File dir, String mp4, A args) {
+        verify(dir, mp4, 0, 2, args);
+    }
+
+    protected final void verify(File dir, String mp4, int ss, int to, A args) {
+        verify(dir, mp4, Integer.toString(ss), Integer.toString(to), args);
+    }
+
+    protected void verify(File dir, String mp4, String ss, String to, A args) {
+        DecoderY4M.decode(dir, mp4, params, ss, to, d -> verify(d, args));
     }
 
     protected String getFolder(A args) {
