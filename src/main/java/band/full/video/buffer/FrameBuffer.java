@@ -57,8 +57,8 @@ public class FrameBuffer {
             int yValue, int uValue, int vValue) {
         Y.fillRect(x, y, w, h, yValue);
 
-        int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
-        int x2 = x + w >> 1, y2 = y + h >> 1;
+        int x1 = x + 1 >> 1, x2 = x + w + 1 >> 1;
+        int y1 = y + 1 >> 1, y2 = y + h + 1 >> 1;
         int cw = x2 - x1, ch = y2 - y1;
 
         U.fillRect(x1, y1, cw, ch, uValue);

@@ -1,19 +1,19 @@
 package band.full.test.video.generator;
 
-import static band.full.core.Window.proportional;
 import static band.full.core.Window.screen;
-import static band.full.core.Window.square;
 import static band.full.video.itu.BT1886.TRUE_BLACK_TRANSFER;
 import static java.lang.Math.floor;
 import static java.lang.Math.log10;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
 import static java.lang.String.format;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.text.Font.font;
 import static javafx.scene.text.TextAlignment.CENTER;
 import static javafx.scene.text.TextAlignment.LEFT;
 import static javafx.scene.text.TextAlignment.RIGHT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.core.Window;
@@ -205,11 +205,11 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
     private Window getWindow(int window) {
         if (window == 0) return screen(resolution);
 
-        double area = window / 100.0;
+        // assume strong alignment
+        assertEquals(0, resolution.width % 8);
+        assertEquals(0, resolution.width % 8);
 
-        return window < 50
-                ? square(resolution, area)
-                : proportional(resolution, area);
+        return window(window / 100.0);
     }
 
     private Window getVerifyWindow(int window) {
@@ -218,7 +218,45 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
 
         // remove areas with labels
         int height = resolution.height - resolution.height / 10;
-        return Window.center(resolution, resolution.width, height);
+        return center(resolution.width, height);
+    }
+
+    public Window window(double area) {
+        double target = resolution.width * resolution.height * area;
+        return area < 0.5 ? square(target) : proportional(target, area);
+    }
+
+    protected Window square(double target) {
+        int height = align(sqrt(target), resolution.height);
+        int width = align(target / height, resolution.width);
+        return center(width, height);
+    }
+
+    protected Window proportional(double target, double area) {
+        int width = align(resolution.width * sqrt(area), resolution.width);
+        int height = align(target / width, resolution.height);
+        return center(width, height);
+    }
+
+    protected Window center(int w, int h) {
+        int x = (resolution.width - w) >> 1;
+        int y = (resolution.height - h) >> 1;
+        return new Window(x, y, w, h);
+    }
+
+    /**
+     * Assume screen sides are divisible by 8.
+     * <p>
+     * Make patch size divisible by 8 or 16 so it will be aligned to 8 pixels by
+     * centering, only reducing size.
+     */
+    protected int align(double suggestion, int side) {
+        int mask = side % 16 == 0 ? ~0xF : ~0x7;
+        int masked = (int) suggestion & mask;
+        if (side % 16 != 0 && masked % 16 == 0) {
+            masked -= 8; // adjust for odd (side / 8) value
+        }
+        return masked;
     }
 
     protected Parent overlay(Args args) {

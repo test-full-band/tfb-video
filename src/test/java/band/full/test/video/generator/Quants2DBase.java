@@ -49,8 +49,8 @@ import javafx.scene.text.TextAlignment;
 @TestInstance(PER_CLASS)
 public abstract class Quants2DBase extends GeneratorBase<Args> {
     /** Number of rows have to be an odd number - center row is neutral. */
-    public static final int ROWS = 17;
-    public static final int COLS = 32;
+    public static final int ROWS = 15;
+    public static final int COLS = 30;
 
     public static class Args {
         public final String suffix;

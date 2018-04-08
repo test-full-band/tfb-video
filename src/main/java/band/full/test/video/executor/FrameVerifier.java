@@ -77,8 +77,8 @@ public class FrameVerifier {
             FrameBuffer actual, int x, int y, int w, int h) {
         verifyRect(yExpected, actual.Y, x, y, w, h);
 
-        int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
-        int x2 = x + w >> 1, y2 = y + h >> 1;
+        int x1 = x + 1 >> 1, x2 = x + w + 1 >> 1;
+        int y1 = y + 1 >> 1, y2 = y + h + 1 >> 1;
         int cw = x2 - x1, ch = y2 - y1;
 
         verifyRect(uExpected, actual.U, x1, y1, cw, ch);
@@ -90,8 +90,8 @@ public class FrameVerifier {
             int deviation, double maxMisses) {
         verifyRect(yExpected, actual.Y, x, y, w, h, deviation, maxMisses);
 
-        int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
-        int x2 = x + w >> 1, y2 = y + h >> 1;
+        int x1 = x + 1 >> 1, x2 = x + w + 1 >> 1;
+        int y1 = y + 1 >> 1, y2 = y + h + 1 >> 1;
         int cw = x2 - x1, ch = y2 - y1;
 
         verifyRect(uExpected, actual.U, x1, y1, cw, ch, deviation, maxMisses);
@@ -104,8 +104,8 @@ public class FrameVerifier {
         verifyRect(yExpected, actual.Y, x, y, w, h,
                 deviation, maxLumaMisses);
 
-        int x1 = x + 1 >> 1, y1 = y + 1 >> 1;
-        int x2 = x + w >> 1, y2 = y + h >> 1;
+        int x1 = x + 1 >> 1, x2 = x + w + 1 >> 1;
+        int y1 = y + 1 >> 1, y2 = y + h + 1 >> 1;
         int cw = x2 - x1, ch = y2 - y1;
 
         verifyRect(uExpected, actual.U, x1, y1, cw, ch,
