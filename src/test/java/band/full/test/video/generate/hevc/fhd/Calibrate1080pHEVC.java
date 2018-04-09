@@ -14,6 +14,6 @@ import band.full.test.video.generator.CalibrationBase;
 @GenerateVideo
 public class Calibrate1080pHEVC extends CalibrationBase {
     public Calibrate1080pHEVC() {
-        super(HEVC, FULLHD_MAIN8, "FullHD/Calibrate", "FHD");
+        super(HEVC, FULLHD_MAIN8, "FullHD/BT709/Calibrate", "FHD");
     }
 }

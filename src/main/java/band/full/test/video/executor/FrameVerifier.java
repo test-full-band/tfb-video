@@ -38,6 +38,12 @@ public class FrameVerifier {
     }
 
     public static void verifyRect(int[] yuvExpected,
+            FrameBuffer actual, Window window) {
+        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
+                actual, window.x, window.y, window.width, window.height);
+    }
+
+    public static void verifyRect(int[] yuvExpected,
             FrameBuffer actual, int x, int y, int w, int h) {
         verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
                 actual, x, y, w, h);

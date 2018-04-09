@@ -158,7 +158,7 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
     }
 
     protected String getBottomRightText(Args args) {
-        return format("%dx%dp", resolution.width, resolution.height);
+        return format("%dx%dp", width, height);
     }
 
     @Override
@@ -193,54 +193,46 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
     }
 
     protected void verify(FrameBuffer fb, Args args) {
-        var win = getVerifyWindow(args.window);
-        int perimeter = win.x + win.y;
-
-        // near-lossless target, allow a few single-step misses
-        FrameVerifier.verifyRect(args.yuv, fb,
-                win, 2, perimeter / 5, perimeter / 10);
+        FrameVerifier.verifyRect(args.yuv, fb, getVerifyWindow(args.window));
     }
 
     private Window getWindow(int window) {
         if (window == 0) return screen(resolution);
 
         // assume strong alignment
-        assertEquals(0, resolution.width % 8);
-        assertEquals(0, resolution.width % 8);
+        assertEquals(0, width % 8);
+        assertEquals(0, height % 8);
 
         return window(window / 100.0);
     }
 
     private Window getVerifyWindow(int window) {
         // remove patch edges
-        if (window > 0) return getWindow(window).shrink(4);
+        if (window > 0) return getWindow(window).shrink(8);
 
         // remove areas with labels
-        int height = resolution.height - resolution.height / 10;
-        return center(resolution.width, height);
+        return center(width, height - height / 10);
     }
 
     public Window window(double area) {
-        double target = resolution.width * resolution.height * area;
+        double target = width * height * area;
         return area < 0.5 ? square(target) : proportional(target, area);
     }
 
     protected Window square(double target) {
-        int height = align(sqrt(target), resolution.height);
-        int width = align(target / height, resolution.width);
-        return center(width, height);
+        int h = align(sqrt(target), height);
+        int w = align(target / h, width);
+        return center(w, h);
     }
 
     protected Window proportional(double target, double area) {
-        int width = align(resolution.width * sqrt(area), resolution.width);
-        int height = align(target / width, resolution.height);
-        return center(width, height);
+        int w = align(width * sqrt(area), width);
+        int h = align(target / w, height);
+        return center(w, h);
     }
 
     protected Window center(int w, int h) {
-        int x = (resolution.width - w) >> 1;
-        int y = (resolution.height - h) >> 1;
-        return new Window(x, y, w, h);
+        return new Window((width - w) >> 1, (height - h) >> 1, w, h);
     }
 
     /**
@@ -304,7 +296,7 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
 
     protected TextFlow text(Color fill, String text, TextAlignment alignment) {
         Text label = new Text(text);
-        label.setFont(font(resolution.height / 54));
+        label.setFont(font(height / 54));
         label.setFill(fill);
 
         TextFlow flow = new TextFlow(label);

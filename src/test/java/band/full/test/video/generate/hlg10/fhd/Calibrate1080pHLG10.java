@@ -18,6 +18,6 @@ import band.full.video.encoder.EncoderParameters;
 public class Calibrate1080pHLG10 extends CalibrationBase {
     public Calibrate1080pHLG10() {
         super(HEVC, new EncoderParameters(STD_1080p, HLG10, FPS_23_976),
-                "UHD4K/HLG10/Calibrate", "U4K_HLG10");
+                "FullHD/HLG10/Calibrate", "FHD_HLG10");
     }
 }

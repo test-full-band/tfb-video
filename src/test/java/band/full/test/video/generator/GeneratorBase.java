@@ -93,7 +93,9 @@ public abstract class GeneratorBase<A> {
     }
 
     protected final void verify(File dir, String mp4, int ss, int to, A args) {
-        verify(dir, mp4, Integer.toString(ss), Integer.toString(to), args);
+        String ssStr = ss == 0 ? null : Integer.toString(ss);
+        String toStr = to == 0 ? null : Integer.toString(to);
+        verify(dir, mp4, ssStr, toStr, args);
     }
 
     protected void verify(File dir, String mp4, String ss, String to, A args) {

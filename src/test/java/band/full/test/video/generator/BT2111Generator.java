@@ -82,7 +82,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
     @Override
     protected void verify(DecoderY4M d, Void args) {
         var expected = draw(d.newFrameBuffer());
-        d.read(fb -> FrameVerifier.verify(expected, fb, 4, 0.001));
+        d.read(fb -> FrameVerifier.verify(expected, fb, 4, 0.002));
     }
 
     private FrameBuffer draw(FrameBuffer fb) {

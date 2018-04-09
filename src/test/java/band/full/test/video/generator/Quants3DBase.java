@@ -12,6 +12,9 @@ import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
 import band.full.video.encoder.MuxerMP4;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.stream.IntStream;
@@ -40,6 +43,12 @@ public class Quants3DBase extends GeneratorBase<Args> {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("params")
+    public void quants(Args args) {
+        generate(args);
+    }
+
     protected static Stream<Args> params() {
         return IntStream.of(1, 4, 16).boxed().flatMap(lsb -> Stream.of(
                 new Args("Fast", 2, lsb), new Args("Slow", 4, lsb)));
@@ -63,6 +72,7 @@ public class Quants3DBase extends GeneratorBase<Args> {
     @Override
     public void encode(MuxerMP4 muxer, File dir, Args args)
             throws IOException, InterruptedException {
+        encode(muxer, dir, args, "intro", INTRO_SECONDS);
         encode(muxer, dir, args, null, 1);
     }
 
@@ -74,15 +84,21 @@ public class Quants3DBase extends GeneratorBase<Args> {
         FrameBuffer fb = e.newFrameBuffer();
         // e.parameters.framerate.toFrames(ofMillis(145));
 
-        rangeClosed(matrix.YMIN, matrix.YMAX).forEach(yCode -> {
-            draw(fb, yCode, uCode, vCode, args.lsb);
-            e.render(args.frames, () -> fb);
-        });
+        if (phase != null) {
+            draw(fb, matrix.YMIN + args.lsb, uCode, vCode, args.lsb);
+            e.render(gop, () -> fb);
+        } else {
+            rangeClosed(matrix.YMIN + args.lsb, matrix.YMAX - args.lsb)
+                    .forEach(yCode -> {
+                        draw(fb, yCode, uCode, vCode, args.lsb);
+                        e.render(args.frames, () -> fb);
+                    });
+        }
     }
 
     @Override
     protected void verify(File dir, String mp4, Args args) {
-        verify(dir, mp4, null, null, args);
+        verify(dir, mp4, INTRO_SECONDS, 0, args);
     }
 
     @Override
@@ -95,13 +111,14 @@ public class Quants3DBase extends GeneratorBase<Args> {
         FrameBuffer expected = d.newFrameBuffer();
         // d.parameters.framerate.toFrames(ofMillis(170));
 
-        rangeClosed(matrix.YMIN, matrix.YMAX).forEach(yCode -> {
-            draw(expected, yCode, uCode, vCode, args.lsb);
+        rangeClosed(matrix.YMIN + args.lsb, matrix.YMAX - args.lsb)
+                .forEach(yCode -> {
+                    draw(expected, yCode, uCode, vCode, args.lsb);
 
-            // TODO more precise individual box verification
-            d.read(args.frames,
-                    fb -> FrameVerifier.verify(expected, fb, 2, 0.00001));
-        });
+                    // TODO more precise individual box verification
+                    d.read(args.frames, fb -> FrameVerifier.verify(
+                            expected, fb, 2, 0.0002));
+                });
     }
 
     private FrameBuffer draw(FrameBuffer fb,

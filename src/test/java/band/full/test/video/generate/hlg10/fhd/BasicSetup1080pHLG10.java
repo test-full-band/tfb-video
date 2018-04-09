@@ -16,6 +16,6 @@ import band.full.video.encoder.EncoderParameters;
 public class BasicSetup1080pHLG10 extends BasicSetupHDRBase {
     public BasicSetup1080pHLG10() {
         super(HEVC, new EncoderParameters(STD_1080p, HLG10, FPS_23_976),
-                "UHD4K/HLG10/Calibrate/Basic", "U4K_HLG10");
+                "FullHD/HLG10/Calibrate/Basic", "FHD_HLG10");
     }
 }
