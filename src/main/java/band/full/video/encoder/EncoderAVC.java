@@ -34,7 +34,7 @@ public class EncoderAVC extends EncoderY4M {
                 getExecutable(), "--demuxer", "y4m",
                 Y4M.isPipe() ? "-" : name + ".y4m", "-o", name + AVC_SUFFIX,
                 "--preset", getPresetParam(),
-                "--keyint", Integer.toString(rate), "--open-gop", "bluray",
+                "--keyint", Integer.toString(rate),
                 "--range", matrix.range == FULL ? "pc" : "tv",
                 "--colorprim", getColorPrimString(colorprim),
                 "--transfer", getTransferString(transfer),

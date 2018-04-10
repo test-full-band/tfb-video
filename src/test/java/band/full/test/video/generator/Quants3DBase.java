@@ -2,6 +2,8 @@ package band.full.test.video.generator;
 
 import static band.full.video.encoder.EncoderY4M.QUICK;
 import static java.lang.String.format;
+import static java.util.stream.IntStream.concat;
+import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 
 import band.full.test.video.executor.FrameVerifier;
@@ -69,10 +71,16 @@ public class Quants3DBase extends GeneratorBase<Args> {
         return pattern + '-' + args.speed + args.lsb;
     }
 
+    public IntStream bases(Args args) {
+        int start = matrix.YMIN + args.lsb;
+        return concat(
+                range(0, gop * INTRO_SECONDS / args.frames).map(i -> start),
+                rangeClosed(start, matrix.YMAX - args.lsb));
+    }
+
     @Override
     public void encode(MuxerMP4 muxer, File dir, Args args)
             throws IOException, InterruptedException {
-        encode(muxer, dir, args, "intro", INTRO_SECONDS);
         encode(muxer, dir, args, null, 1);
     }
 
@@ -84,21 +92,15 @@ public class Quants3DBase extends GeneratorBase<Args> {
         FrameBuffer fb = e.newFrameBuffer();
         // e.parameters.framerate.toFrames(ofMillis(145));
 
-        if (phase != null) {
-            draw(fb, matrix.YMIN + args.lsb, uCode, vCode, args.lsb);
-            e.render(gop, () -> fb);
-        } else {
-            rangeClosed(matrix.YMIN + args.lsb, matrix.YMAX - args.lsb)
-                    .forEach(yCode -> {
-                        draw(fb, yCode, uCode, vCode, args.lsb);
-                        e.render(args.frames, () -> fb);
-                    });
-        }
+        bases(args).forEach(yCode -> {
+            draw(fb, yCode, uCode, vCode, args.lsb);
+            e.render(args.frames, () -> fb);
+        });
     }
 
     @Override
     protected void verify(File dir, String mp4, Args args) {
-        verify(dir, mp4, INTRO_SECONDS, 0, args);
+        verify(dir, mp4, null, null, args);
     }
 
     @Override
@@ -111,14 +113,13 @@ public class Quants3DBase extends GeneratorBase<Args> {
         FrameBuffer expected = d.newFrameBuffer();
         // d.parameters.framerate.toFrames(ofMillis(170));
 
-        rangeClosed(matrix.YMIN + args.lsb, matrix.YMAX - args.lsb)
-                .forEach(yCode -> {
-                    draw(expected, yCode, uCode, vCode, args.lsb);
+        bases(args).forEach(yCode -> {
+            draw(expected, yCode, uCode, vCode, args.lsb);
 
-                    // TODO more precise individual box verification
-                    d.read(args.frames, fb -> FrameVerifier.verify(
-                            expected, fb, 2, 0.0002));
-                });
+            // TODO more precise individual box verification
+            d.read(args.frames, fb -> FrameVerifier.verify(
+                    expected, fb, 2, 0.0005));
+        });
     }
 
     private FrameBuffer draw(FrameBuffer fb,

@@ -1,5 +1,7 @@
 package band.full.video.buffer;
 
+import static java.lang.Math.round;
+
 import java.time.Duration;
 
 /**
@@ -21,8 +23,8 @@ public class Framerate {
 
     public static final Framerate FPS_60 = new Framerate("60:1", 60f);
 
-    public static int toFrames(float rate, Duration duration) {
-        return (int) (rate * duration.toNanos() / 1_000_000_000);
+    public static int toFrames(double rate, Duration duration) {
+        return (int) round(rate * duration.toNanos() / 1_000_000_000);
     }
 
     private final String str;
