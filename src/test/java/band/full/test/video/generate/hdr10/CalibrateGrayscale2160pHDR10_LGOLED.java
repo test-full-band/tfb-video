@@ -9,8 +9,8 @@ import static java.lang.String.format;
 import static java.util.function.Function.identity;
 
 import band.full.test.video.executor.GenerateVideo;
-import band.full.test.video.generator.GrayscalePatchesGenerator;
-import band.full.test.video.generator.PatchesGenerator.Args;
+import band.full.test.video.generator.CalibrateGrayscaleBase;
+import band.full.test.video.generator.CalibratePatchesBase.Args;
 import band.full.video.encoder.EncoderParameters;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  *      Calibration Notes for 2017 LG OLED TVs</a>
  */
 @GenerateVideo
-public class Calibrate2160pHDR10_LGOLED {
+public class CalibrateGrayscale2160pHDR10_LGOLED {
     private static final int[] OLED6_CODES = {
         127, 254, 320, 386, 419, 451, 467, 482, 498, 513,
         529, 544, 560, 575, 591, 606, 622, 637, 653, 668,
@@ -68,7 +68,7 @@ public class Calibrate2160pHDR10_LGOLED {
         608, 625, 640, 658, 673, 690, 704, 718, 749, // 831.56 nit
     };
 
-    private static class LG extends GrayscalePatchesGenerator {
+    private static class LG extends CalibrateGrayscaleBase {
         private final int version;
         private final int display;
 
@@ -188,7 +188,7 @@ public class Calibrate2160pHDR10_LGOLED {
     }
 
     private static Stream<Args> grayscale(EncoderParameters ep, int[] codes) {
-        var lg = new GrayscalePatchesGenerator(HEVC, ep, null, null);
+        var lg = new CalibrateGrayscaleBase(HEVC, ep, null, null);
 
         var start = Stream.of(
                 lg.gray(10, "$$", codes[codes.length - 1]),

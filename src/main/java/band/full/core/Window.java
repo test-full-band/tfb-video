@@ -2,6 +2,9 @@ package band.full.core;
 
 import static java.lang.String.format;
 
+/**
+ * @author Igor Malinin
+ */
 public class Window {
     public final int x;
     public final int y;

@@ -4,16 +4,16 @@ import static band.full.test.video.generator.GeneratorFactory.HEVC;
 import static band.full.video.encoder.EncoderParameters.FULLHD_MAIN8;
 
 import band.full.test.video.executor.GenerateVideo;
-import band.full.test.video.generator.CalibrationBase;
+import band.full.test.video.generator.Quants2DBase8;
 
 /**
- * Calibration box fills.
+ * Testing color bands separation / quantization step uniformity.
  *
  * @author Igor Malinin
  */
 @GenerateVideo
-public class Calibrate1080pHEVC extends CalibrationBase {
-    public Calibrate1080pHEVC() {
-        super(HEVC, FULLHD_MAIN8, "FullHD/BT709/Calibrate", "FHD");
+public class Quants2D1080pHEVC extends Quants2DBase8 {
+    public Quants2D1080pHEVC() {
+        super(HEVC, FULLHD_MAIN8, "FullHD/BT709/Quants2D", "U4K");
     }
 }

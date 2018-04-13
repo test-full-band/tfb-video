@@ -5,16 +5,14 @@ import static band.full.test.video.generator.GeneratorFactory.AVC;
 import static band.full.video.encoder.EncoderParameters.FULLHD_MAIN8;
 
 import band.full.test.video.executor.GenerateVideo;
-import band.full.test.video.generator.BasicSetupBase;
+import band.full.test.video.generator.CalibrateColorCheckerBase;
 
 /**
- * Testing color bands separation / quantization step uniformity.
- *
  * @author Igor Malinin
  */
 @GenerateVideo(MAIN)
-public class BasicSetup1080p extends BasicSetupBase {
-    public BasicSetup1080p() {
+public class CalibrateColorChecker1080p extends CalibrateColorCheckerBase {
+    public CalibrateColorChecker1080p() {
         super(AVC, FULLHD_MAIN8, "FullHD", "1080p");
     }
 }

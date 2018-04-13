@@ -5,6 +5,9 @@ import static java.lang.Integer.MIN_VALUE;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+/**
+ * @author Igor Malinin
+ */
 @FunctionalInterface
 public interface Quantizer {
     int quantize(double value);

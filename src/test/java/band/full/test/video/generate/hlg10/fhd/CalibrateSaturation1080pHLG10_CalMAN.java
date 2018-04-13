@@ -6,18 +6,24 @@ import static band.full.video.buffer.Framerate.FPS_23_976;
 import static band.full.video.itu.BT2100.HLG10;
 
 import band.full.test.video.executor.GenerateVideo;
-import band.full.test.video.generator.CalibrationBase;
+import band.full.test.video.generator.CalibrateSaturationBase_CalMAN;
 import band.full.video.encoder.EncoderParameters;
 
+import java.util.stream.IntStream;
+
 /**
- * Calibration box fills.
- *
  * @author Igor Malinin
  */
 @GenerateVideo
-public class Calibrate1080pHLG10 extends CalibrationBase {
-    public Calibrate1080pHLG10() {
+public class CalibrateSaturation1080pHLG10_CalMAN
+        extends CalibrateSaturationBase_CalMAN {
+    public CalibrateSaturation1080pHLG10_CalMAN() {
         super(HEVC, new EncoderParameters(STD_1080p, HLG10, FPS_23_976),
-                "FullHD/HLG10/Calibrate", "FHD_HLG10");
+                "FullHD/HLG10", "FHD_HLG10");
+    }
+
+    @Override
+    protected IntStream stimulus() {
+        return IntStream.of(25, 50, 75);
     }
 }

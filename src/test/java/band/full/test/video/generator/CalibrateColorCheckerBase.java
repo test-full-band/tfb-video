@@ -1,23 +1,22 @@
 package band.full.test.video.generator;
 
+import static band.full.core.ArrayMath.multiply;
 import static band.full.core.Quantizer.round;
 import static band.full.core.color.CIEXYZ.ILLUMINANT_D50;
 import static band.full.core.color.ChromaticAdaptation.bradford;
 import static band.full.test.video.generator.ColorChecker.CLASSIC_24;
 import static band.full.test.video.generator.ColorChecker.CLASSIC_24_NAMES;
 import static java.lang.Character.toUpperCase;
-import static java.lang.String.format;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.video.encoder.EncoderParameters;
-import band.full.video.itu.ICtCp;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -27,10 +26,10 @@ import java.util.stream.Stream;
  * @author Igor Malinin
  */
 @TestInstance(PER_CLASS)
-public class ColorPatchesGenerator extends PatchesGenerator {
-    public ColorPatchesGenerator(GeneratorFactory factory,
+public class CalibrateColorCheckerBase extends CalibrateColorPatchesBase {
+    public CalibrateColorCheckerBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
-        super(factory, params, folder, pattern);
+        super(factory, params, folder + "/Calibrate", pattern);
     }
 
     @ParameterizedTest(name = "{arguments}")
@@ -39,9 +38,13 @@ public class ColorPatchesGenerator extends PatchesGenerator {
         generate(args);
     }
 
+    public Stream<Args> colorchecker() {
+        return IntStream.of(5, 10, 20).boxed().flatMap(this::colorchecker);
+    }
+
     public Stream<Args> colorchecker(int window) {
         var adaptation = bradford(
-                ILLUMINANT_D50, matrix.primaries.white.CIEXYZ());
+                ILLUMINANT_D50, primaries.white.CIEXYZ());
 
         var result = new ArrayList<Args>();
 
@@ -59,7 +62,7 @@ public class ColorPatchesGenerator extends PatchesGenerator {
 
                 double peak = transfer.getNominalDisplayPeakLuminance();
                 if (peak > 100.0) { // Scale to 100 nit for HDR
-                    multiply(buf, 100.0 / peak);
+                    multiply(buf, buf, 100.0 / peak);
                 }
 
                 matrix.XYZtoRGB.multiply(adaptation.multiply(buf, buf), buf);
@@ -87,44 +90,5 @@ public class ColorPatchesGenerator extends PatchesGenerator {
         }
 
         return ret.toString();
-    }
-
-    @Override
-    protected String getBottomCenterText(Args args) {
-        String fmt = matrix instanceof ICtCp ? "I%d T%d P%d" : "Y%d U%d V%d";
-
-        double[] buf = matrix.fromCodes(args.yuv, new double[3]);
-        matrix.toRGBCodes(matrix.toRGB(buf, buf), buf);
-
-        var df = new DecimalFormat("#.#");
-
-        return format(fmt + "    |    R%s G%s B%s",
-                args.yuv[0], args.yuv[1], args.yuv[2],
-                df.format(buf[0]), df.format(buf[1]), df.format(buf[2]));
-    }
-
-    @Override
-    protected String getFolder(Args args) {
-        if (args.window == 0) return factory.folder + '/' + folder +
-                format("/Fill/%s", args.file);
-
-        return factory.folder + '/' + folder +
-                format("/Win%02d/%s", args.window, args.file);
-    }
-
-    @Override
-    protected String getPattern(Args args) {
-        if (args.window == 0)
-            return format("%s-%s-%s",
-                    args.file, pattern, args.sequence);
-
-        return format("%s%d-%s-%s",
-                args.file, args.window, pattern, args.sequence);
-    }
-
-    private static void multiply(double[] buf, double mult) {
-        for (int i = 0; i < buf.length; i++) {
-            buf[i] *= mult;
-        }
     }
 }

@@ -5,16 +5,14 @@ import static band.full.test.video.generator.GeneratorFactory.AVC;
 import static band.full.video.encoder.EncoderParameters.FULLHD_MAIN8;
 
 import band.full.test.video.executor.GenerateVideo;
-import band.full.test.video.generator.CalibrationBase;
+import band.full.test.video.generator.CalibrateGrayscaleBase;
 
 /**
- * Calibration box fills.
- *
  * @author Igor Malinin
  */
 @GenerateVideo(MAIN)
-public class Calibrate1080p extends CalibrationBase {
-    public Calibrate1080p() {
-        super(AVC, FULLHD_MAIN8, "FullHD/Calibrate", "1080p");
+public class CalibrateGrayscale1080p extends CalibrateGrayscaleBase {
+    public CalibrateGrayscale1080p() {
+        super(AVC, FULLHD_MAIN8, "FullHD", "1080p");
     }
 }

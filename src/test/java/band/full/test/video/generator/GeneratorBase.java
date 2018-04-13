@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.IntStream.range;
 
 import band.full.core.Resolution;
+import band.full.core.color.Primaries;
 import band.full.video.buffer.Framerate;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
@@ -32,6 +33,7 @@ public abstract class GeneratorBase<A> {
     public final Resolution resolution;
     public final ColorMatrix matrix;
     public final Framerate framerate;
+    public final Primaries primaries;
     public final TransferCharacteristics transfer;
     public final int width, height, gop;
 
@@ -46,6 +48,7 @@ public abstract class GeneratorBase<A> {
         matrix = params.matrix;
         framerate = params.framerate;
 
+        primaries = matrix.primaries;
         transfer = matrix.transfer;
 
         width = resolution.width;

@@ -4,14 +4,14 @@ import static band.full.test.video.generator.GeneratorFactory.HEVC;
 import static band.full.video.encoder.EncoderParameters.HDR10;
 
 import band.full.test.video.executor.GenerateVideo;
-import band.full.test.video.generator.BasicSetupHDRBase;
+import band.full.test.video.generator.CalibrateColorCheckerBase;
 
 /**
  * @author Igor Malinin
  */
 @GenerateVideo
-public class BasicSetup2160pHDR10 extends BasicSetupHDRBase {
-    public BasicSetup2160pHDR10() {
+public class CalibrateColorChecker2160pHDR10 extends CalibrateColorCheckerBase {
+    public CalibrateColorChecker2160pHDR10() {
         super(HEVC, HDR10, "UHD4K/HDR10", "U4K_HDR10");
     }
 }

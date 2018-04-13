@@ -22,7 +22,7 @@ import band.full.core.color.CIExy;
 import band.full.core.color.CIExyY;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
-import band.full.test.video.generator.PatchesGenerator.Args;
+import band.full.test.video.generator.CalibratePatchesBase.Args;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
@@ -51,11 +51,11 @@ import javafx.scene.text.TextFlow;
  * specified area percentage.
  *
  * @author Igor Malinin
- * @see GrayscalePatchesGenerator
- * @see ColorPatchesGenerator
+ * @see CalibrateGrayscaleBase
+ * @see CalibrateColorPatchesBase
  */
 @TestInstance(PER_CLASS)
-public abstract class PatchesGenerator extends GeneratorBase<Args> {
+public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
     public static class Args {
         public final String file;
         public final String sequence;
@@ -86,7 +86,7 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
         }
     }
 
-    public PatchesGenerator(GeneratorFactory factory,
+    public CalibratePatchesBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
         super(factory, params, folder, pattern);
     }
@@ -193,7 +193,9 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
     }
 
     protected void verify(FrameBuffer fb, Args args) {
-        FrameVerifier.verifyRect(args.yuv, fb, getVerifyWindow(args.window));
+        Window win = getVerifyWindow(args.window);
+        FrameVerifier.verifyRect(args.yuv, fb, win, 1,
+                max(width, height), max(width + 1 >> 1, height + 1 >> 1));
     }
 
     private Window getWindow(int window) {
@@ -311,7 +313,7 @@ public abstract class PatchesGenerator extends GeneratorBase<Args> {
     protected CIExyY getColor(Args args, DoubleUnaryOperator eotf) {
         if (args.yuv[0] <= matrix.YMIN) {
             // fake color value for pure black
-            CIExy white = matrix.primaries.white;
+            CIExy white = primaries.white;
             return new CIExyY(white.x, white.y, 0);
         }
 

@@ -6,6 +6,9 @@ import static java.lang.Integer.MIN_VALUE;
 
 import java.util.Random;
 
+/**
+ * @author Igor Malinin
+ */
 public abstract class Dither implements Quantizer {
     protected final Random PRNG = new Random();
     protected final int min, max;

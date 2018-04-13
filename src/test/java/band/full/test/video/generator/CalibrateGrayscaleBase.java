@@ -5,11 +5,11 @@ import static java.lang.String.format;
 import static java.util.function.Function.identity;
 import static java.util.stream.IntStream.concat;
 import static java.util.stream.IntStream.iterate;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.video.encoder.EncoderParameters;
 
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
@@ -21,11 +21,20 @@ import java.util.stream.Stream;
  *
  * @author Igor Malinin
  */
-@TestInstance(PER_CLASS)
-public class GrayscalePatchesGenerator extends PatchesGenerator {
-    public GrayscalePatchesGenerator(GeneratorFactory factory,
+public class CalibrateGrayscaleBase extends CalibratePatchesBase {
+    public CalibrateGrayscaleBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
-        super(factory, params, folder, pattern);
+        super(factory, params, folder + "/Calibrate", pattern);
+    }
+
+    @ParameterizedTest(name = "{arguments}")
+    @MethodSource("grayscale")
+    public void grayscale(Args args) {
+        generate(args);
+    }
+
+    public Stream<Args> grayscale() {
+        return IntStream.of(0, 5, 10, 20, 50).boxed().flatMap(this::grayscale);
     }
 
     public Stream<Args> grayscale(int window) {

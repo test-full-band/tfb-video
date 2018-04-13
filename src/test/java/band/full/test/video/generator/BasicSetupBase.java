@@ -30,11 +30,11 @@ public abstract class BasicSetupBase {
             EncoderParameters params, String folder, String pattern) {
         this.factory = factory;
         this.params = params;
-        this.folder = folder;
+        this.folder = folder + "/Basic";
         this.pattern = pattern;
 
         checkerboard = new CheckerboardGenerator(
-                factory, params, folder, pattern);
+                factory, params, this.folder, pattern);
     }
 
     @Test

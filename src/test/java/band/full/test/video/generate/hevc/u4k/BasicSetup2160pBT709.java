@@ -12,6 +12,6 @@ import band.full.test.video.generator.BasicSetupBase;
 @GenerateVideo
 public class BasicSetup2160pBT709 extends BasicSetupBase {
     public BasicSetup2160pBT709() {
-        super(HEVC, UHD4K_MAIN8, "UHD4K/BT709/Calibrate/Basic", "U4K");
+        super(HEVC, UHD4K_MAIN8, "UHD4K/BT709", "U4K");
     }
 }
