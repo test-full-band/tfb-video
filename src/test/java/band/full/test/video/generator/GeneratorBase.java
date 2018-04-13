@@ -21,7 +21,7 @@ import java.io.IOException;
  * @author Igor Malinin
  */
 public abstract class GeneratorBase<A> {
-    protected static final int PATTERN_SECONDS = 30;
+    protected static final int PATTERN_SECONDS = 60;
     protected static final int INTRO_SECONDS = 5;
     protected static final int BODY_SECONDS = PATTERN_SECONDS - INTRO_SECONDS;
 
