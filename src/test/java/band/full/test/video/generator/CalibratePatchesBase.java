@@ -286,7 +286,7 @@ public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
                 ? transfer::fromLinear
                 : TRUE_BLACK_TRANSFER::eotfi;
 
-        double peak = matrix.transfer.getNominalDisplayPeakLuminance();
+        double peak = transfer.getNominalDisplayPeakLuminance();
         double minY = eotfi.applyAsDouble(1.0 / peak);
 
         if (args.window == 0)

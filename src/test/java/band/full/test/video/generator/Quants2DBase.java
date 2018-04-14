@@ -5,7 +5,6 @@ import static java.lang.String.format;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 import static javafx.scene.layout.Background.EMPTY;
-import static javafx.scene.text.Font.font;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.core.Window;
@@ -27,12 +26,10 @@ import java.io.IOException;
 import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Stream;
 
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.TextAlignment;
 
 /**
  * Testing color bands separation / quantization step uniformity.
@@ -261,15 +258,7 @@ public abstract class Quants2DBase extends GeneratorBase<Args> {
     }
 
     private Label text(String text, Color color, int col, int row) {
-        var l = new Label(text);
-        l.setFont(font(height / 54));
-        l.setTextFill(color);
-        l.setTextAlignment(TextAlignment.CENTER);
-        l.setAlignment(Pos.CENTER);
-        l.relocate(getColX(col), getRowY(row));
-        l.setPrefSize(getColW(col), getRowH(row));
-
-        return l;
+        return text(getWindow(row, col), color, text);
     }
 
     private int[] getYUV(Args args, int row, int col) {

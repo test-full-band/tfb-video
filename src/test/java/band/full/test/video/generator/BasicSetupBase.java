@@ -44,6 +44,12 @@ public abstract class BasicSetupBase {
                 .generate(null);
     }
 
+    @Test
+    public void blackPLUGE() {
+        new BlackPLUGEGenerator(factory, params, folder, pattern)
+                .generate(null);
+    }
+
     @ParameterizedTest
     @MethodSource("checkerboard")
     public void checkerboard(CheckerboardGenerator.Args args) {

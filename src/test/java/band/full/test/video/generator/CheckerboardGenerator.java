@@ -47,15 +47,18 @@ public class CheckerboardGenerator extends GeneratorBase<Args> {
                 new Args("1090",
                         round(matrix.toLumaCode(0.1)),
                         round(matrix.toLumaCode(0.9))),
-                new Args("2080",
-                        round(matrix.toLumaCode(0.2)),
-                        round(matrix.toLumaCode(0.8))),
                 new Args("2575",
                         round(matrix.toLumaCode(0.25)),
                         round(matrix.toLumaCode(0.75))),
                 new Args("3070",
                         round(matrix.toLumaCode(0.3)),
-                        round(matrix.toLumaCode(0.7))));
+                        round(matrix.toLumaCode(0.7))),
+                new Args("4060",
+                        round(matrix.toLumaCode(0.4)),
+                        round(matrix.toLumaCode(0.6))),
+                new Args("4555",
+                        round(matrix.toLumaCode(0.45)),
+                        round(matrix.toLumaCode(0.55))));
 
         return (matrix.range == FULL) ? args
                 : concat(args, Stream.of(

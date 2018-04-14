@@ -99,7 +99,7 @@ public class CalibrateGrayscaleBase extends CalibratePatchesBase {
         int y = args.yuv[0];
         String fmt;
 
-        if (matrix.bitdepth > 10) {
+        if (bitdepth > 10) {
             fmt = "%04d";
         } else if (y > 1000 && y < 1100) {
             y %= 100; // for 10 bit WtW and full-range patterns

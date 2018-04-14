@@ -1,21 +1,36 @@
 package band.full.test.video.generator;
 
+import static band.full.core.ArrayMath.multiply;
 import static band.full.core.Quantizer.round;
 import static band.full.core.Resolution.STD_1080p;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static javafx.scene.layout.Background.EMPTY;
+import static javafx.scene.text.Font.font;
 
 import band.full.core.color.Matrix3x3;
 import band.full.test.video.executor.FrameVerifier;
+import band.full.test.video.executor.FxImage;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.buffer.Plane;
 import band.full.video.encoder.DecoderY4M;
 import band.full.video.encoder.EncoderParameters;
 import band.full.video.encoder.EncoderY4M;
+import band.full.video.itu.BT2020;
 import band.full.video.itu.BT709;
+import band.full.video.smpte.ST2084;
+
+import javafx.scene.Parent;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 
 /**
+ * Colour bar test pattern for high dynamic range television systems.
+ *
  * @author Igor Malinin
+ * @see <a href=
+ *      "https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.2111-0-201712-I!!PDF-E.pdf">
+ *      Rec. ITU-R BT.2111-0 (12/2017)</a>
  */
 // TODO output file type and test.full.band branding
 public class BT2111Generator extends GeneratorBase<Void> {
@@ -34,6 +49,8 @@ public class BT2111Generator extends GeneratorBase<Void> {
     private final int wi; // 238
     private final int wj; // 438
     private final int wk; // 282
+    private final int b2; // 540
+    private final int b12; // 90
 
     public BT2111Generator(GeneratorFactory factory,
             EncoderParameters params, String folder, String suffix) {
@@ -54,7 +71,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
 
             default:
                 throw new IllegalArgumentException(
-                        "Unsupported transfer function: " + matrix.transfer);
+                        "Unsupported transfer function: " + transfer);
         }
 
         bt709conv = BT709.PRIMARIES.RGBtoXYZ.multiply(matrix.XYZtoRGB)
@@ -71,18 +88,29 @@ public class BT2111Generator extends GeneratorBase<Void> {
         wi = wd - wg + we / 2;
         wj = 438 * scale;
         wk = width - 2 * wc - wf - 3 * wg - 2 * wh - wi - wj;
+
+        b2 = height / 2;
+        b12 = b2 / 6;
     }
 
     @Override
     protected void encode(EncoderY4M e, Void args, String phase) {
         var fb = draw(e.newFrameBuffer());
+        FxImage.overlay(overlay(params), fb);
         e.render(gop, () -> fb);
     }
 
     @Override
     protected void verify(DecoderY4M d, Void args) {
         var expected = draw(d.newFrameBuffer());
-        d.read(fb -> FrameVerifier.verify(expected, fb, 4, 0.002));
+        d.read(fb -> {
+            // cover overlay before verification
+            int gray40 = round(matrix.toLumaCode(0.4));
+            fb.Y.fillRect(0, 0, wc, b12 + b12, gray40);
+            fb.Y.fillRect(width - wc, 0, wc, b12 + b12, gray40);
+
+            FrameVerifier.verify(expected, fb, 4, 0.002);
+        });
     }
 
     private FrameBuffer draw(FrameBuffer fb) {
@@ -94,7 +122,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
     }
 
     private void fillBigBars(FrameBuffer fb) {
-        int b2 = height / 2, b12 = b2 / 6, x = wc;
+        int x = wc;
 
         fb.Y.fillRect(0, 0, width, b12 + b2, round(matrix.toLumaCode(0.4)));
 
@@ -114,7 +142,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
         int[] bright = round(
                 matrix.toCodes(matrix.fromLinearRGB(rgb, buf), buf));
 
-        multiply(rgb, transfer.toLinear(alpha));
+        multiply(rgb, rgb, transfer.toLinear(alpha));
 
         int[] dim = round(
                 matrix.toCodes(matrix.fromLinearRGB(rgb, buf), buf));
@@ -125,7 +153,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
     }
 
     private void fillStair(FrameBuffer fb) {
-        int b2 = height / 2, b12 = b2 / 6, y = b2 + b12, x = wc;
+        int y = b2 + b12, x = wc;
 
         fb.Y.fillRect(0, y, width, b12, round(matrix.toLumaCode(alpha)));
 
@@ -138,7 +166,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
     }
 
     private void fillRamp(FrameBuffer fb) {
-        int b2 = height / 2, b12 = b2 / 6, y = b2 + 2 * b12;
+        int y = b2 + 2 * b12;
 
         for (int x = wc; x < width; x++) {
             // TODO 12 bit support and diagonal sub-pixel shift below 8K
@@ -188,9 +216,35 @@ public class BT2111Generator extends GeneratorBase<Void> {
         return x + w;
     }
 
-    private static void multiply(double[] buf, double mult) {
-        for (int i = 0; i < buf.length; i++) {
-            buf[i] *= mult;
+    protected Parent overlay(EncoderParameters params) {
+        int b24 = b12 / 2, x = width - wc;
+        Color fill = Color.BLACK;
+
+        Pane grid = new Pane(
+                text(0, 0, wc, b12, fill, font(height / 15), transferLabel()),
+                text(0, b12, wc, b24, fill, font(height / 40), rangeLabel()),
+                text(x, 0, wc, b12, fill, font(height / 18), "BT.2111"),
+                text(x, b12, wc, b24, fill, font(height / 40),
+                        "test.full.band"));
+
+        grid.setBackground(EMPTY);
+        return grid;
+    }
+
+    private String transferLabel() {
+        if (bitdepth == 10 && primaries == BT2020.PRIMARIES) {
+            if (transfer instanceof ST2084) return "HDR10";
         }
+
+        String label = transfer.toString();
+        if (bitdepth > 8) {
+            label += bitdepth;
+        }
+
+        return label;
+    }
+
+    private String rangeLabel() {
+        return matrix.range.name() + " RANGE";
     }
 }

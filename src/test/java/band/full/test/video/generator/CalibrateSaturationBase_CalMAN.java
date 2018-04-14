@@ -130,7 +130,7 @@ public class CalibrateSaturationBase_CalMAN extends CalibrateColorPatchesBase {
      * <code>(bitdepth-8)</code> least significant bits with zeros.
      */
     public int[] getRGB(int stimulus, CIExy color, int saturation) {
-        int m = 1 << matrix.bitdepth - 8;
+        int m = 1 << bitdepth - 8;
         int code = round(matrix.toLumaCode(stimulus / 100.0) / m) * m;
         var max = transfer.toLinear(matrix.fromLumaCode(code));
         var xy = saturation(color, saturation / 100.0);

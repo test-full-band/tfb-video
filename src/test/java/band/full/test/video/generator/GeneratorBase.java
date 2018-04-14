@@ -3,8 +3,10 @@ package band.full.test.video.generator;
 import static java.lang.Math.round;
 import static java.util.Collections.emptyList;
 import static java.util.stream.IntStream.range;
+import static javafx.scene.text.Font.font;
 
 import band.full.core.Resolution;
+import band.full.core.Window;
 import band.full.core.color.Primaries;
 import band.full.video.buffer.Framerate;
 import band.full.video.encoder.DecoderY4M;
@@ -16,6 +18,12 @@ import band.full.video.itu.TransferCharacteristics;
 
 import java.io.File;
 import java.io.IOException;
+
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 /**
  * @author Igor Malinin
@@ -35,7 +43,7 @@ public abstract class GeneratorBase<A> {
     public final Framerate framerate;
     public final Primaries primaries;
     public final TransferCharacteristics transfer;
-    public final int width, height, gop;
+    public final int bitdepth, width, height, gop;
 
     public GeneratorBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
@@ -50,6 +58,7 @@ public abstract class GeneratorBase<A> {
 
         primaries = matrix.primaries;
         transfer = matrix.transfer;
+        bitdepth = matrix.bitdepth;
 
         width = resolution.width;
         height = resolution.height;
@@ -111,6 +120,34 @@ public abstract class GeneratorBase<A> {
 
     protected String getPattern(A args) {
         return pattern;
+    }
+
+    protected Label text(Window window, Color color, String text) {
+        return text(window.x, window.y, window.width, window.height,
+                color, text);
+    }
+
+    protected Label text(Window window, Color color, Font font, String text) {
+        return text(window.x, window.y, window.width, window.height,
+                color, font, text);
+    }
+
+    protected Label text(int x, int y, int w, int h,
+            Color color, String text) {
+        return text(x, y, w, h, color, font(height / 54), text);
+    }
+
+    protected Label text(int x, int y, int w, int h,
+            Color color, Font font, String text) {
+        var l = new Label(text);
+        l.setFont(font);
+        l.setTextFill(color);
+        l.setTextAlignment(TextAlignment.CENTER);
+        l.setAlignment(Pos.CENTER);
+        l.relocate(x, y);
+        l.setPrefSize(w, h);
+
+        return l;
     }
 
     protected abstract void encode(EncoderY4M e, A args, String phase);
