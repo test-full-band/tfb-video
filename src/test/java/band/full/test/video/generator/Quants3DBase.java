@@ -118,7 +118,7 @@ public class Quants3DBase extends GeneratorBase<Args> {
 
             // TODO more precise individual box verification
             d.read(args.frames, fb -> FrameVerifier.verify(
-                    expected, fb, 2, 0.0005));
+                    expected, fb, 2, 0.001));
         });
     }
 
