@@ -121,7 +121,7 @@ public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
 
         String name = useMatrixTransfer
                 ? transfer.toString()
-                : "BT.1866";
+                : "BT.1886";
 
         DoubleUnaryOperator eotf = useMatrixTransfer
                 ? transfer::toLinear
@@ -170,16 +170,19 @@ public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
 
     @Override
     protected void encode(EncoderY4M e, Args args, String phase) {
-        var win = getWindow(args.window);
-
         var fb = e.newFrameBuffer();
-        fb.fillRect(win.x, win.y, win.width, win.height, args.yuv);
+        fb.fillRect(getWindow(args.window), args.yuv);
 
         if (phase != null) {
             FxImage.overlay(overlay(args), fb);
         }
 
         e.render(gop, () -> fb);
+    }
+
+    public void generate(FrameBuffer fb, Args args) {
+        fb.fillRect(getWindow(args.window), args.yuv);
+        FxImage.overlay(overlay(args), fb);
     }
 
     @Override

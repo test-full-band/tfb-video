@@ -9,15 +9,16 @@ import static band.full.test.video.generator.ColorChecker.CLASSIC_24_NAMES;
 import static java.lang.Character.toUpperCase;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+import band.full.core.color.Matrix3x3;
 import band.full.video.encoder.EncoderParameters;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.ArrayList;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 /**
  * Base class for creating single-color patches in the middle of the screen with
@@ -27,56 +28,59 @@ import java.util.stream.Stream;
  */
 @TestInstance(PER_CLASS)
 public class CalibrateColorCheckerBase extends CalibrateColorPatchesBase {
+    private final Matrix3x3 ADAPTATION;
+
     public CalibrateColorCheckerBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String pattern) {
         super(factory, params, folder + "/Calibrate", pattern);
+
+        ADAPTATION = bradford(ILLUMINANT_D50, primaries.white.CIEXYZ());
     }
 
+    @Override
     @ParameterizedTest(name = "{arguments}")
-    @MethodSource("colorchecker")
-    public void colorchecker(Args args) {
-        generate(args);
+    @MethodSource("args")
+    public void generate(Args args) {
+        super.generate(args);
     }
 
-    public Stream<Args> colorchecker() {
+    protected Stream<Args> args() {
         return IntStream.of(5, 10, 20).boxed().flatMap(this::colorchecker);
     }
 
     public Stream<Args> colorchecker(int window) {
-        var adaptation = bradford(
-                ILLUMINANT_D50, primaries.white.CIEXYZ());
-
-        var result = new ArrayList<Args>();
+        Builder<Args> builder = Stream.builder();
 
         for (int i = 0; i < CLASSIC_24.size(); i++) {
-            String alpha = String.valueOf((char) ('A' + i));
-
             var column = CLASSIC_24.get(i);
-            var names = CLASSIC_24_NAMES.get(i);
 
             for (int j = 0; j < column.size(); j++) {
-                String sequence = alpha + (j + 1);
-                String name = names.get(j);
-
-                double[] buf = column.get(j).CIEXYZ().array();
-
-                double peak = transfer.getNominalDisplayPeakLuminance();
-                if (peak > 100.0) { // Scale to 100 nit for HDR
-                    multiply(buf, buf, 100.0 / peak);
-                }
-
-                matrix.XYZtoRGB.multiply(adaptation.multiply(buf, buf), buf);
-
-                int[] yuv = round(
-                        matrix.toCodes(matrix.fromLinearRGB(buf, buf), buf));
-
-                result.add(new Args("ColorChecker",
-                        sequence + "-" + toCamelCase(name), "ColorChecker",
-                        sequence + " - " + name, window, yuv));
+                builder.add(colorchecker(window, i, j));
             }
         }
 
-        return result.stream();
+        return builder.build();
+    }
+
+    public Args colorchecker(int window, int i, int j) {
+        String sequence = String.valueOf((char) ('A' + i)) + (j + 1);
+        String name = CLASSIC_24_NAMES.get(i).get(j);
+
+        double[] buf = CLASSIC_24.get(i).get(j).CIEXYZ().array();
+
+        double peak = transfer.getNominalDisplayPeakLuminance();
+        if (peak > 100.0) { // Scale to 100 nit for HDR
+            multiply(buf, buf, 100.0 / peak);
+        }
+
+        matrix.XYZtoRGB.multiply(ADAPTATION.multiply(buf, buf), buf);
+
+        int[] yuv = round(
+                matrix.toCodes(matrix.fromLinearRGB(buf, buf), buf));
+
+        return new Args("ColorChecker",
+                sequence + "-" + toCamelCase(name), "ColorChecker",
+                sequence + " - " + name, window, yuv);
     }
 
     private String toCamelCase(final String init) {

@@ -69,7 +69,7 @@ public class BlackPLUGEGenerator extends GeneratorBase<Void> {
      * code value starting from <code>yMin</code> and increment of 1 for every
      * next column.
      */
-    private FrameBuffer draw(FrameBuffer fb) {
+    public FrameBuffer draw(FrameBuffer fb) {
         fillVerticalBars(fb.Y);
         fillLeftBars(fb.Y);
 

@@ -4,7 +4,7 @@
 
   <groupId>band.full.test</groupId>
   <artifactId>testing-video</artifactId>
-  <version>0.4</version>
+  <version>0.5-SNAPSHOT</version>
 
   <name>test.full.band testing video generator</name>
 

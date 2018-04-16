@@ -157,6 +157,14 @@ public class FxImage {
         return (r << 16) + (g << 8) + b;
     }
 
+    public static double[] offset(double[] rgb, double value) {
+        for (int i = 0; i < rgb.length; i++) {
+            rgb[i] += value;
+        }
+
+        return rgb;
+    }
+
     public static double[] amplify(double[] rgb, double gain) {
         for (int i = 0; i < rgb.length; i++) {
             rgb[i] *= gain;
