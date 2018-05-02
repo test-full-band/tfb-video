@@ -28,7 +28,7 @@ import band.full.video.itu.TransferCharacteristics;
 public class ST2084 implements TransferCharacteristics {
     public static ST2084 PQ = new ST2084();
 
-    public static final double L_MAX = 10000.0;
+    public static final double L_MAX = 10_000.0;
 
     private static final double N = 2610.0 / 4096 / 4;
     private static final double M = 2523.0 / 4096 * 128;
@@ -67,32 +67,27 @@ public class ST2084 implements TransferCharacteristics {
 
     @Override
     public double toLinear(double v) {
-        if (v <= 0.0)
-            return 0.0;
+        if (v <= 0.0) return 0.0;
 
         double vm = pow(v, 1.0 / M);
 
         double a = vm - C1;
-        if (a <= 0.0)
-            return 0.0;
+        if (a <= 0.0) return 0.0;
 
         double b = C2 - C3 * vm;
-        if (b <= 0.0)
-            return POSITIVE_INFINITY;
-
-        return pow(a / b, 1.0 / N);
+        return b <= 0.0
+                ? POSITIVE_INFINITY
+                : pow(a / b, 1.0 / N);
     }
 
     @Override
     public double fromLinear(double l) {
-        if (l <= 0.0)
-            return 0.0;
+        if (l <= 0.0) return 0.0;
 
         double ln = pow(l, N);
 
         double a = C1 + C2 * ln;
         double b = 1 + C3 * ln;
-
         return pow(a / b, M);
     }
 }

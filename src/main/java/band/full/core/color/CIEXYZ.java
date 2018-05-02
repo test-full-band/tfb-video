@@ -47,6 +47,11 @@ public class CIEXYZ {
         return new CIExyY(X / sum, Y / sum, Y);
     }
 
+    public CIExyY CIExyY(double yScale) {
+        double sum = X + Y + Z;
+        return new CIExyY(X / sum, Y / sum, Y * yScale);
+    }
+
     public CIExy CIExy() {
         double sum = X + Y + Z;
         return new CIExy(X / sum, Y / sum);

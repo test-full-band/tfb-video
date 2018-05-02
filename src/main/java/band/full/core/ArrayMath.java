@@ -40,4 +40,18 @@ public class ArrayMath {
 
         return out;
     }
+
+    private final static char[] HEX = "0123456789ABCDEF".toCharArray();
+
+    public static String toHexString(byte[] bytes) {
+        char[] chars = new char[bytes.length * 2];
+
+        for (int i = 0, j = 0; i < bytes.length;) {
+            int v = bytes[i++] & 0xFF;
+            chars[j++] = HEX[v >>> 4];
+            chars[j++] = HEX[v & 0x0F];
+        }
+
+        return new String(chars);
+    }
 }

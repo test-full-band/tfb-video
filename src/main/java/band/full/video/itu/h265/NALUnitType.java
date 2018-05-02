@@ -1,5 +1,7 @@
 package band.full.video.itu.h265;
 
+import java.util.function.Supplier;
+
 public enum NALUnitType {
     TRAIL_N("Coded slice segment of a non-TSA, non-STSA trailing picture N"),
     TRAIL_R("Coded slice segment of a non-TSA, non-STSA trailing picture R"),
@@ -33,15 +35,17 @@ public enum NALUnitType {
     RSV_VCL29("Reserved non-IRAP VCL 29"),
     RSV_VCL30("Reserved non-IRAP VCL 30"),
     RSV_VCL31("Reserved non-IRAP VCL 31"),
-    VPS_NUT("Video parameter set"),
+    VPS_NUT("Video parameter set", VPS::new),
     SPS_NUT("Sequence parameter set"),
-    PPS_NUT("Picture parameter set"),
-    AUD_NUT("Access unit delimiter"),
+    PPS_NUT("Picture parameter set", PPS::new),
+    AUD_NUT("Access unit delimiter", AUD::new),
     EOS_NUT("End of sequence"),
     EOB_NUT("End of bitstream"),
     FD_NUT("Filler data"),
-    PREFIX_SEI_NUT("Supplemental enhancement information (prefix)"),
-    SUFFIX_SEI_NUT("Supplemental enhancement information (suffix)"),
+    PREFIX_SEI_NUT("Supplemental enhancement information (prefix)",
+            SEI::PREFIX_SEI),
+    SUFFIX_SEI_NUT("Supplemental enhancement information (suffix)",
+            SEI::SUFFIX_SEI),
     RSV_NVCL41("Reserved 41"),
     RSV_NVCL42("Reserved 42"),
     RSV_NVCL43("Reserved 43"),
@@ -68,12 +72,18 @@ public enum NALUnitType {
 
     public final String shortName;
     public final String fullName;
+    public final Supplier<NALUnit> constructor;
 
     private NALUnitType(String fullName) {
-        this(null, fullName);
+        this(null, fullName, null);
     }
 
-    private NALUnitType(String shortName, String fullName) {
+    private NALUnitType(String fullName, Supplier<NALUnit> constructor) {
+        this(null, fullName, constructor);
+    }
+
+    private NALUnitType(String shortName, String fullName,
+            Supplier<NALUnit> constructor) {
         String name = name();
 
         this.shortName = name.endsWith("_NUT")
@@ -81,6 +91,14 @@ public enum NALUnitType {
                 : name;
 
         this.fullName = fullName;
+
+        this.constructor = constructor == null
+                ? () -> new NALU(this)
+                : constructor;
+    }
+
+    public NALUnit createNALU() {
+        return constructor.get();
     }
 
     private static NALUnitType[] CACHE = values();

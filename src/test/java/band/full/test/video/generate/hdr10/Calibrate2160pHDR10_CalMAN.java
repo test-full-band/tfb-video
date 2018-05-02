@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 @Disabled("Investigate chromacity percentage")
 public class Calibrate2160pHDR10_CalMAN {
     private static final Matrix3x3 RGBtoXYZ = PRIMARIES.RGBtoXYZ;
+    private static final Matrix3x3 XYZtoRGB = PRIMARIES.XYZtoRGB;
 
     // TODO Calman codes for red
     private static final double[][] RxyY = {
@@ -40,6 +41,45 @@ public class Calibrate2160pHDR10_CalMAN {
         {0.9, 0.6678, 0.2958, 27.0506},
         {1.0, 0.7080, 0.2920, 24.7943}
     };
+
+    @Test
+    public void compare() {
+        System.out.println("504, 332, 332:");
+        double[] rgb = {504.0, 332.0, 332.0};
+        HDR10.matrix.fromLumaCode(rgb, rgb);
+        xxx(rgb);
+
+        // var xyz = new CIExyY(0.5877086649, 0.3032592446, 32.7695947021 /
+        // 10000)
+        // .CIEXYZ()
+        // .array();
+        var xyz = new CIExyY(0.587717785, 0.303261279, 32.77050068 / 10000)
+                .CIEXYZ()
+                .array();
+        XYZtoRGB.multiply(xyz, rgb);
+        HDR10.matrix.transfer.fromLinear(rgb, rgb);
+        HDR10.matrix.toLumaCode(rgb, rgb);
+
+        System.out.println(format("R%05.5f G%05.5f B%05.5f",
+                rgb[0], rgb[1], rgb[2]));
+
+        System.out.println();
+
+        System.out.println("Y377, U487, V600:");
+        double[] yuv = {377.0, 487.0, 600.0};
+        HDR10.matrix.fromCodes(yuv, yuv);
+        HDR10.matrix.toRGB(yuv, yuv);
+        HDR10.matrix.toLumaCode(yuv, rgb);
+        System.out.println(format("R%05.1f G%05.1f B%05.1f",
+                rgb[0], rgb[1], rgb[2]));
+        xxx(yuv);
+    }
+
+    void xxx(double[] rgb) {
+        PQ.toLinear(rgb, rgb);
+        var xyz = RGBtoXYZ.multiply(rgb);
+        System.out.println(new CIEXYZ(xyz).CIExyY(10000.0));
+    }
 
     @Test
     public void red() {
