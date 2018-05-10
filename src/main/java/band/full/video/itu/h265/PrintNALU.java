@@ -6,27 +6,28 @@ import static java.lang.System.out;
 
 import band.full.video.itu.nal.RbspReader;
 
-import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class PrintNALU {
     public static void main(String[] args)
             throws FileNotFoundException, IOException {
         long time = currentTimeMillis();
-        try (FileInputStream in = new FileInputStream(
+        try (var parser = new H265ReaderAnnexB(new FileInputStream(
                 // "target/video-main/H.265-HEVC/FullHD/HLG10/Basic/Checkerboard-FHD_HLG10-1090.hevc"))
                 // {
                 // "../LG_DolbyTrailer.h265")) {
-                "../DV5.h265")) {
-            H265ReaderAnnexB parser =
-                    new H265ReaderAnnexB(new BufferedInputStream(in));
-            for (int i = 0; i < 200; i++) {
+                "../DV5.h265"));
+             var writer = new H265WriterAnnexB(
+                     new FileOutputStream("../out.h265"))) {
+            for (int i = 0; i < 2000000; i++) {
                 NALUnit nalu = parser.read();
                 if (nalu == null) {
                     break;
                 }
+                writer.write(nalu);
 
                 out.print(nalu.zero_byte ? "* " : "- ");
                 out.println(nalu.getTypeString() +

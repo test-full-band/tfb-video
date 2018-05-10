@@ -1,78 +1,95 @@
 package band.full.video.itu.nal;
 
 import static band.full.video.itu.nal.RbspWriter.UE;
+import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
+import java.util.stream.IntStream;
+
 public class RbspWriterTest {
     @Test
-    public void testReadU1() {
-        RbspReader reader = reader(0b01001101, 0b01001101);
+    public void testWriteU1() {
+        NalBuffer buf = new NalBuffer();
+        RbspWriter writer = new RbspWriter(buf);
 
-        for (int i = 0; i < 2; i++) {
-            assertEquals(false, reader.readU1());
-            assertEquals(true, reader.readU1());
-            assertEquals(false, reader.readU1());
-            assertEquals(false, reader.readU1());
-            assertEquals(true, reader.readU1());
-            assertEquals(true, reader.readU1());
-            assertEquals(false, reader.readU1());
-            assertEquals(true, reader.readU1());
-        }
+        range(0, 2).flatMap(i -> IntStream.of(0, 1, 0, 0, 1, 1, 0, 1))
+                .forEach(b -> writer.writeU1(b != 0));
+
+        assertEquals(16, buf.pos);
+        range(0, 2).forEach(i -> assertEquals(0b01001101, buf.bytes[i]));
     }
 
     @Test
-    public void testReadUByte() {
-        RbspReader reader = reader(0b01001101, 0b01001101, 0b01001101);
+    public void testWriteU3() {
+        NalBuffer buf = new NalBuffer();
+        RbspWriter writer = new RbspWriter(buf);
 
-        assertEquals(0b010, reader.readUByte(3));
-        assertEquals(0b011, reader.readUByte(3));
-        assertEquals(0b010, reader.readUByte(3));
-        assertEquals(0b100, reader.readUByte(3));
-        assertEquals(0b110, reader.readUByte(3));
-        assertEquals(0b101, reader.readUByte(3));
-        assertEquals(0b001, reader.readUByte(3));
-        assertEquals(0b101, reader.readUByte(3));
+        writer.writeU(3, 0b010);
+        writer.writeU(3, 0b011);
+        writer.writeU(3, 0b010);
+        writer.writeU(3, 0b100);
+        writer.writeU(3, 0b110);
+        writer.writeU(3, 0b101);
+        writer.writeU(3, 0b001);
+        writer.writeU(3, 0b101);
+
+        assertEquals(24, buf.pos);
+        range(0, 3).forEach(i -> assertEquals(0b01001101, buf.bytes[i]));
     }
 
     @Test
-    public void testReadUInt() {
-        RbspReader reader = reader(0b01001101, 0b01001101,
-                0b01001101, 0b01001101, 0b01001101);
+    public void testWriteU20() {
+        NalBuffer buf = new NalBuffer();
+        RbspWriter writer = new RbspWriter(buf);
 
-        assertEquals(0b01001101010011010100, reader.readUInt(20));
-        assertEquals(0b11010100110101001101, reader.readUInt(20));
+        writer.writeU(20, 0b01001101010011010100);
+        writer.writeU(20, 0b11010100110101001101);
+
+        assertEquals(40, buf.pos);
+        range(0, 5).forEach(i -> assertEquals(0b01001101, buf.bytes[i]));
     }
 
     @Test
-    public void testReadULong() {
-        RbspReader reader = reader(0b01001101, 0b01001101,
-                0b01001101, 0b01001101, 0b01001101, 0b01001101,
-                0b01001101, 0b01001101, 0b01001101, 0b01001101);
+    public void testWriteULong() {
+        NalBuffer buf = new NalBuffer();
+        RbspWriter writer = new RbspWriter(buf);
 
-        assertEquals(0b01001101010011010100110101001101010011010100L,
-                reader.readULong(44));
+        writer.writeULong(44, 0b01001101010011010100110101001101010011010100L);
+        writer.writeULong(36, 0b110101001101010011010100110101001101L);
 
-        assertEquals(0b110101001101010011010100110101001101L,
-                reader.readULong(36));
+        assertEquals(80, buf.pos);
+        range(0, 10).forEach(i -> assertEquals(0b01001101, buf.bytes[i]));
     }
 
     @Test
-    public void testReadUE() {
-        assertUE(0, bytes(0b10000000));
-        assertUE(1, bytes(0b01000000));
-        assertUE(2, bytes(0b01100000));
-        assertUE(3, bytes(0b00100000));
-        assertUE(4, bytes(0b00101000));
-        assertUE(5, bytes(0b00110000));
-        assertUE(6, bytes(0b00111000));
+    public void testWriteUE() {
+        assertUE(1, 0b10000000, 0);
+        assertUE(3, 0b01000000, 1);
+        assertUE(3, 0b01100000, 2);
+        assertUE(5, 0b00100000, 3);
+        assertUE(5, 0b00101000, 4);
+        assertUE(5, 0b00110000, 5);
+        assertUE(5, 0b00111000, 6);
+        assertUE(7, 0b00010000, 7);
+        assertUE(7, 0b00010010, 8);
+        assertUE(7, 0b00010100, 9);
+        assertUE(7, 0b00010110, 10);
+        assertUE(7, 0b00011000, 11);
+        assertUE(7, 0b00011010, 12);
+        assertUE(7, 0b00011100, 13);
+        assertUE(7, 0b00011110, 14);
     }
 
-    private void assertUE(int expected, byte[] in) {
-        assertEquals(expected, reader(in).readUE());
+    private void assertUE(int bits, int expected, int ue) {
+        NalBuffer buf = new NalBuffer();
+        RbspWriter writer = new RbspWriter(buf);
+
+        writer.writeUE(ue);
+
+        assertEquals(bits, buf.pos);
+        assertEquals((byte) expected, buf.bytes[0]);
     }
 
     @Test
@@ -84,82 +101,5 @@ public class RbspWriterTest {
         assertEquals(4, UE(-2));
         assertEquals(5, UE(3));
         assertEquals(6, UE(-3));
-    }
-
-    // @Test
-    // public void testTrailingBitsAligned() {
-    // assertTrailingBits(bytes(), bytes());
-    //
-    // assertTrailingBits(bytes(0x80), bytes(0x80));
-    // assertTrailingBits(bytes(0x01), bytes(0x01));
-    //
-    // assertTrailingBits(bytes(0x55, 0x80), bytes(0x55, 0x80));
-    // assertTrailingBits(bytes(0x55, 0x01), bytes(0x55, 0x01));
-    //
-    // assertTrailingBits(bytes(0x80), bytes(0x55, 0x80), 8);
-    // assertTrailingBits(bytes(0x01), bytes(0x55, 0x01), 8);
-    // }
-    //
-    // @Test
-    // public void testTrailingBitsUnaligned1() {
-    // assertTrailingBits(bytes(), bytes(), 1, 0x02);
-    //
-    // assertTrailingBits(bytes(0x00), bytes(0x00), 1, 0x02);
-    // assertTrailingBits(bytes(0x40), bytes(0x80), 1, 0x02);
-    // assertTrailingBits(bytes(0x00, 0x80), bytes(0x01), 1, 0x02);
-    //
-    // assertTrailingBits(bytes(0x00, 0x00),
-    // bytes(0x00, 0x00), 1, 0x02);
-    //
-    // assertTrailingBits(bytes(0x00, 0x40),
-    // bytes(0x00, 0x80), 1, 0x02);
-    //
-    // assertTrailingBits(bytes(0x00, 0x00, 0x80),
-    // bytes(0x00, 0x01), 1, 0x02);
-    // }
-    //
-    // @Test
-    // public void testTrailingBitsUnaligned7() {
-    // assertTrailingBits(bytes(), bytes(), 7, 0x80);
-    //
-    // assertTrailingBits(bytes(0x00), bytes(0x00), 7, 0x80);
-    // assertTrailingBits(bytes(0x01), bytes(0x80), 7, 0x80);
-    // assertTrailingBits(bytes(0x00, 0x02), bytes(0x01), 7, 0x80);
-    //
-    // assertTrailingBits(bytes(0x00, 0x00),
-    // bytes(0x00, 0x00), 7, 0x80);
-    //
-    // assertTrailingBits(bytes(0x00, 0x01),
-    // bytes(0x00, 0x80), 7, 0x80);
-    //
-    // assertTrailingBits(bytes(0x00, 0x00, 0x02),
-    // bytes(0x00, 0x01), 7, 0x80);
-    // }
-    //
-    // private void assertTrailingBits(byte[] expected, byte[] in) {
-    // RbspReader reader = reader(in);
-    // assertArrayEquals(expected, reader.readTrailingBits());
-    // }
-    //
-    // private void assertTrailingBits(byte[] expected, byte[] in, int bits) {
-    // RbspReader reader = reader(in);
-    // reader.readUInt(bits);
-    // assertArrayEquals(expected, reader.readTrailingBits());
-    // }
-
-    private byte[] bytes(int... ints) {
-        byte[] bytes = new byte[ints.length];
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) ints[i];
-        }
-        return bytes;
-    }
-
-    private RbspReader reader(int... ints) {
-        return reader(bytes(ints));
-    }
-
-    private RbspReader reader(byte[] in) {
-        return new RbspReader(in, 0, in.length);
     }
 }

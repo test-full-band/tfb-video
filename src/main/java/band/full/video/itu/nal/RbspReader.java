@@ -66,6 +66,10 @@ public class RbspReader {
         return array;
     }
 
+    public int available() {
+        return buf.end - buf.pos;
+    }
+
     public byte[] readTrailingBits() {
         if (!isByteAligned()) return readTrailingBitsUnaligned();
 
@@ -73,6 +77,7 @@ public class RbspReader {
         int len = getByteIndex(buf.end) - off;
         byte[] result = new byte[len];
         arraycopy(buf.bytes, off, result, 0, len);
+        buf.pos = buf.end;
 
         return result;
     }
@@ -133,7 +138,7 @@ public class RbspReader {
     }
 
     private int readInt(int bits, boolean sign) {
-        int pos = buf.checkRead(bits), lim = pos + bits;
+        int pos = buf.checkRead(bits), lim = buf.pos;
 
         int accumulator = sign ? -1 : 0;
 
@@ -146,9 +151,9 @@ public class RbspReader {
             return buf.bytes[index] >> sb & mask;
         }
 
-        if (shift != 0) { // lead align
+        if (shift != 0) { // head align
             int mask = (1 << 8 - shift) - 1;
-            accumulator += buf.bytes[index++] & mask;
+            accumulator += buf.bytes[index++] & mask; // TODO sign=true?
             pos += 8 - shift;
         }
 
@@ -159,7 +164,7 @@ public class RbspReader {
         }
 
         sb = lim - pos;
-        if (sb != 0) { // remaining
+        if (sb != 0) { // tail
             accumulator <<= sb;
             accumulator += (buf.bytes[index] & 0xFF) >> 8 - sb;
         }
@@ -177,7 +182,7 @@ public class RbspReader {
     }
 
     private long readLong(int bits) {
-        int pos = buf.checkRead(bits), lim = pos + bits;
+        int pos = buf.checkRead(bits), lim = buf.pos;
 
         long accumulator = 0;
 

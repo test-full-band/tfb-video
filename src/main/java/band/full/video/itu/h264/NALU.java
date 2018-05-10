@@ -19,6 +19,11 @@ public class NALU extends NALUnit {
         super(type);
     }
 
+    public NALU(NALUnitType type, byte[] bytes) {
+        super(type);
+        this.bytes = bytes;
+    }
+
     @Override
     public void read(RbspReader reader) {
         bytes = reader.readTrailingBits();

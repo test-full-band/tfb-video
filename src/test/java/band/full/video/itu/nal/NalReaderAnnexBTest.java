@@ -1,5 +1,6 @@
 package band.full.video.itu.nal;
 
+import static band.full.core.TestArrayMath.bytes;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import org.junit.jupiter.api.Test;
@@ -10,7 +11,7 @@ public class NalReaderAnnexBTest {
     private static final class TestReaderAnnexB
             extends NalReaderAnnexB<NalUnit> {
         private TestReaderAnnexB(byte[] nal) {
-            super(nal);
+            super(nal); // TODO use ByteArrayInputStream in tests
         }
 
         @Override
@@ -62,13 +63,5 @@ public class NalReaderAnnexBTest {
             throws IOException {
         RbspReader reader = new TestReaderAnnexB(in).nalu();
         assertArrayEquals(expected, reader.readTrailingBits());
-    }
-
-    private byte[] bytes(int... ints) {
-        byte[] bytes = new byte[ints.length];
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) ints[i];
-        }
-        return bytes;
     }
 }

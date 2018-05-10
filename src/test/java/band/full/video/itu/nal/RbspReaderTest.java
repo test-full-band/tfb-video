@@ -67,6 +67,14 @@ public class RbspReaderTest {
         assertUE(4, bytes(0b00101000));
         assertUE(5, bytes(0b00110000));
         assertUE(6, bytes(0b00111000));
+        assertUE(7, bytes(0b00010000));
+        assertUE(8, bytes(0b00010010));
+        assertUE(9, bytes(0b00010100));
+        assertUE(10, bytes(0b00010110));
+        assertUE(11, bytes(0b00011000));
+        assertUE(12, bytes(0b00011010));
+        assertUE(13, bytes(0b00011100));
+        assertUE(14, bytes(0b00011110));
     }
 
     private void assertUE(int expected, byte[] in) {

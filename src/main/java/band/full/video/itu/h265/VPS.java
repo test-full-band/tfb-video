@@ -137,8 +137,6 @@ public class VPS extends NALUnit {
         writer.writeU1(vps_temporal_id_nesting);
         writer.writeS16(vps_reserved_0xffff_16bits);
 
-        profile_tier_level = new ProfileTierLevel(
-                true, vps_max_sub_layers_minus1);
         profile_tier_level.write(writer);
 
         writer.writeU1(vps_sub_layer_ordering_info_present);

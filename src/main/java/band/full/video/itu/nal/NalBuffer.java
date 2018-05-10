@@ -43,6 +43,9 @@ public final class NalBuffer {
         return getByteShift() == 0;
     }
 
+    /**
+     * @return <code>pos</code> cursor before it is moved
+     */
     int checkRead(int bits) {
         if (pos + bits > end) throw new IllegalStateException(
                 "End of RBSP, only " + (end - pos)
@@ -53,27 +56,44 @@ public final class NalBuffer {
         return off;
     }
 
+    /**
+     * @return <code>pos</code> cursor before it is moved
+     */
     int checkWrite(int bits) {
-        int pos = end + bits;
-        if (pos <= bytes.length << 3) {
-            end = pos;
-            return 0;
+        int p = pos + bits;
+        if (p <= bytes.length << 3) {
+            int off = pos;
+            pos = p;
+            return off;
         }
 
-        int diff = 0; // TODO
-        // = move(bytes.length - end + start < 65536
-        // ? new byte[bytes.length * 2]
-        // : bytes);
+        int bp = p + 7 >> 3;
+        move(bytes.length - bp + offset < 65536
+                ? dest(bp - offset)
+                : bytes);
 
-        end += bits;
-        return diff;
+        int off = pos;
+        pos += bits;
+        return off;
     }
 
-    private int move(byte[] dest) {
-        int diff = offset;
-        end -= offset;
-        arraycopy(bytes, offset, bytes = dest, 0, end);
+    private void move(byte[] dest) {
+        int diff = offset << 3;
+        pos -= diff;
+        end -= diff;
+        arraycopy(bytes, offset, bytes = dest, 0, pos + 7 >> 3);
         offset = 0;
-        return diff;
+    }
+
+    private byte[] dest(int capacity) {
+        if (bytes.length < capacity) {
+            int length = bytes.length << 1;
+            while (length < capacity) {
+                length <<= 1;
+            }
+            return new byte[length];
+        }
+
+        return bytes;
     }
 }

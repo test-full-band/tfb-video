@@ -11,11 +11,6 @@ public class H265ReaderAnnexB extends NalReaderAnnexB<NALUnit> {
         super(in);
     }
 
-    /** for unit testing */
-    H265ReaderAnnexB(byte[] nal) {
-        super(nal);
-    }
-
     @Override
     protected NALUnit create(boolean zero_byte, RbspReader nalu) {
         return NALUnit.create(zero_byte, nalu);

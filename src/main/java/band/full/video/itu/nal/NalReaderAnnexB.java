@@ -6,7 +6,8 @@ import static java.lang.System.arraycopy;
 import java.io.IOException;
 import java.io.InputStream;
 
-public abstract class NalReaderAnnexB<U extends NalUnit> {
+public abstract class NalReaderAnnexB<U extends NalUnit>
+        implements AutoCloseable {
     private final InputStream in;
 
     private byte[] buf = new byte[1_048_576]; // 1MB = 8Mb
@@ -42,13 +43,18 @@ public abstract class NalReaderAnnexB<U extends NalUnit> {
     }
 
     /** for unit testing */
-    protected NalReaderAnnexB(byte[] nal) {
+    NalReaderAnnexB(byte[] nal) {
         offset = 4;
         limit = offset + nal.length;
         buf[3] = 1; // init prefix
         System.arraycopy(nal, 0, buf, offset, nal.length);
         in = null;
         eof = true;
+    }
+
+    @Override
+    public void close() throws IOException {
+        in.close();
     }
 
     public U read() throws IOException {

@@ -1,13 +1,15 @@
 package band.full.video.itu.h265;
 
-import static band.full.core.ArrayMath.toHexString;
 import static band.full.video.itu.h265.NALUnitType.PREFIX_SEI_NUT;
 import static band.full.video.itu.h265.NALUnitType.SUFFIX_SEI_NUT;
 import static java.util.Arrays.stream;
 
+import band.full.video.itu.nal.Payload;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.itu.nal.Structure;
+import band.full.video.itu.nal.sei.MasteringDisplayColourVolume;
+import band.full.video.itu.nal.sei.UserDataRegisteredT35;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -110,14 +112,35 @@ public class SEI extends NALUnit {
 
     public static class Message implements Structure {
         public int payloadType;
-        public int payloadSize;
-        public byte[] payload;
+        public Payload payload;
+
+        public Message() {}
+
+        public Message(RbspReader reader) {
+            read(reader);
+        }
 
         @Override
         public void read(RbspReader reader) {
             payloadType = readValue(reader);
-            payloadSize = readValue(reader);
-            payload = reader.readBytes(payloadSize);
+            int size = readValue(reader);
+            PayloadType type = PayloadType.get(payloadType);
+            if (type != null) {
+                switch (type) {
+                    case user_data_registered_itu_t_t35:
+                        payload = new UserDataRegisteredT35(reader, size);
+                        return;
+
+                    case mastering_display_colour_volume:
+                        payload =
+                                new MasteringDisplayColourVolume(reader, size);
+                        return;
+
+                    default: // default
+                }
+            }
+
+            payload = new Payload.Bytes(reader, size);
         }
 
         int readValue(RbspReader reader) {
@@ -133,8 +156,8 @@ public class SEI extends NALUnit {
         @Override
         public void write(RbspWriter writer) {
             writeValue(writer, payloadType);
-            writeValue(writer, payloadSize);
-            writer.writeBytes(payload);
+            writeValue(writer, payload.size());
+            payload.write(writer);
         }
 
         void writeValue(RbspWriter writer, int value) {
@@ -147,12 +170,21 @@ public class SEI extends NALUnit {
 
         @Override
         public void print(PrintStream ps) {
-            // TODO Auto-generated method stub
+            PayloadType type = PayloadType.get(payloadType);
+            ps.print("    SEI Message ");
+            ps.print(payloadType);
+            if (type != null) {
+                ps.print(" [");
+                ps.print(type);
+                ps.print("]");
+            }
+            ps.print(", size: ");
+            ps.println(payload.size());
+            payload.print(ps);
         }
     }
 
     public List<Message> messages;
-    public byte[] trailing_bits;
 
     public SEI(NALUnitType type) {
         super(type);
@@ -170,11 +202,10 @@ public class SEI extends NALUnit {
     public void read(RbspReader reader) {
         messages = new ArrayList<>();
         do {
-            Message m = new Message();
-            m.read(reader);
-            messages.add(m);
-        } while (false); // TODO more_rbsp_data()
-        trailing_bits = reader.readTrailingBits();
+            messages.add(new Message(reader));
+        } while (reader.available() > 8);
+        if (!reader.isByteAligned()) throw new IllegalStateException();
+        if (reader.readUShort(8) != 0x80) throw new IllegalStateException();
     }
 
     @Override
@@ -182,27 +213,14 @@ public class SEI extends NALUnit {
         for (Message m : messages) {
             m.write(writer);
         }
-        writer.writeTrailingBits(trailing_bits);
+        if (!writer.isByteAligned()) throw new IllegalStateException();
+        writer.writeU(8, 0x80);
     }
 
     @Override
     public void print(PrintStream ps) {
         for (Message m : messages) {
-            PayloadType type = PayloadType.get(m.payloadType);
-            ps.println("    message");
-            ps.print("      payloadType: ");
-            if (type == null) {
-                ps.println(m.payloadType);
-            } else {
-                ps.print(m.payloadType);
-                ps.println(" " + type);
-            }
-            ps.print("      payloadSize: ");
-            ps.println(m.payloadSize);
-            ps.print("      payload: ");
-            ps.println("0x" + toHexString(m.payload));
+            m.print(ps);
         }
-        ps.print("    trailing_bits: ");
-        ps.println("0x" + toHexString(trailing_bits));
     }
 }

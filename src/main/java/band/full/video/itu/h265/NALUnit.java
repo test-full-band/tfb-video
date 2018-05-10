@@ -7,7 +7,7 @@ public abstract class NALUnit extends NalUnit {
     // nal_unit_header
     public final NALUnitType type;
     public byte nuh_layer_id;
-    public byte nuh_temporal_id_plus1;
+    public byte nuh_temporal_id_plus1 = 1;
 
     public NALUnit(NALUnitType type) {
         this.type = type;
