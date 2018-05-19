@@ -6,8 +6,8 @@ import static java.lang.System.arraycopy;
 import java.io.IOException;
 import java.io.InputStream;
 
-public abstract class NalReaderAnnexB<U extends NalUnit>
-        implements AutoCloseable {
+public abstract class NalReaderAnnexB<C extends NalContext,
+        U extends NalUnit<C>> implements AutoCloseable {
     private final InputStream in;
 
     private byte[] buf = new byte[1_048_576]; // 1MB = 8Mb
@@ -42,26 +42,18 @@ public abstract class NalReaderAnnexB<U extends NalUnit>
         next = offset = 4;
     }
 
-    /** for unit testing */
-    NalReaderAnnexB(byte[] nal) {
-        offset = 4;
-        limit = offset + nal.length;
-        buf[3] = 1; // init prefix
-        System.arraycopy(nal, 0, buf, offset, nal.length);
-        in = null;
-        eof = true;
-    }
-
     @Override
     public void close() throws IOException {
         in.close();
     }
 
     public U read() throws IOException {
-        return next == end ? null : create(next - end > 3, nalu());
+        return next == end ? null : create(context(), nalu(), next - end > 3);
     }
 
-    protected abstract U create(boolean zero_byte, RbspReader nalu);
+    protected abstract C context();
+
+    protected abstract U create(C context, RbspReader nalu, boolean zero_byte);
 
     RbspReader nalu() throws IOException {
         loadStartCodePrefix();

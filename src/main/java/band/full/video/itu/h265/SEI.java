@@ -2,8 +2,10 @@ package band.full.video.itu.h265;
 
 import static band.full.video.itu.h265.NALUnitType.PREFIX_SEI_NUT;
 import static band.full.video.itu.h265.NALUnitType.SUFFIX_SEI_NUT;
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
+import band.full.video.itu.h265.sei.PicTiming;
 import band.full.video.itu.nal.Payload;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
@@ -110,30 +112,36 @@ public class SEI extends NALUnit {
         }
     }
 
-    public static class Message implements Structure {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static class Message implements Structure<H265Context> {
         public int payloadType;
         public Payload payload;
 
         public Message() {}
 
-        public Message(RbspReader reader) {
-            read(reader);
+        public Message(H265Context context, RbspReader reader) {
+            read(context, reader);
         }
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(H265Context context, RbspReader reader) {
             payloadType = readValue(reader);
             int size = readValue(reader);
             PayloadType type = PayloadType.get(payloadType);
             if (type != null) {
                 switch (type) {
+                    case pic_timing:
+                        payload = new PicTiming(context, reader, size);
+                        return;
+
                     case user_data_registered_itu_t_t35:
-                        payload = new UserDataRegisteredT35(reader, size);
+                        payload = new UserDataRegisteredT35(
+                                context, reader, size);
                         return;
 
                     case mastering_display_colour_volume:
-                        payload =
-                                new MasteringDisplayColourVolume(reader, size);
+                        payload = new MasteringDisplayColourVolume(
+                                context, reader, size);
                         return;
 
                     default: // default
@@ -154,10 +162,10 @@ public class SEI extends NALUnit {
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(H265Context context, RbspWriter writer) {
             writeValue(writer, payloadType);
-            writeValue(writer, payload.size());
-            payload.write(writer);
+            writeValue(writer, payload.size(context));
+            payload.write(context, writer);
         }
 
         void writeValue(RbspWriter writer, int value) {
@@ -169,7 +177,7 @@ public class SEI extends NALUnit {
         }
 
         @Override
-        public void print(PrintStream ps) {
+        public void print(H265Context context, PrintStream ps) {
             PayloadType type = PayloadType.get(payloadType);
             ps.print("    SEI Message ");
             ps.print(payloadType);
@@ -179,8 +187,8 @@ public class SEI extends NALUnit {
                 ps.print("]");
             }
             ps.print(", size: ");
-            ps.println(payload.size());
-            payload.print(ps);
+            ps.println(payload.size(context));
+            payload.print(context, ps);
         }
     }
 
@@ -190,37 +198,41 @@ public class SEI extends NALUnit {
         super(type);
     }
 
-    public static SEI PREFIX_SEI() {
-        return new SEI(PREFIX_SEI_NUT);
+    public static SEI PREFIX_SEI(Message... messages) {
+        SEI sei = new SEI(PREFIX_SEI_NUT);
+        sei.messages = asList(messages);
+        return sei;
     }
 
-    public static SEI SUFFIX_SEI() {
-        return new SEI(SUFFIX_SEI_NUT);
+    public static SEI SUFFIX_SEI(Message... messages) {
+        SEI sei = new SEI(SUFFIX_SEI_NUT);
+        sei.messages = asList(messages);
+        return sei;
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H265Context context, RbspReader reader) {
         messages = new ArrayList<>();
         do {
-            messages.add(new Message(reader));
+            messages.add(new Message(context, reader));
         } while (reader.available() > 8);
         if (!reader.isByteAligned()) throw new IllegalStateException();
         if (reader.readUShort(8) != 0x80) throw new IllegalStateException();
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(H265Context context, RbspWriter writer) {
         for (Message m : messages) {
-            m.write(writer);
+            m.write(context, writer);
         }
         if (!writer.isByteAligned()) throw new IllegalStateException();
         writer.writeU(8, 0x80);
     }
 
     @Override
-    public void print(PrintStream ps) {
+    public void print(H265Context context, PrintStream ps) {
         for (Message m : messages) {
-            m.print(ps);
+            m.print(context, ps);
         }
     }
 }

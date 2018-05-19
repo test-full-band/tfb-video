@@ -6,7 +6,7 @@ import band.full.video.itu.nal.RbspWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class H265WriterAnnexB extends NalWriterAnnexB<NALUnit> {
+public class H265WriterAnnexB extends NalWriterAnnexB<H265Context, NALUnit> {
     public H265WriterAnnexB(OutputStream out) throws IOException {
         super(out);
     }

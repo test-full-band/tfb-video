@@ -61,6 +61,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
                     "Unsupported resolution: " + resolution);
 
         switch (transfer.code()) {
+            case 2: // DV PQ
             case 16: // PQ
                 alpha = 0.58;
                 break;

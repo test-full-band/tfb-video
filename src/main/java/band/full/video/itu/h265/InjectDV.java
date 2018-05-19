@@ -1,6 +1,6 @@
 package band.full.video.itu.h265;
 
-import static band.full.video.itu.h265.NALUnitType.TRAIL_R;
+import static band.full.video.itu.h265.NALUnitType.PREFIX_SEI_NUT;
 import static band.full.video.itu.h265.SEI.PREFIX_SEI;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.out;
@@ -13,74 +13,81 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 public class InjectDV {
+    private static final String IN_FILE =
+            "target/video-main/H.265-HEVC/UHD4K/DV10/Basic/BT2111U4K_DV10.hevc";
+
+    private static final String OUT_FILE =
+            "target/video-main/H.265-HEVC/UHD4K/DV10/Basic/BT2111U4K_DV10p5.hevc";
+
     public static void main(String[] args)
             throws FileNotFoundException, IOException {
         long time = currentTimeMillis();
-        try (var parser = new H265ReaderAnnexB(
-                new FileInputStream("../BT2111HDR10.h265"));
+        try (var reader = new H265ReaderAnnexB(new FileInputStream(IN_FILE));
              var writer = new H265WriterAnnexB(
-                     new FileOutputStream("../BT2111DV10.h265"))) {
-            for (int i = 0; i < 100; i++) {
-                NALUnit nalu = parser.read();
-                if (nalu == null) {
-                    break;
+                     new FileOutputStream(OUT_FILE))) {
+            NALUnit nalu = reader.read();
+            while (nalu != null) {
+                if (nalu.type == PREFIX_SEI_NUT) {
+                    SEI ps = (SEI) nalu;
+                    if (ps.messages.get(0).payloadType == 1) {
+                        SEI sei = SEI_ST2094_10(0);
+                        writer.write(reader.context, sei);
+                        print(reader.context, sei);
+                    }
                 }
 
-                writer.write(nalu);
-                print(nalu);
+                writer.write(reader.context, nalu);
+                print(reader.context, nalu);
 
-                if (nalu.type == TRAIL_R) {
-                    var cr = new ST2094_10.ContentRange();
-                    cr.min_PQ = 0;
-                    cr.max_PQ = 2048;
-                    cr.avg_PQ = 1024;
-
-                    ST2094_10.TrimPass trim = new ST2094_10.TrimPass();
-                    trim.target_max_PQ = 2048;
-
-                    ST2094_10.DisplayManagementBlock[] blocks = {cr, trim};
-
-                    ST2094_10 dm = new ST2094_10();
-                    dm.metadata_refresh = true;
-                    dm.ext_blocks = blocks;
-
-                    ATSC1 atsc1 = new ATSC1();
-                    atsc1.user_data_type_code = 0x09;
-                    atsc1.user_data_type_structure = dm;
-
-                    UserDataRegisteredT35 t35 = new UserDataRegisteredT35();
-                    t35.country_code = ATSC1.COUNTRY_CODE;
-                    t35.provider_code = ATSC1.PROVIDER_CODE;
-                    t35.user_identifier = ATSC1.USER_IDENTIFIER;
-                    t35.user_structure = atsc1;
-
-                    SEI.Message msg = new SEI.Message();
-                    msg.payloadType =
-                            SEI.PayloadType.user_data_registered_itu_t_t35
-                                    .ordinal();
-                    msg.payload = t35;
-
-                    SEI sei = PREFIX_SEI();
-                    sei.zero_byte = true;
-                    sei.messages = List.of(msg);
-
-                    writer.write(nalu);
-                    print(sei);
-                }
+                nalu = reader.read();
             }
         }
 
         System.out.println("Time: " + (currentTimeMillis() - time));
     }
 
-    private static void print(NALUnit nalu) {
+    private static SEI SEI_ST2094_10(int i) {
+        var cr = new ST2094_10.ContentRange();
+        cr.min_PQ = 0;
+        cr.max_PQ = 4095;
+        cr.avg_PQ = 1024;
+
+        ST2094_10.TrimPass trim = new ST2094_10.TrimPass();
+        trim.target_max_PQ = 2048;
+        // trim.trim_power = (short) (4096 / 24 * i);
+
+        ST2094_10.DisplayManagementBlock[] blocks = {cr, trim};
+
+        ST2094_10 dm = new ST2094_10();
+        dm.metadata_refresh = true;
+        dm.ext_blocks = blocks;
+
+        ATSC1 atsc1 = new ATSC1();
+        atsc1.user_data_type_code = 0x09;
+        atsc1.user_data_type_structure = dm;
+
+        UserDataRegisteredT35 t35 = new UserDataRegisteredT35();
+        t35.country_code = ATSC1.COUNTRY_CODE;
+        t35.provider_code = ATSC1.PROVIDER_CODE;
+        t35.user_identifier = ATSC1.USER_IDENTIFIER;
+        t35.user_structure = atsc1;
+
+        SEI.Message msg = new SEI.Message();
+        msg.payloadType =
+                SEI.PayloadType.user_data_registered_itu_t_t35
+                        .ordinal();
+        msg.payload = t35;
+
+        return PREFIX_SEI(msg);
+    }
+
+    private static void print(H265Context context, NALUnit nalu) {
         out.print(nalu.zero_byte ? "* " : "- ");
         out.println(nalu.getTypeString() +
                 " - " + nalu.getHeaderParamsString());
-        nalu.print(out);
+        nalu.print(context, out);
         out.println();
     }
 }

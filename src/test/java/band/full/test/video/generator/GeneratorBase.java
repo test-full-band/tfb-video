@@ -75,7 +75,7 @@ public abstract class GeneratorBase<A> {
 
             encode(muxer, dir, args);
             String mp4 = muxer.mux();
-            muxer.deleteInputs();
+            // muxer.deleteInputs();
 
             verify(dir, mp4, args);
         } catch (IOException | InterruptedException e) {

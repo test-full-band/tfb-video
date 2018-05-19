@@ -6,13 +6,21 @@ import band.full.video.itu.nal.RbspReader;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class H265ReaderAnnexB extends NalReaderAnnexB<NALUnit> {
+public class H265ReaderAnnexB extends NalReaderAnnexB<H265Context, NALUnit> {
+    public final H265Context context = new H265Context();
+
     public H265ReaderAnnexB(InputStream in) throws IOException {
         super(in);
     }
 
     @Override
-    protected NALUnit create(boolean zero_byte, RbspReader nalu) {
-        return NALUnit.create(zero_byte, nalu);
+    protected H265Context context() {
+        return context;
+    }
+
+    @Override
+    protected NALUnit create(H265Context context, RbspReader nalu,
+            boolean zero_byte) {
+        return NALUnit.create(context, nalu, zero_byte);
     }
 }

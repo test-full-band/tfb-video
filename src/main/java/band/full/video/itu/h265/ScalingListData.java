@@ -15,14 +15,14 @@ import java.io.PrintStream;
  *
  * @author Igor Malinin
  */
-public class ScalingListData implements Structure {
+public class ScalingListData implements Structure<H265Context> {
     public boolean[][] pred_mode_flag; // u(1)
     public int[][] pred_matrix_id_delta; // ue(v)
     public int[][] dc_coef_minus8; // se(v)
     public int[][][] ScalingList;
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H265Context context, RbspReader reader) {
         pred_mode_flag = new boolean[4][];
         pred_matrix_id_delta = new int[4][];
         dc_coef_minus8 = new int[2][];
@@ -71,12 +71,12 @@ public class ScalingListData implements Structure {
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(H265Context context, RbspWriter writer) {
         throw new NoSuchMethodError(); // TODO
     }
 
     @Override
-    public void print(PrintStream ps) {
-        // TODO Auto-generated method stub
+    public void print(H265Context context, PrintStream ps) {
+        throw new NoSuchMethodError(); // TODO
     }
 }

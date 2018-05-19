@@ -1,6 +1,9 @@
 package band.full.video.scte;
 
+import static band.full.core.ArrayMath.toHexString;
+
 import band.full.video.itu.T35;
+import band.full.video.itu.nal.NalContext;
 import band.full.video.itu.nal.Payload;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
@@ -16,6 +19,7 @@ import java.io.PrintStream;
  *      "https://www.scte.org/documents/pdf/Standards/ANSI_SCTE%20128-1%202013.pdf">
  *      ANSI/SCTE 128-1 2013</a>
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class ATSC1 implements T35, Payload {
     /**
      * A fixed 8-bit field, the value of which shall be 0xB5.
@@ -40,22 +44,22 @@ public class ATSC1 implements T35, Payload {
 
     public ATSC1() {}
 
-    public ATSC1(RbspReader reader, int size) {
-        read(reader);
+    public ATSC1(RbspReader reader) {
+        read(null, reader);
     }
 
     @Override
-    public int size() {
-        return user_data_type_structure.size() + 2;
+    public int size(NalContext context) {
+        return user_data_type_structure.size(context) + 2;
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(NalContext context, RbspReader reader) {
         user_data_type_code = reader.readUShort(8);
 
         switch (user_data_type_code) {
             case 0x09: {
-                user_data_type_structure = new ST2094_10(reader);
+                user_data_type_structure = new ST2094_10(context, reader);
                 break;
             }
 
@@ -70,23 +74,30 @@ public class ATSC1 implements T35, Payload {
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(NalContext context, RbspWriter writer) {
         // ATSC1_data()
         writer.writeU(8, user_data_type_code);
-        user_data_type_structure.write(writer);
+        user_data_type_structure.write(context, writer);
         writer.writeS8(MARKER_BITS);
     }
 
     @Override
-    public void print(PrintStream ps) {
+    public void print(NalContext context, PrintStream ps) {
         ps.println("      country_code: 0xB5 [United States]");
         ps.println("      provider_code: 0x0031 [ATSC]");
         ps.println("      user_identifier: 0x47413934 \"GA94\" [ATSC1]");
 
-        ps.print("      user_data_type_code: ");
-        ps.print(user_data_type_code);
-        ps.println(", SMPTE ST2094-10");
+        ps.print("      user_data_type_code: 0x");
+        ps.print(toHexString((byte) user_data_type_code));
+        switch (user_data_type_code) {
+            case 0x09:
+                ps.println(", SMPTE ST.2094-10");
+                break;
 
-        user_data_type_structure.print(ps);
+            default:
+                ps.println();
+        }
+
+        user_data_type_structure.print(context, ps);
     }
 }

@@ -1,12 +1,13 @@
 package band.full.video.itu.nal.sei;
 
+import static band.full.core.ArrayMath.toHexString;
+
 import band.full.video.itu.T35;
+import band.full.video.itu.nal.NalContext;
 import band.full.video.itu.nal.Payload;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
-import band.full.video.itu.nal.Payload.Bytes;
 import band.full.video.scte.ATSC1;
-import band.full.video.smpte.st2094.ST2094_10;
 
 import java.io.PrintStream;
 
@@ -18,6 +19,7 @@ import java.io.PrintStream;
  *
  * @author Igor Malinin
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class UserDataRegisteredT35 implements T35, Payload {
     public short country_code;
     public int provider_code;
@@ -26,27 +28,31 @@ public class UserDataRegisteredT35 implements T35, Payload {
 
     public UserDataRegisteredT35() {}
 
-    public UserDataRegisteredT35(RbspReader reader, int size) {
-        // TODO Auto-generated constructor stub
+    public UserDataRegisteredT35(NalContext context, RbspReader reader,
+            int size) {
+        int start = reader.available();
+        read(context, reader);
+        if (start - reader.available() != size << 3)
+            throw new IllegalArgumentException();
     }
 
     @Override
-    public int size() {
+    public int size(NalContext context) {
         int size = 1;
         if (country_code == UNITED_STATES) {
             size += 2;
             if (provider_code == ATSC1.PROVIDER_CODE) {
                 size += 4;
                 if (user_identifier == ATSC1.USER_IDENTIFIER)
-                    return size + user_structure.size();
+                    return size + user_structure.size(context);
             }
         }
 
-        return size + user_structure.size();
+        return size + user_structure.size(context);
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(NalContext context, RbspReader reader) {
         country_code = reader.readUShort(8);
 
         if (country_code == UNITED_STATES) {
@@ -54,7 +60,7 @@ public class UserDataRegisteredT35 implements T35, Payload {
             if (provider_code == ATSC1.PROVIDER_CODE) {
                 user_identifier = reader.readS32();
                 if (user_identifier == ATSC1.USER_IDENTIFIER) {
-                    user_structure = new ST2094_10(reader);
+                    user_structure = new ATSC1(reader);
                     return;
                 }
             }
@@ -64,39 +70,39 @@ public class UserDataRegisteredT35 implements T35, Payload {
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(NalContext context, RbspWriter writer) {
         writer.writeU(8, country_code);
         if (country_code == UNITED_STATES) {
             writer.writeU(16, provider_code);
             if (provider_code == ATSC1.PROVIDER_CODE) {
                 writer.writeS32(user_identifier);
                 if (user_identifier == ATSC1.USER_IDENTIFIER) {
-                    user_structure.write(writer);
+                    user_structure.write(context, writer);
                     return;
                 }
             }
         }
 
-        user_structure.write(writer);
+        user_structure.write(context, writer);
     }
 
     @Override
-    public void print(PrintStream ps) {
+    public void print(NalContext context, PrintStream ps) {
         ps.print("      country_code: ");
         ps.println(country_code);
         if (country_code == UNITED_STATES) {
-            ps.print("      provider_code: ");
-            ps.println(String.format("0x%4H", provider_code));
+            ps.print("      provider_code: 0x");
+            ps.println(toHexString((short) provider_code));
             if (provider_code == ATSC1.PROVIDER_CODE) {
-                ps.print("      user_identifier: ");
-                ps.println(user_identifier);
+                ps.print("      user_identifier: 0x");
+                ps.println(toHexString(user_identifier));
                 if (user_identifier == ATSC1.USER_IDENTIFIER) {
-                    user_structure.print(ps);
+                    user_structure.print(context, ps);
                     return;
                 }
             }
         }
 
-        user_structure.print(ps);
+        user_structure.print(context, ps);
     }
 }

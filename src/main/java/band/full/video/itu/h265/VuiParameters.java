@@ -13,7 +13,7 @@ import java.io.PrintStream;
  *
  * @author Igor Malinin
  */
-public class VuiParameters implements Structure {
+public class VuiParameters implements Structure<H265Context> {
     public final byte maxNumSubLayersMinus1;
 
     public boolean aspect_ratio_info_present;
@@ -66,7 +66,7 @@ public class VuiParameters implements Structure {
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H265Context context, RbspReader reader) {
         aspect_ratio_info_present = reader.readU1();
         if (aspect_ratio_info_present) {
             aspect_ratio_idc = reader.readUShort(8);
@@ -123,6 +123,7 @@ public class VuiParameters implements Structure {
             vui_hrd_parameters_present = reader.readU1();
             if (vui_hrd_parameters_present) {
                 hrd_parameters = new HrdParameters(true, maxNumSubLayersMinus1);
+                hrd_parameters.read(context, reader);
             }
         }
 
@@ -140,7 +141,7 @@ public class VuiParameters implements Structure {
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(H265Context context, RbspWriter writer) {
         writer.writeU1(aspect_ratio_info_present);
         if (aspect_ratio_info_present) {
             writer.writeU(8, aspect_ratio_idc);
@@ -196,7 +197,7 @@ public class VuiParameters implements Structure {
 
             writer.writeU1(vui_hrd_parameters_present);
             if (vui_hrd_parameters_present) {
-                hrd_parameters.write(writer);
+                hrd_parameters.write(context, writer);
             }
         }
 
@@ -214,114 +215,114 @@ public class VuiParameters implements Structure {
     }
 
     @Override
-    public void print(PrintStream ps) {
-        ps.print("    aspect_ratio_info_present: ");
+    public void print(H265Context context, PrintStream ps) {
+        ps.print("      aspect_ratio_info_present: ");
         ps.println(aspect_ratio_info_present);
         if (aspect_ratio_info_present) {
-            ps.print("      aspect_ratio_idc: ");
+            ps.print("        aspect_ratio_idc: ");
             ps.println(aspect_ratio_idc);
             if (aspect_ratio_idc == 255) { // TODO EXTENDED_SAR constant
-                ps.print("        sar_width: ");
+                ps.print("          sar_width: ");
                 ps.println(sar_width);
-                ps.print("        sar_height: ");
+                ps.print("          sar_height: ");
                 ps.println(sar_height);
             }
         }
 
-        ps.print("    overscan_info_present: ");
+        ps.print("      overscan_info_present: ");
         ps.println(overscan_info_present);
         if (overscan_info_present) {
-            ps.print("      overscan_appropriate: ");
+            ps.print("        overscan_appropriate: ");
             ps.println(overscan_appropriate);
         }
 
-        ps.print("    video_signal_type_present: ");
+        ps.print("      video_signal_type_present: ");
         ps.println(video_signal_type_present);
         if (video_signal_type_present) {
-            ps.print("      video_format: ");
+            ps.print("        video_format: ");
             ps.println(video_format);
-            ps.print("      video_full_range: ");
+            ps.print("        video_full_range: ");
             ps.println(video_full_range);
-            ps.print("      colour_description_present: ");
+            ps.print("        colour_description_present: ");
             ps.println(colour_description_present);
             if (colour_description_present) {
-                ps.print("        colour_primaries: ");
+                ps.print("          colour_primaries: ");
                 ps.println(colour_primaries);
-                ps.print("        transfer_characteristics: ");
+                ps.print("          transfer_characteristics: ");
                 ps.println(transfer_characteristics);
-                ps.print("        matrix_coeffs: ");
+                ps.print("          matrix_coeffs: ");
                 ps.println(matrix_coeffs);
             }
         }
 
-        ps.println("    chroma_loc_info_present: ");
+        ps.print("      chroma_loc_info_present: ");
         ps.println(chroma_loc_info_present);
         if (chroma_loc_info_present) {
-            ps.print("      chroma_sample_loc_type_top_field: ");
+            ps.print("        chroma_sample_loc_type_top_field: ");
             ps.println(chroma_sample_loc_type_top_field);
-            ps.print("      chroma_sample_loc_type_bottom_field: ");
+            ps.print("        chroma_sample_loc_type_bottom_field: ");
             ps.println(chroma_sample_loc_type_bottom_field);
         }
 
-        ps.print("    neutral_chroma_indication: ");
+        ps.print("      neutral_chroma_indication: ");
         ps.println(neutral_chroma_indication);
-        ps.print("    field_seq: ");
+        ps.print("      field_seq: ");
         ps.println(field_seq);
-        ps.print("    frame_field_info_present: ");
+        ps.print("      frame_field_info_present: ");
         ps.println(frame_field_info_present);
-        ps.print("    default_display_window: ");
+        ps.print("      default_display_window: ");
         ps.println(default_display_window);
         if (default_display_window) {
-            ps.print("      def_disp_win_left_offset: ");
+            ps.print("        def_disp_win_left_offset: ");
             ps.println(def_disp_win_left_offset);
-            ps.print("      def_disp_win_right_offset: ");
+            ps.print("        def_disp_win_right_offset: ");
             ps.println(def_disp_win_right_offset);
-            ps.print("      def_disp_win_top_offset: ");
+            ps.print("        def_disp_win_top_offset: ");
             ps.println(def_disp_win_top_offset);
-            ps.print("      def_disp_win_bottom_offset: ");
+            ps.print("        def_disp_win_bottom_offset: ");
             ps.println(def_disp_win_bottom_offset);
         }
 
-        ps.print("    vui_timing_info_present: ");
+        ps.print("      vui_timing_info_present: ");
         ps.println(vui_timing_info_present);
         if (vui_timing_info_present) {
-            ps.print("      vui_num_units_in_tick: ");
+            ps.print("        vui_num_units_in_tick: ");
             ps.println(vui_num_units_in_tick);
-            ps.print("      vui_time_scale: ");
+            ps.print("        vui_time_scale: ");
             ps.println(vui_time_scale);
 
-            ps.print("      vui_poc_proportional_to_timing: ");
+            ps.print("        vui_poc_proportional_to_timing: ");
             ps.println(vui_poc_proportional_to_timing);
             if (vui_poc_proportional_to_timing) {
-                ps.print("        vui_num_ticks_poc_diff_one_minus1: ");
+                ps.print("          vui_num_ticks_poc_diff_one_minus1: ");
                 ps.println(vui_num_ticks_poc_diff_one_minus1);
             }
 
-            ps.print("      vui_hrd_parameters_present: ");
+            ps.print("        vui_hrd_parameters_present: ");
             ps.println(vui_hrd_parameters_present);
             if (vui_hrd_parameters_present) {
-                hrd_parameters.print(ps);
+                hrd_parameters.print(context, ps);
             }
         }
 
-        ps.print("    bitstream_restriction: ");
+        ps.print("      bitstream_restriction: ");
         ps.println(bitstream_restriction);
         if (bitstream_restriction) {
-            ps.print("      tiles_fixed_structure: ");
+            ps.print("        tiles_fixed_structure: ");
             ps.println(tiles_fixed_structure);
-            ps.print("      motion_vectors_over_pic_boundaries: ");
+            ps.print("        motion_vectors_over_pic_boundaries: ");
             ps.println(motion_vectors_over_pic_boundaries);
-            ps.print("      restricted_ref_pic_lists: ");
+            ps.print("        restricted_ref_pic_lists: ");
             ps.println(restricted_ref_pic_lists);
-            ps.print("      min_spatial_segmentation_idc: ");
+            ps.print("        min_spatial_segmentation_idc: ");
             ps.println(min_spatial_segmentation_idc);
-            ps.print("      max_bytes_per_pic_denom: ");
+            ps.print("        max_bytes_per_pic_denom: ");
             ps.println(max_bytes_per_pic_denom);
-            ps.print("      max_bits_per_min_cu_denom: ");
+            ps.print("        max_bits_per_min_cu_denom: ");
             ps.println(max_bits_per_min_cu_denom);
-            ps.print("      log2_max_mv_length_horizontal: ");
+            ps.print("        log2_max_mv_length_horizontal: ");
             ps.println(log2_max_mv_length_horizontal);
-            ps.print("      log2_max_mv_length_vertical: ");
+            ps.print("        log2_max_mv_length_vertical: ");
             ps.println(log2_max_mv_length_vertical);
         }
     }

@@ -36,7 +36,7 @@ public enum NALUnitType {
     RSV_VCL30("Reserved non-IRAP VCL 30"),
     RSV_VCL31("Reserved non-IRAP VCL 31"),
     VPS_NUT("Video parameter set", VPS::new),
-    SPS_NUT("Sequence parameter set"),
+    SPS_NUT("Sequence parameter set", SPS::new),
     PPS_NUT("Picture parameter set", PPS::new),
     AUD_NUT("Access unit delimiter", AUD::new),
     EOS_NUT("End of sequence"),

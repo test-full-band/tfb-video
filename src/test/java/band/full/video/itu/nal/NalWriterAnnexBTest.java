@@ -12,7 +12,7 @@ import java.io.PrintStream;
 
 public class NalWriterAnnexBTest {
     private static final class TestWriterAnnexB
-            extends NalWriterAnnexB<TestNALU> {
+            extends NalWriterAnnexB<NalContext, TestNALU> {
         private TestWriterAnnexB(OutputStream out) throws IOException {
             super(out);
         }
@@ -23,7 +23,7 @@ public class NalWriterAnnexBTest {
         }
     }
 
-    private static final class TestNALU extends NalUnit {
+    private static final class TestNALU extends NalUnit<NalContext> {
         public byte type;
         public byte[] bytes;
 
@@ -44,15 +44,15 @@ public class NalWriterAnnexBTest {
         }
 
         @Override
-        public void read(RbspReader reader) {}
+        public void read(NalContext context, RbspReader reader) {}
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(NalContext context, RbspWriter writer) {
             writer.writeTrailingBits(bytes);
         }
 
         @Override
-        public void print(PrintStream ps) {}
+        public void print(NalContext context, PrintStream ps) {}
     }
 
     @Test
@@ -118,7 +118,7 @@ public class NalWriterAnnexBTest {
         try (TestWriterAnnexB writer = new TestWriterAnnexB(out)) {
             for (var hex : rbsps) {
                 var rbsp = fromHexString(hex);
-                writer.write(new TestNALU(true, NALU_TYPE, rbsp));
+                writer.write(null, new TestNALU(true, NALU_TYPE, rbsp));
             }
         }
         assertArrayEquals(fromHexString(expected), out.toByteArray());

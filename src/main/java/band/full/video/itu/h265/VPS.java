@@ -1,13 +1,12 @@
 package band.full.video.itu.h265;
 
+import static band.full.core.ArrayMath.toHexString;
 import static band.full.video.itu.h265.NALUnitType.VPS_NUT;
-import static java.lang.Integer.toHexString;
 
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 
 import java.io.PrintStream;
-import java.util.Arrays;
 
 /**
  * 7.3.2.1 Video parameter set RBSP syntax
@@ -59,7 +58,7 @@ public class VPS extends NALUnit {
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H265Context context, RbspReader reader) {
         vps_video_parameter_set_id = reader.readUByte(4);
         vps_base_layer_internal = reader.readU1();
         vps_base_layer_available = reader.readU1();
@@ -70,7 +69,7 @@ public class VPS extends NALUnit {
 
         profile_tier_level = new ProfileTierLevel(
                 true, vps_max_sub_layers_minus1);
-        profile_tier_level.read(reader);
+        profile_tier_level.read(context, reader);
 
         vps_sub_layer_ordering_info_present = reader.readU1();
 
@@ -119,7 +118,7 @@ public class VPS extends NALUnit {
 
                 hrd_parameters[i] = new HrdParameters(
                         cprms_present[i], vps_max_sub_layers_minus1);
-                hrd_parameters[i].read(reader);
+                hrd_parameters[i].read(context, reader);
             }
         }
 
@@ -128,7 +127,7 @@ public class VPS extends NALUnit {
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(H265Context context, RbspWriter writer) {
         writer.writeU(4, vps_video_parameter_set_id);
         writer.writeU1(vps_base_layer_internal);
         writer.writeU1(vps_base_layer_available);
@@ -137,7 +136,7 @@ public class VPS extends NALUnit {
         writer.writeU1(vps_temporal_id_nesting);
         writer.writeS16(vps_reserved_0xffff_16bits);
 
-        profile_tier_level.write(writer);
+        profile_tier_level.write(context, writer);
 
         writer.writeU1(vps_sub_layer_ordering_info_present);
 
@@ -175,7 +174,7 @@ public class VPS extends NALUnit {
                     writer.writeU1(cprms_present[i]);
                 }
 
-                hrd_parameters[i].write(writer);
+                hrd_parameters[i].write(context, writer);
             }
         }
 
@@ -184,7 +183,7 @@ public class VPS extends NALUnit {
     }
 
     @Override
-    public void print(PrintStream ps) {
+    public void print(H265Context context, PrintStream ps) {
         ps.print("    vps_video_parameter_set_id: ");
         ps.println(vps_video_parameter_set_id);
         ps.print("    vps_base_layer_internal: ");
@@ -200,7 +199,7 @@ public class VPS extends NALUnit {
         ps.print("    vps_reserved_0xffff_16bits: ");
         ps.println("0x" + toHexString(vps_reserved_0xffff_16bits & 0xFFFF));
 
-        profile_tier_level.print(ps);
+        profile_tier_level.print(context, ps);
 
         ps.print("    vps_sub_layer_ordering_info_present: ");
         ps.println(vps_sub_layer_ordering_info_present);
@@ -256,13 +255,13 @@ public class VPS extends NALUnit {
                     ps.println(cprms_present[i]);
                 }
 
-                hrd_parameters[i].print(ps);
+                hrd_parameters[i].print(context, ps);
             }
         }
 
         ps.print("    vps_extension: ");
         ps.println(vps_extension);
-        ps.print("    vps_extension_data: ");
-        ps.println(Arrays.toString(vps_extension_data));
+        ps.print("    vps_extension_data: 0x");
+        ps.println(toHexString(vps_extension_data));
     }
 }

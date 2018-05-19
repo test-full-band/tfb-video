@@ -2,10 +2,10 @@ package band.full.video.itu.nal;
 
 import java.io.PrintStream;
 
-public interface Structure {
-    void read(RbspReader reader);
+public interface Structure<C extends NalContext> {
+    void read(C context, RbspReader reader);
 
-    void write(RbspWriter writer);
+    void write(C context, RbspWriter writer);
 
-    void print(PrintStream ps);
+    void print(C context, PrintStream ps);
 }

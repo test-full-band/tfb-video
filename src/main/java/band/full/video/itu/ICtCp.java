@@ -39,7 +39,12 @@ public final class ICtCp extends ColorMatrix {
 
     public ICtCp(TransferCharacteristics transfer, Primaries primaries,
             int bitdepth, ColorRange range) {
-        super(14, transfer, primaries, bitdepth, range);
+        this(14, transfer, primaries, bitdepth, range);
+    }
+
+    public ICtCp(int code, TransferCharacteristics transfer,
+            Primaries primaries, int bitdepth, ColorRange range) {
+        super(code, transfer, primaries, bitdepth, range);
     }
 
     @Override

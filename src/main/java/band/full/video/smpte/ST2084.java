@@ -36,7 +36,7 @@ public class ST2084 implements TransferCharacteristics {
     private static final double C2 = 2413.0 / 4096 * 32;
     private static final double C3 = 2392.0 / 4096 * 32;
 
-    private ST2084() {}
+    protected ST2084() {}
 
     /**
      * transfer_characteristics = 16

@@ -58,7 +58,7 @@ public class TestST2094 {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         H265WriterAnnexB writer = new H265WriterAnnexB(out);
-        writer.write(sei);
+        writer.write(null, sei);
         writer.close();
 
         assertArrayEquals(fromHexString("00000001_4E01_041E"

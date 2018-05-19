@@ -6,8 +6,8 @@ import static java.lang.System.arraycopy;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public abstract class NalWriterAnnexB<U extends NalUnit>
-        implements AutoCloseable {
+public abstract class NalWriterAnnexB<C extends NalContext,
+        U extends NalUnit<C>> implements AutoCloseable {
     private final NalBuffer buf;
 
     private final OutputStream out;
@@ -34,7 +34,7 @@ public abstract class NalWriterAnnexB<U extends NalUnit>
         buf.offset = buf.pos = buf.end = 0;
     }
 
-    public void write(U nalu) throws IOException {
+    public void write(C context, U nalu) throws IOException {
         writeStartCodePrefix(nalu.zero_byte);
 
         RbspWriter writer = new RbspWriter(buf);
@@ -43,7 +43,7 @@ public abstract class NalWriterAnnexB<U extends NalUnit>
             throw new IllegalStateException("RBSP buffer is unaligned!");
 
         writeHeader(writer, nalu);
-        nalu.write(writer);
+        nalu.write(context, writer);
         insertEmulationPreventionBytes();
         if (buf.pos >= 524_288) { // 64kB*8bit
             flush();

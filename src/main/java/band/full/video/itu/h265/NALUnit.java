@@ -3,7 +3,7 @@ package band.full.video.itu.h265;
 import band.full.video.itu.nal.NalUnit;
 import band.full.video.itu.nal.RbspReader;
 
-public abstract class NALUnit extends NalUnit {
+public abstract class NALUnit extends NalUnit<H265Context> {
     // nal_unit_header
     public final NALUnitType type;
     public byte nuh_layer_id;
@@ -24,11 +24,12 @@ public abstract class NALUnit extends NalUnit {
                 ", TemporalID " + (nuh_temporal_id_plus1 - 1);
     }
 
-    public static NALUnit create(RbspReader reader) {
-        return create(false, reader);
+    public static NALUnit create(H265Context context, RbspReader reader) {
+        return create(context, reader, false);
     }
 
-    public static NALUnit create(boolean zero_byte, RbspReader reader) {
+    public static NALUnit create(H265Context context, RbspReader reader,
+            boolean zero_byte) {
         // nal_unit_header
         if (reader.readU1())
             throw new IllegalStateException("forbidden_zero_bit is 1");
@@ -41,7 +42,7 @@ public abstract class NALUnit extends NalUnit {
         nalu.nuh_temporal_id_plus1 = reader.readUByte(3);
 
         // *_rbsp()
-        nalu.read(reader);
+        nalu.read(context, reader);
         return nalu;
     }
 }

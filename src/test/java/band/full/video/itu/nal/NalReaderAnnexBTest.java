@@ -1,67 +1,54 @@
 package band.full.video.itu.nal;
 
-import static band.full.core.TestArrayMath.bytes;
+import static band.full.core.ArrayMath.fromHexString;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 public class NalReaderAnnexBTest {
     private static final class TestReaderAnnexB
-            extends NalReaderAnnexB<NalUnit> {
-        private TestReaderAnnexB(byte[] nal) {
-            super(nal); // TODO use ByteArrayInputStream in tests
+            extends NalReaderAnnexB<NalContext, NalUnit<NalContext>> {
+        private TestReaderAnnexB(byte[] in) throws IOException {
+            super(new ByteArrayInputStream(in));
         }
 
         @Override
-        protected NalUnit create(boolean zero_byte, RbspReader nalu) {
+        protected NalContext context() {
+            return null;
+        }
+
+        @Override
+        protected NalUnit<NalContext> create(NalContext context,
+                RbspReader nalu, boolean zero_byte) {
             throw new NoSuchMethodError();
         }
     }
 
     @Test
     public void testRemoveEmulationPrevention() throws IOException {
-        assertRbspBytes(bytes(0x00, 0x00),
-                bytes(0x00, 0x00, 0x03));
-
-        assertRbspBytes(bytes(0x01, 0x00, 0x00),
-                bytes(0x01, 0x00, 0x00, 0x03));
-
-        assertRbspBytes(bytes(0x00, 0x00, 0x00),
-                bytes(0x00, 0x00, 0x03, 0x00));
-
-        assertRbspBytes(bytes(0x00, 0x00, 0x01),
-                bytes(0x00, 0x00, 0x03, 0x01));
-
-        assertRbspBytes(bytes(0x00, 0x00, 0x03),
-                bytes(0x00, 0x00, 0x03, 0x03));
-
-        assertRbspBytes(bytes(0x00, 0x00, 0x00, 0x00),
-                bytes(0x00, 0x00, 0x03, 0x00, 0x00));
-
-        assertRbspBytes(bytes(0x00, 0x00, 0x01, 0x00, 0x00),
-                bytes(0x00, 0x00, 0x03, 0x01, 0x00, 0x00));
-
-        assertRbspBytes(bytes(0x00, 0x00, 0x00, 0x00),
-                bytes(0x00, 0x00, 0x03, 0x00, 0x00, 0x03));
-
-        assertRbspBytes(bytes(0x00, 0x00, 0x01, 0x00, 0x00),
-                bytes(0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x03));
-
-        assertRbspBytes(bytes(0x00, 0x00, 0x01, 0x00, 0x00, 0x01),
-                bytes(0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x03, 0x01));
-
-        assertRbspBytes(bytes(0x00, 0x00),
-                bytes(0x00, 0x00, 0x03, 0x00, 0x00, 0x01));
-
-        assertRbspBytes(bytes(0x00, 0x00),
-                bytes(0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x01));
+        assertRbspBytes("0000", "00000001_000003");
+        assertRbspBytes("010000", "00000001_01_000003");
+        assertRbspBytes("000000", "00000001_000003_00");
+        assertRbspBytes("000001", "00000001_000003_01");
+        assertRbspBytes("000003", "00000001_000003_03");
+        assertRbspBytes("0000_0000", "00000001_000003_0000");
+        assertRbspBytes("000001_0000", "00000001_000003_010000");
+        assertRbspBytes("0000_0000", "00000001_000003_000003");
+        assertRbspBytes("000001_0000", "00000001_000003_01_000003");
+        assertRbspBytes("000001_000001", "00000001_000003_01_000003_01");
+        assertRbspBytes("0000", "00000001_000003_000001");
+        assertRbspBytes("0000", "00000001_000003_00000001");
     }
 
-    private void assertRbspBytes(byte[] expected, byte[] in)
+    private void assertRbspBytes(String expected, String in)
             throws IOException {
-        RbspReader reader = new TestReaderAnnexB(in).nalu();
-        assertArrayEquals(expected, reader.readTrailingBits());
+        try (TestReaderAnnexB test = new TestReaderAnnexB(fromHexString(in))) {
+            RbspReader reader = test.nalu();
+            assertArrayEquals(fromHexString(expected),
+                    reader.readTrailingBits());
+        }
     }
 }

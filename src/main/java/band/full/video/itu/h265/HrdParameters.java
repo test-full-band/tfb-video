@@ -1,5 +1,7 @@
 package band.full.video.itu.h265;
 
+import static java.util.Arrays.setAll;
+
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.itu.nal.Structure;
@@ -13,14 +15,14 @@ import java.io.PrintStream;
  *
  * @author Igor Malinin
  */
-public class HrdParameters implements Structure {
+public class HrdParameters implements Structure<H265Context> {
     public final boolean commonInfPresentFlag;
     public final byte maxNumSubLayersMinus1;
 
     public final CommonInf common_inf = new CommonInf();
     public final SubLayer[] sub_layers;
 
-    public static class CommonInf implements Structure {
+    public static class CommonInf implements Structure<H265Context> {
         public boolean nal_hrd_parameters_present;
         public boolean vcl_hrd_parameters_present;
         public boolean sub_pic_hrd_params_present;
@@ -36,7 +38,7 @@ public class HrdParameters implements Structure {
         public byte dpb_output_delay_length_minus1; // u5
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(H265Context context, RbspReader reader) {
             nal_hrd_parameters_present = reader.readU1();
             vcl_hrd_parameters_present = reader.readU1();
 
@@ -48,7 +50,7 @@ public class HrdParameters implements Structure {
                     du_cpb_removal_delay_increment_length_minus1 =
                             reader.readUByte(5);
                     sub_pic_cpb_params_in_pic_timing_sei = reader.readU1();
-                    dpb_output_delay_du_length_minus1 = reader.readUByte(2);
+                    dpb_output_delay_du_length_minus1 = reader.readUByte(5);
                 }
 
                 bit_rate_scale = reader.readUByte(4);
@@ -65,7 +67,7 @@ public class HrdParameters implements Structure {
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(H265Context context, RbspWriter writer) {
             writer.writeU1(nal_hrd_parameters_present);
             writer.writeU1(vcl_hrd_parameters_present);
 
@@ -77,7 +79,7 @@ public class HrdParameters implements Structure {
                     writer.writeU(5,
                             du_cpb_removal_delay_increment_length_minus1);
                     writer.writeU1(sub_pic_cpb_params_in_pic_timing_sei);
-                    writer.writeU(2, dpb_output_delay_du_length_minus1);
+                    writer.writeU(5, dpb_output_delay_du_length_minus1);
                 }
 
                 writer.writeU(4, bit_rate_scale);
@@ -94,49 +96,50 @@ public class HrdParameters implements Structure {
         }
 
         @Override
-        public void print(PrintStream ps) {
-            ps.print("    nal_hrd_parameters_present: ");
+        public void print(H265Context context, PrintStream ps) {
+            ps.print("          nal_hrd_parameters_present: ");
             ps.println(nal_hrd_parameters_present);
-            ps.print("    vcl_hrd_parameters_present: ");
+            ps.print("          vcl_hrd_parameters_present: ");
             ps.println(vcl_hrd_parameters_present);
 
             if (nal_hrd_parameters_present || vcl_hrd_parameters_present) {
-                ps.print("    sub_pic_hrd_params_present: ");
+                ps.print("          sub_pic_hrd_params_present: ");
                 ps.println(sub_pic_hrd_params_present);
 
                 if (sub_pic_hrd_params_present) {
-                    ps.print("    tick_divisor_minus2: ");
+                    ps.print("          tick_divisor_minus2: ");
                     ps.println(tick_divisor_minus2);
                     ps.print(
-                            "    du_cpb_removal_delay_increment_length_minus1: ");
+                            "          du_cpb_removal_delay_increment_length_minus1: ");
                     ps.println(du_cpb_removal_delay_increment_length_minus1);
-                    ps.print("    sub_pic_cpb_params_in_pic_timing_sei: ");
+                    ps.print(
+                            "          sub_pic_cpb_params_in_pic_timing_sei: ");
                     ps.println(sub_pic_cpb_params_in_pic_timing_sei);
-                    ps.print("    dpb_output_delay_du_length_minus1: ");
+                    ps.print("          dpb_output_delay_du_length_minus1: ");
                     ps.println(dpb_output_delay_du_length_minus1);
                 }
 
-                ps.print("    bit_rate_scale: ");
+                ps.print("          bit_rate_scale: ");
                 ps.println(bit_rate_scale);
-                ps.print("    cpb_size_scale: ");
+                ps.print("          cpb_size_scale: ");
                 ps.println(cpb_size_scale);
 
                 if (sub_pic_hrd_params_present) {
-                    ps.print("    cpb_size_du_scale: ");
+                    ps.print("          cpb_size_du_scale: ");
                     ps.println(cpb_size_du_scale);
                 }
 
-                ps.print("    initial_cpb_removal_delay_length_minus1: ");
+                ps.print("          initial_cpb_removal_delay_length_minus1: ");
                 ps.println(initial_cpb_removal_delay_length_minus1);
-                ps.print("    au_cpb_removal_delay_length_minus1: ");
+                ps.print("          au_cpb_removal_delay_length_minus1: ");
                 ps.println(au_cpb_removal_delay_length_minus1);
-                ps.print("    dpb_output_delay_length_minus1: ");
+                ps.print("          dpb_output_delay_length_minus1: ");
                 ps.println(dpb_output_delay_length_minus1);
             }
         }
     }
 
-    public class SubLayer implements Structure {
+    public class SubLayer implements Structure<H265Context> {
         public boolean fixed_pic_rate_general;
         public boolean fixed_pic_rate_within_cvs;
         public int elemental_duration_in_tc_minus1;
@@ -148,11 +151,10 @@ public class HrdParameters implements Structure {
         public SubLayerParameters[] vcl_hrd_parameters;
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(H265Context context, RbspReader reader) {
             fixed_pic_rate_general = reader.readU1();
-            if (!fixed_pic_rate_general) {
-                fixed_pic_rate_within_cvs = reader.readU1();
-            }
+            fixed_pic_rate_within_cvs = fixed_pic_rate_general
+                    || reader.readU1();
             if (fixed_pic_rate_within_cvs) {
                 elemental_duration_in_tc_minus1 = reader.readUE();
             } else {
@@ -166,23 +168,28 @@ public class HrdParameters implements Structure {
 
             if (common_inf.nal_hrd_parameters_present) {
                 nal_hrd_parameters = new SubLayerParameters[CbpCnt];
+                setAll(nal_hrd_parameters, i -> new SubLayerParameters());
                 for (SubLayerParameters nhp : nal_hrd_parameters) {
-                    nhp.read(reader);
+                    nhp.read(context, reader);
                 }
             }
 
             if (common_inf.vcl_hrd_parameters_present) {
                 vcl_hrd_parameters = new SubLayerParameters[CbpCnt];
+                setAll(vcl_hrd_parameters, i -> new SubLayerParameters());
                 for (SubLayerParameters vhp : vcl_hrd_parameters) {
-                    vhp.read(reader);
+                    vhp.read(context, reader);
                 }
             }
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(H265Context context, RbspWriter writer) {
             writer.writeU1(fixed_pic_rate_general);
-            if (!fixed_pic_rate_general) {
+            if (fixed_pic_rate_general) {
+                if (!fixed_pic_rate_within_cvs)
+                    throw new IllegalStateException();
+            } else {
                 writer.writeU1(fixed_pic_rate_within_cvs);
             }
             if (fixed_pic_rate_within_cvs) {
@@ -201,7 +208,7 @@ public class HrdParameters implements Structure {
                     throw new IllegalStateException();
 
                 for (SubLayerParameters nhp : nal_hrd_parameters) {
-                    nhp.write(writer);
+                    nhp.write(context, writer);
                 }
             }
 
@@ -210,42 +217,42 @@ public class HrdParameters implements Structure {
                     throw new IllegalStateException();
 
                 for (SubLayerParameters vhp : vcl_hrd_parameters) {
-                    vhp.write(writer);
+                    vhp.write(context, writer);
                 }
             }
         }
 
         @Override
-        public void print(PrintStream ps) {
-            ps.print("    fixed_pic_rate_general: ");
+        public void print(H265Context context, PrintStream ps) {
+            ps.print("          fixed_pic_rate_general: ");
             ps.println(fixed_pic_rate_general);
             if (!fixed_pic_rate_general) {
-                ps.print("    fixed_pic_rate_within_cvs: ");
+                ps.print("          fixed_pic_rate_within_cvs: ");
                 ps.println(fixed_pic_rate_within_cvs);
             }
             if (fixed_pic_rate_within_cvs) {
-                ps.print("    elemental_duration_in_tc_minus1: ");
+                ps.print("          elemental_duration_in_tc_minus1: ");
                 ps.println(elemental_duration_in_tc_minus1);
             } else {
-                ps.print("    low_delay_hrd: ");
+                ps.print("          low_delay_hrd: ");
                 ps.println(low_delay_hrd);
             }
             if (!low_delay_hrd) {
-                ps.print("    cpb_cnt_minus1: ");
+                ps.print("          cpb_cnt_minus1: ");
                 ps.println(cpb_cnt_minus1);
             }
 
             if (common_inf.nal_hrd_parameters_present) {
-                ps.print("    nal_hrd_parameters");
+                ps.println("          nal_hrd_parameters");
                 for (SubLayerParameters nhp : nal_hrd_parameters) {
-                    nhp.print(ps);
+                    nhp.print(context, ps);
                 }
             }
 
             if (common_inf.vcl_hrd_parameters_present) {
-                ps.print("    vcl_hrd_parameters");
+                ps.print("          vcl_hrd_parameters");
                 for (SubLayerParameters vhp : vcl_hrd_parameters) {
-                    vhp.print(ps);
+                    vhp.print(context, ps);
                 }
             }
         }
@@ -256,7 +263,7 @@ public class HrdParameters implements Structure {
      * <p>
      * <code>sub_layer_hrd_parameters(subLayerId)</code>
      */
-    public class SubLayerParameters implements Structure {
+    public class SubLayerParameters implements Structure<H265Context> {
         public int bit_rate_value_minus1;
         public int cpb_size_value_minus1;
         public int cpb_size_du_value_minus1;
@@ -264,7 +271,7 @@ public class HrdParameters implements Structure {
         public boolean cbr;
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(H265Context context, RbspReader reader) {
             bit_rate_value_minus1 = reader.readUE();
             cpb_size_value_minus1 = reader.readUE();
 
@@ -277,7 +284,7 @@ public class HrdParameters implements Structure {
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(H265Context context, RbspWriter writer) {
             writer.writeUE(bit_rate_value_minus1);
             writer.writeUE(cpb_size_value_minus1);
 
@@ -290,20 +297,20 @@ public class HrdParameters implements Structure {
         }
 
         @Override
-        public void print(PrintStream ps) {
-            ps.print("      bit_rate_value_minus1: ");
+        public void print(H265Context context, PrintStream ps) {
+            ps.print("            bit_rate_value_minus1: ");
             ps.println(bit_rate_value_minus1);
-            ps.print("      cpb_size_value_minus1: ");
+            ps.print("            cpb_size_value_minus1: ");
             ps.println(cpb_size_value_minus1);
 
             if (common_inf.sub_pic_hrd_params_present) {
-                ps.print("      cpb_size_du_value_minus1: ");
+                ps.print("            cpb_size_du_value_minus1: ");
                 ps.println(cpb_size_du_value_minus1);
-                ps.print("      bit_rate_du_value_minus1: ");
+                ps.print("            bit_rate_du_value_minus1: ");
                 ps.println(bit_rate_du_value_minus1);
             }
 
-            ps.print("      cbr: ");
+            ps.print("            cbr: ");
             ps.println(cbr);
         }
     }
@@ -314,40 +321,42 @@ public class HrdParameters implements Structure {
         this.maxNumSubLayersMinus1 = maxNumSubLayersMinus1;
 
         sub_layers = new SubLayer[maxNumSubLayersMinus1 + 1];
+        setAll(sub_layers, i -> new SubLayer());
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H265Context context, RbspReader reader) {
         if (commonInfPresentFlag) {
-            common_inf.read(reader);
+            common_inf.read(context, reader);
         }
 
         for (SubLayer sl : sub_layers) {
-            sl.read(reader);
-        }
-    }
-
-    @Override
-    public void write(RbspWriter writer) {
-        if (commonInfPresentFlag) {
-            common_inf.write(writer);
-        }
-
-        for (SubLayer sl : sub_layers) {
-            sl.write(writer);
+            sl.read(context, reader);
         }
     }
 
     @Override
-    public void print(PrintStream ps) {
-        ps.print("  hrd_parameters");
+    public void write(H265Context context, RbspWriter writer) {
         if (commonInfPresentFlag) {
-            common_inf.print(ps);
+            common_inf.write(context, writer);
         }
 
         for (SubLayer sl : sub_layers) {
-            ps.print("    sub_layer");
-            sl.print(ps);
+            sl.write(context, writer);
+        }
+    }
+
+    @Override
+    public void print(H265Context context, PrintStream ps) {
+        ps.println("        hrd_parameters");
+        if (commonInfPresentFlag) {
+            common_inf.print(context, ps);
+        }
+
+        for (int i = 0; i < sub_layers.length; i++) {
+            ps.print("        sub_layer_");
+            ps.println(i);
+            sub_layers[i].print(context, ps);
         }
     }
 }

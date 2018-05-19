@@ -15,7 +15,7 @@ import java.io.PrintStream;
  *
  * @author Igor Malinin
  */
-public class ProfileTierLevel implements Structure {
+public class ProfileTierLevel implements Structure<H265Context> {
     public final boolean profilePresentFlag;
     public final byte maxNumSubLayersMinus1;
 
@@ -26,7 +26,7 @@ public class ProfileTierLevel implements Structure {
     public final boolean[] sub_layer_profile_present;
     public final boolean[] sub_layer_level_present;
 
-    public static class LayerProfile implements Structure {
+    public static class LayerProfile implements Structure<H265Context> {
         public byte sub_layer_profile_space;
         public boolean sub_layer_tier;
         public byte sub_layer_profile_idc;
@@ -57,7 +57,7 @@ public class ProfileTierLevel implements Structure {
         // } end if
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(H265Context context, RbspReader reader) {
             sub_layer_profile_space = reader.readUByte(2);
             sub_layer_tier = reader.readU1();
             sub_layer_profile_idc = reader.readUByte(5);
@@ -82,7 +82,7 @@ public class ProfileTierLevel implements Structure {
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(H265Context context, RbspWriter writer) {
             writer.writeU(2, sub_layer_profile_space);
             writer.writeU1(sub_layer_tier);
             writer.writeU(5, sub_layer_profile_idc);
@@ -107,7 +107,7 @@ public class ProfileTierLevel implements Structure {
         }
 
         @Override
-        public void print(PrintStream ps) {
+        public void print(H265Context context, PrintStream ps) {
             ps.print("      sub_layer_profile_space: ");
             ps.println(sub_layer_profile_space);
             ps.print("      sub_layer_tier: ");
@@ -170,9 +170,9 @@ public class ProfileTierLevel implements Structure {
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H265Context context, RbspReader reader) {
         if (profilePresentFlag) {
-            general_profile.read(reader);
+            general_profile.read(context, reader);
         }
 
         general_level_idc = reader.readUShort(8);
@@ -190,7 +190,7 @@ public class ProfileTierLevel implements Structure {
         for (int i = 0; i < maxNumSubLayersMinus1; i++) {
             if (sub_layer_profile_present[i]) {
                 sub_layer_profile[i] = new LayerProfile();
-                sub_layer_profile[i].read(reader);
+                sub_layer_profile[i].read(context, reader);
             }
 
             if (sub_layer_level_present[i]) {
@@ -200,9 +200,9 @@ public class ProfileTierLevel implements Structure {
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(H265Context context, RbspWriter writer) {
         if (profilePresentFlag) {
-            general_profile.write(writer);
+            general_profile.write(context, writer);
         }
 
         writer.writeU(8, general_level_idc);
@@ -218,7 +218,7 @@ public class ProfileTierLevel implements Structure {
 
         for (int i = 0; i < maxNumSubLayersMinus1; i++) {
             if (sub_layer_profile_present[i]) {
-                sub_layer_profile[i].write(writer);
+                sub_layer_profile[i].write(context, writer);
             }
 
             if (sub_layer_level_present[i]) {
@@ -228,10 +228,10 @@ public class ProfileTierLevel implements Structure {
     }
 
     @Override
-    public void print(PrintStream ps) {
+    public void print(H265Context context, PrintStream ps) {
         if (profilePresentFlag) {
             ps.println("    general_profile");
-            general_profile.print(ps);
+            general_profile.print(context, ps);
         }
 
         ps.print("    general_level_idc: ");
@@ -253,7 +253,7 @@ public class ProfileTierLevel implements Structure {
         for (int i = 0; i < maxNumSubLayersMinus1; i++) {
             ps.println("    sub_layer: " + i);
             if (sub_layer_profile_present[i]) {
-                sub_layer_profile[i].print(ps);
+                sub_layer_profile[i].print(context, ps);
             }
 
             if (sub_layer_level_present[i]) {

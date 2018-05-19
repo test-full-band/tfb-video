@@ -13,7 +13,7 @@ import java.io.PrintStream;
  *
  * @author Igor Malinin
  */
-public class StRefPicSet implements Structure {
+public class StRefPicSet implements Structure<H265Context> {
     public final byte stRpsIdx;
     public final byte stRpsNum;
 
@@ -37,7 +37,7 @@ public class StRefPicSet implements Structure {
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H265Context context, RbspReader reader) {
         if (stRpsIdx != 0) {
             inter_ref_pic_set_prediction_flag = reader.readU1();
         }
@@ -52,8 +52,7 @@ public class StRefPicSet implements Structure {
             delta_rps_sign = reader.readU1();
             abs_delta_rps_minus1 = reader.readUE();
 
-            // TODO j <= NumDeltaPocs[RefRpsIdx]
-            for (int j = 0; j <= 0; j++) {
+            for (int j = 0; j <= context.NumDeltaPocs(RefRpsIdx); j++) {
                 used_by_curr_pic_flag[j] = reader.readU1();
                 if (!used_by_curr_pic_flag[j]) {
                     use_delta_flag[j] = reader.readU1();
@@ -76,12 +75,12 @@ public class StRefPicSet implements Structure {
     }
 
     @Override
-    public void write(RbspWriter writer) {
-        // TODO
+    public void write(H265Context context, RbspWriter writer) {
+        throw new NoSuchMethodError(); // TODO
     }
 
     @Override
-    public void print(PrintStream ps) {
-        // TODO
+    public void print(H265Context context, PrintStream ps) {
+        throw new NoSuchMethodError(); // TODO
     }
 }

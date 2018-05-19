@@ -3,6 +3,7 @@ package band.full.video.smpte.st2094;
 import static band.full.core.ArrayMath.toHexString;
 import static band.full.video.itu.nal.RbspWriter.countUEbits;
 
+import band.full.video.itu.nal.NalContext;
 import band.full.video.itu.nal.Payload;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
@@ -20,6 +21,7 @@ import java.io.PrintStream;
  *      "https://www.atsc.org/wp-content/uploads/2017/05/A341-2018-Video-HEVC-1.pdf">
  *      A/341:2018</a> Video - HEVC
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class ST2094_10 implements Payload {
     /**
      * <code>ext_dm_data_block_payload()</code>
@@ -46,7 +48,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(NalContext context, RbspReader reader) {
             min_PQ = reader.readUShort(12);
             max_PQ = reader.readUShort(12);
             avg_PQ = reader.readUShort(12);
@@ -56,7 +58,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(NalContext context, RbspWriter writer) {
             writer.writeU(12, min_PQ);
             writer.writeU(12, max_PQ);
             writer.writeU(12, avg_PQ);
@@ -65,7 +67,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void print(PrintStream ps) {
+        public void print(NalContext context, PrintStream ps) {
             ps.print("    Level ");
             ps.print(level);
             ps.println(" - Content Range");
@@ -95,7 +97,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(NalContext context, RbspReader reader) {
             target_max_PQ = reader.readUShort(12);
             trim_slope = reader.readUShort(12);
             trim_offset = reader.readUShort(12);
@@ -109,7 +111,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(NalContext context, RbspWriter writer) {
             writer.writeU(12, target_max_PQ);
             writer.writeU(12, trim_slope);
             writer.writeU(12, trim_offset);
@@ -122,7 +124,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void print(PrintStream ps) {
+        public void print(NalContext context, PrintStream ps) {
             ps.print("    Level ");
             ps.print(level);
             ps.println(" - Trim Pass");
@@ -157,7 +159,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(NalContext context, RbspReader reader) {
             left_offset = reader.readUShort(13);
             right_offset = reader.readUShort(13);
             top_offset = reader.readUShort(13);
@@ -168,7 +170,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(NalContext context, RbspWriter writer) {
             writer.writeU(13, left_offset);
             writer.writeU(13, right_offset);
             writer.writeU(13, top_offset);
@@ -178,7 +180,7 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void print(PrintStream ps) {
+        public void print(NalContext context, PrintStream ps) {
             ps.print("    Level ");
             ps.print(level);
             ps.println(" - Active Area");
@@ -202,17 +204,17 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(NalContext context, RbspReader reader) {
             bytes = reader.readBytes(length);
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(NalContext context, RbspWriter writer) {
             writer.writeBytes(bytes);
         }
 
         @Override
-        public void print(PrintStream ps) {
+        public void print(NalContext context, PrintStream ps) {
             ps.print("    Level ");
             ps.println(level);
             ps.print("      bytes: ");
@@ -222,8 +224,8 @@ public class ST2094_10 implements Payload {
 
     public ST2094_10() {}
 
-    public ST2094_10(RbspReader reader) {
-        read(reader);
+    public ST2094_10(NalContext context, RbspReader reader) {
+        read(context, reader);
     }
 
     public int app_identifier = 1;
@@ -233,7 +235,7 @@ public class ST2094_10 implements Payload {
     public DisplayManagementBlock[] ext_blocks;
 
     @Override
-    public int size() {
+    public int size(NalContext context) {
         int bits = countUEbits(app_identifier)
                 + countUEbits(app_version) + 1;
 
@@ -251,7 +253,7 @@ public class ST2094_10 implements Payload {
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(NalContext context, RbspReader reader) {
         app_identifier = reader.readUE();
         app_version = reader.readUE();
 
@@ -289,7 +291,7 @@ public class ST2094_10 implements Payload {
                     if (length != block.length)
                         throw new IllegalStateException();
 
-                    block.read(reader);
+                    block.read(context, reader);
 
                     while (!reader.isByteAligned())
                         if (reader.readU1()) throw new IllegalStateException();
@@ -304,7 +306,7 @@ public class ST2094_10 implements Payload {
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(NalContext context, RbspWriter writer) {
         writer.writeUE(app_identifier);
         writer.writeUE(app_version);
 
@@ -322,7 +324,7 @@ public class ST2094_10 implements Payload {
                     writer.writeUE(block.length);
                     writer.writeU(8, block.level);
 
-                    block.write(writer);
+                    block.write(context, writer);
 
                     while (!writer.isByteAligned()) {
                         writer.writeU1(false);
@@ -339,7 +341,7 @@ public class ST2094_10 implements Payload {
     }
 
     @Override
-    public void print(PrintStream ps) {
+    public void print(NalContext context, PrintStream ps) {
         ps.println("    Display Management");
         ps.print("      app_identifier: ");
         ps.println(app_identifier);
@@ -350,7 +352,7 @@ public class ST2094_10 implements Payload {
         ps.println(metadata_refresh);
         if (metadata_refresh && ext_blocks != null && ext_blocks.length > 0) {
             for (var ext_block : ext_blocks) {
-                ext_block.print(ps);
+                ext_block.print(context, ps);
             }
         }
     }

@@ -50,9 +50,13 @@ public class ArrayMath {
     };
 
     public static String toBinaryString(byte[] bytes) {
-        char[] chars = new char[bytes.length * 8];
+        return toBinaryString(bytes, 0, bytes.length);
+    }
 
-        for (int i = 0, j = 0; i < bytes.length;) {
+    public static String toBinaryString(byte[] bytes, int offset, int length) {
+        char[] chars = new char[length * 8];
+
+        for (int i = offset, j = 0, end = offset + length; i < end;) {
             int v = bytes[i++] & 0xFF;
             String b = BINARY[v >>> 4];
             chars[j++] = b.charAt(0);
@@ -72,14 +76,41 @@ public class ArrayMath {
     private final static char[] HEX = "0123456789ABCDEF".toCharArray();
 
     public static String toHexString(byte[] bytes) {
-        char[] chars = new char[bytes.length * 2];
+        return toHexString(bytes, 0, bytes.length);
+    }
 
-        for (int i = 0, j = 0; i < bytes.length;) {
+    public static String toHexString(byte[] bytes, int offset, int length) {
+        char[] chars = new char[length * 2];
+
+        for (int i = offset, j = 0, end = offset + length; i < end;) {
             int v = bytes[i++] & 0xFF;
             chars[j++] = HEX[v >>> 4];
             chars[j++] = HEX[v & 0x0F];
         }
 
+        return new String(chars);
+    }
+
+    public static String toHexString(byte b) {
+        char[] chars = {HEX[b >>> 4], HEX[b & 0x0F]};
+        return new String(chars);
+    }
+
+    public static String toHexString(short s) {
+        char[] chars = {
+            HEX[s >>> 12 & 0x0F], HEX[s >>> 8 & 0x0F],
+            HEX[s >>> 4 & 0x0F], HEX[s & 0x0F]
+        };
+        return new String(chars);
+    }
+
+    public static String toHexString(int value) {
+        char[] chars = {
+            HEX[value >>> 28 & 0x0F], HEX[value >>> 24 & 0x0F],
+            HEX[value >>> 20 & 0x0F], HEX[value >>> 16 & 0x0F],
+            HEX[value >>> 12 & 0x0F], HEX[value >>> 8 & 0x0F],
+            HEX[value >>> 4 & 0x0F], HEX[value & 0x0F]
+        };
         return new String(chars);
     }
 

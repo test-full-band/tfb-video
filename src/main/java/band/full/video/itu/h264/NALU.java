@@ -25,17 +25,17 @@ public class NALU extends NALUnit {
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H264Context context, RbspReader reader) {
         bytes = reader.readTrailingBits();
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(H264Context context, RbspWriter writer) {
         writer.writeTrailingBits(bytes);
     }
 
     @Override
-    public void print(PrintStream ps) {
+    public void print(H264Context context, PrintStream ps) {
         ps.println("    size: " + bytes.length);
         if (bytes.length <= 256) {
             ps.print("    bytes: 0x");

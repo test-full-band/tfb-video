@@ -23,19 +23,19 @@ public class AUD extends NALUnit {
     }
 
     @Override
-    public void read(RbspReader reader) {
+    public void read(H265Context context, RbspReader reader) {
         pic_type = reader.readUByte(3);
         trailing_bits = reader.readTrailingBits();
     }
 
     @Override
-    public void write(RbspWriter writer) {
+    public void write(H265Context context, RbspWriter writer) {
         writer.writeU(3, pic_type);
         writer.writeTrailingBits(trailing_bits);
     }
 
     @Override
-    public void print(PrintStream ps) {
+    public void print(H265Context context, PrintStream ps) {
         ps.print("    pic_type: ");
         ps.println(pic_type);
     }

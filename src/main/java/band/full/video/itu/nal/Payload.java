@@ -4,16 +4,17 @@ import static band.full.core.ArrayMath.toHexString;
 
 import java.io.PrintStream;
 
-public interface Payload extends Structure {
-    int size();
+public interface Payload<C extends NalContext> extends Structure<C> {
+    int size(C context);
 
+    @SuppressWarnings("rawtypes")
     public static class Bytes implements Payload {
         public byte[] bytes;
 
         public Bytes() {}
 
         public Bytes(RbspReader reader) {
-            read(reader);
+            read(null, reader);
         }
 
         public Bytes(RbspReader reader, int size) {
@@ -21,22 +22,22 @@ public interface Payload extends Structure {
         }
 
         @Override
-        public int size() {
+        public int size(NalContext context) {
             return bytes.length;
         }
 
         @Override
-        public void read(RbspReader reader) {
+        public void read(NalContext context, RbspReader reader) {
             bytes = reader.readTrailingBits();
         }
 
         @Override
-        public void write(RbspWriter writer) {
+        public void write(NalContext context, RbspWriter writer) {
             writer.writeBytes(bytes);
         }
 
         @Override
-        public void print(PrintStream ps) {
+        public void print(NalContext context, PrintStream ps) {
             ps.print("      payload: 0x");
             ps.println(toHexString(bytes));
         }
