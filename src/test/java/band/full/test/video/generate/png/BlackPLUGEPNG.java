@@ -22,13 +22,12 @@ import java.io.IOException;
  */
 @GenerateVideo(MAIN)
 public class BlackPLUGEPNG extends BlackPLUGEGenerator {
-    private final double AMP = 16.0; // intensity amplification factor
-    private final double OFF = matrix.fromLumaCode(matrix.YMIN + step1); // intensity
-                                                                         // offset
+    private static final double AMP = 16.0; // intensity amplification factor
+    private final double OFF;
 
     public BlackPLUGEPNG() {
         super(null, HD_MAIN, null, null);
-        // OFF = ;
+        OFF = matrix.fromLumaCode(matrix.YMIN + step1); // intensity offset
     }
 
     @Test
