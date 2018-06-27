@@ -11,9 +11,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <surefire.version>2.19.1</surefire.version>
-    <junit.jupiter.version>5.1.0</junit.jupiter.version>
-    <junit.platform.version>1.1.0</junit.platform.version>
+    <surefire.version>2.21.0</surefire.version>
+    <junit.jupiter.version>5.2.0</junit.jupiter.version>
+    <junit.platform.version>1.2.0</junit.platform.version>
   </properties>
 
   <dependencies>
@@ -214,7 +214,9 @@
             </goals>
             <configuration>
               <skipAssembly>${skipMain}</skipAssembly>
-              <descriptor>src/assembly/main.xml</descriptor>
+              <descriptors>
+                <descriptor>src/assembly/main.xml</descriptor>
+              </descriptors>
               <finalName>${project.build.finalName}</finalName>
             </configuration>
           </execution>
@@ -226,7 +228,9 @@
             </goals>
             <configuration>
               <skipAssembly>${skipLossless}</skipAssembly>
-              <descriptor>src/assembly/lossless.xml</descriptor>
+              <descriptors>
+                <descriptor>src/assembly/lossless.xml</descriptor>
+              </descriptors>
               <finalName>${project.build.finalName}</finalName>
             </configuration>
           </execution>
