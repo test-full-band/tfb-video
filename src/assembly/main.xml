@@ -4,17 +4,18 @@
   <formats>
     <format>zip</format>
   </formats>
+  <baseDirectory>test.full.band-video-${project.version}</baseDirectory>
   <fileSets>
     <fileSet>
-      <directory>${project.basedir}</directory>
+      <directory>${project.build.directory}/video-main</directory>
+      <outputDirectory>main</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${tfb.root}</directory>
       <includes>
         <include>LICENSE*</include>
         <include>NOTICE*</include>
       </includes>
-    </fileSet>
-    <fileSet>
-      <directory>${project.build.directory}/video-main</directory>
-      <outputDirectory>main</outputDirectory>
     </fileSet>
   </fileSets>
 </assembly>

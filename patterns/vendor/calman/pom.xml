@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <packaging>pom</packaging>
+
+  <parent>
+    <groupId>band.full.test</groupId>
+    <artifactId>tfb-video-patterns-vendor</artifactId>
+    <version>0.5-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>tfb-video-patterns-vendor-calman</artifactId>
+  <name>test.full.band Video Patterns: CalMAN</name>
+  <description>Vendor Specific Test Video Patterns: CalMAN</description>
+  
+  <properties>
+    <!-- <ROOT>/patterns/vendors/<VENDOR>/<RESOLUTION> -->
+    <tfb.root>${project.basedir}/../../../..</tfb.root>
+  </properties>
+
+  <modules>
+    <module>fhd</module>
+    <module>u4k</module>
+  </modules>
+</project>

@@ -10,9 +10,9 @@ see our web site: [test.full.band](https://test.full.band).
 
 ## Development environment
 
-The test generator is written in Java 10 and you need Java Development Kit
+The test generator is written in Java 11 and you need Java Development Kit
 (JDK) installed to build the project. You can get Java for your platform
-from [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk10-downloads-4416644.html).
+from [here](http://jdk.java.net/11/).
 
 Also you will need Apache Maven 3.5+ to build the project. x264, x265,
 MP4Box and ffmpeg executables need to be installed and available in the
@@ -41,25 +41,14 @@ Required executables can be installed with [Homebrew](https://brew.sh/):
 ```sh
 brew install maven
 brew install x264
+brew install x265
 brew install mp4box
 brew install ffmpeg
 ```
 
-Homebrew doesn't allow you to install _multilib_ x265 executable that
-supports multiple bitdepths so you have to compile it yourself so all HEVC
-bitdepths (8, 10, 12 bit) are supported by single executable. Build it with
-(or see [x265 Wiki](https://bitbucket.org/multicoreware/x265/wiki/Home) for
-details):
-
-```sh
-brew install hg
-brew install cmake
-hg clone https://bitbucket.org/multicoreware/x265
-cd x265/build/linux
-./multilib.sh
-cd 8bit/
-make install
-```
+Homebrew x265 executable is now a _multilib_ executable that supports
+multiple bitdepths so all HEVC bitdepths (8, 10, 12 bit) are supported
+by single executable.
 
 If you want to install multiple bitdepth versions of x264 read
 [this](https://github.com/Homebrew/legacy-homebrew/issues/48902).

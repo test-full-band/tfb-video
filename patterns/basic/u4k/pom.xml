@@ -1,0 +1,29 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>band.full.test</groupId>
+    <artifactId>tfb-video-patterns-basic</artifactId>
+    <version>0.5-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>tfb-video-set-u4k-basic</artifactId>
+  <name>test.full.band Video Set: Basic UHD 4K</name>
+  <description>Test Video Patterns for Basic Setup and Test (UHD 4K)</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>band.full.test</groupId>
+      <artifactId>tfb-video-generators</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin><artifactId>maven-failsafe-plugin</artifactId></plugin>
+      <plugin><artifactId>maven-assembly-plugin</artifactId></plugin>
+    </plugins>
+  </build>
+</project>

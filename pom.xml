@@ -1,39 +1,60 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <packaging>pom</packaging>
 
   <groupId>band.full.test</groupId>
-  <artifactId>testing-video</artifactId>
+  <artifactId>tfb-video</artifactId>
   <version>0.5-SNAPSHOT</version>
 
-  <name>test.full.band testing video generator</name>
+  <name>test.full.band Video Patterns</name>
+  <description>Calibration and test video pattern sets</description>
+  <url>https://github.com/testing-av/testing-video</url>
+
+  <organization>
+    <name>test.full.band</name>
+    <url>http://test.full.band/</url>
+  </organization>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <surefire.version>2.21.0</surefire.version>
-    <junit.jupiter.version>5.2.0</junit.jupiter.version>
-    <junit.platform.version>1.2.0</junit.platform.version>
+    <surefire.version>2.22.0</surefire.version>
+    <junit.jupiter.version>5.3.0</junit.jupiter.version>
+    <junit.platform.version>1.3.0</junit.platform.version>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
-      <version>${junit.jupiter.version}</version>
-    </dependency>
-    <!-- TODO Only required to run tests from Eclipse! -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-launcher</artifactId>
-      <version>${junit.platform.version}</version>
-    </dependency> 
-  </dependencies>
+  <modules>
+    <module>core</module>
+    <module>generators</module>
+    <module>patterns</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-controls</artifactId>
+        <version>11</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <!-- TODO Only required to run tests from Eclipse! -->
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-launcher</artifactId>
+        <version>${junit.platform.version}</version>
+      </dependency> 
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <pluginManagement>
@@ -48,84 +69,30 @@
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.7.0</version>
+          <version>3.8.0</version>
           <configuration>
-            <source>10</source>
-            <target>10</target>
+            <release>11</release>
           </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${surefire.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.junit.platform</groupId>
-              <artifactId>junit-platform-surefire-provider</artifactId>
-              <version>${junit.platform.version}</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${surefire.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.junit.platform</groupId>
-              <artifactId>junit-platform-surefire-provider</artifactId>
-              <version>${junit.platform.version}</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
-          <executions>
-            <execution>
-              <id>default-jar</id>
-              <phase>never</phase>
-            </execution>
-          </executions>
+          <version>3.1.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>2.5.2</version>
-          <configuration>
-            <skip>true</skip>
-          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.8.2</version>
-          <configuration>
-            <skip>true</skip>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
-        <!-- This plugin's configuration is used to store Eclipse m2e -->
-        <!-- settings only. It has no influence on the Maven build itself. -->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <versionRange>[3.0.0,)</versionRange>
-                    <goals><goal>bsh-property</goal></goals>
-                  </pluginExecutionFilter>
-                  <action><ignore/></action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -147,155 +114,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-main</id>
-            <phase>test</phase>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-            <configuration>
-              <skipTests>${skipMain}</skipTests>
-              <includes>
-                <include>band/full/test/video/generate/**/*.java</include>
-              </includes>
-              <useFile>false</useFile>
-              <properties>
-                <includeTags>GenerateVideo</includeTags>
-                <excludeTags>SkipMain</excludeTags>
-              </properties>
-              <systemPropertyVariables>
-                <encoder.quick>${encoder.quick}</encoder.quick>
-                <encoder.main>true</encoder.main>
-              </systemPropertyVariables>
-              <reportsDirectory>${project.build.directory}/main-reports</reportsDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate-lossless</id>
-            <phase>test</phase>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-            <configuration>
-              <skipTests>${skipLossless}</skipTests>
-              <includes>
-                <include>band/full/test/video/generate/**/*.java</include>
-              </includes>
-              <useFile>false</useFile>
-              <properties>
-                <includeTags>GenerateVideo</includeTags>
-                <excludeTags>SkipLossless</excludeTags>
-              </properties>
-              <systemPropertyVariables>
-                <encoder.quick>${encoder.quick}</encoder.quick>
-                <encoder.lossless>true</encoder.lossless>
-              </systemPropertyVariables>
-              <reportsDirectory>${project.build.directory}/lossless-reports</reportsDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>zip-main</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <skipAssembly>${skipMain}</skipAssembly>
-              <descriptors>
-                <descriptor>src/assembly/main.xml</descriptor>
-              </descriptors>
-              <finalName>${project.build.finalName}</finalName>
-            </configuration>
-          </execution>
-          <execution>
-            <id>zip-lossless</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <skipAssembly>${skipLossless}</skipAssembly>
-              <descriptors>
-                <descriptor>src/assembly/lossless.xml</descriptor>
-              </descriptors>
-              <finalName>${project.build.finalName}</finalName>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>negate-prop</id>
-            <phase>initialize</phase>
-            <goals>
-              <goal>bsh-property</goal>
-            </goals>
-            <configuration>
-              <source>
-                props = project.getProperties();
-
-                main = props.getProperty("main");
-                skipMain = value == null ? false
-                  : !Boolean.parseBoolean(main);
-
-                lossless = props.getProperty("lossless");
-                skipLossless = value == null ? false
-                  : !Boolean.parseBoolean(lossless);
-              </source>
-              <properties>
-                <property>skipMain</property>
-                <property>skipLossless</property>
-              </properties>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>main</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <main>true</main>
-      </properties>
-    </profile>
-    <profile>
-      <id>lossless</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <lossless>true</lossless>
-      </properties>
-    </profile>
-    <profile>
-      <id>quick</id>
-      <!-- Useful for quick testing the build logic -->
-      <!-- Cuts video time and quality to a minimum -->
-      <!-- Videos produced will not be fully usable -->
-      <properties>
-        <encoder.quick>true</encoder.quick>
-      </properties>
-    </profile>
-  </profiles>
 </project>
