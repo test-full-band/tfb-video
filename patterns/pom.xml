@@ -103,7 +103,7 @@
                   </goals>
                   <configuration>
                     <descriptors>
-                      <descriptor>src/assembly/main.xml</descriptor>
+                      <descriptor>${tfb.root}/src/assembly/main.xml</descriptor>
                     </descriptors>
                   </configuration>
                 </execution>
@@ -162,7 +162,7 @@
                   </goals>
                   <configuration>
                     <descriptors>
-                      <descriptor>src/assembly/lossless.xml</descriptor>
+                      <descriptor>${tfb.root}/src/assembly/lossless.xml</descriptor>
                     </descriptors>
                   </configuration>
                 </execution>
