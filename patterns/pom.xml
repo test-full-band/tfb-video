@@ -25,6 +25,16 @@
     <module>vendor</module>
   </modules>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>band.full.test</groupId>
+        <artifactId>tfb-video-generators</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <build>
     <pluginManagement>
       <plugins>

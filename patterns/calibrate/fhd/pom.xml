@@ -16,7 +16,6 @@
     <dependency>
       <groupId>band.full.test</groupId>
       <artifactId>tfb-video-generators</artifactId>
-      <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
 

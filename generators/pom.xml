@@ -16,7 +16,7 @@
     <dependency>
       <groupId>band.full.test</groupId>
       <artifactId>tfb-video-core</artifactId>
-      <version>0.5-SNAPSHOT</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
@@ -36,4 +36,12 @@
       <artifactId>junit-platform-launcher</artifactId>
     </dependency> 
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
