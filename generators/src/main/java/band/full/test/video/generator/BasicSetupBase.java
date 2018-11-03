@@ -25,6 +25,7 @@ public abstract class BasicSetupBase {
     protected final String group;
 
     protected final CheckerboardGenerator checkerboard;
+    protected final LinesGenerator lines;
 
     protected BasicSetupBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String group) {
@@ -34,6 +35,9 @@ public abstract class BasicSetupBase {
         this.group = group;
 
         checkerboard = new CheckerboardGenerator(
+                factory, params, this.folder, group);
+
+        lines = new LinesGenerator(
                 factory, params, this.folder, group);
     }
 
@@ -58,5 +62,15 @@ public abstract class BasicSetupBase {
 
     public Stream<CheckerboardGenerator.Args> checkerboard() {
         return checkerboard.args();
+    }
+
+    @ParameterizedTest
+    @MethodSource("lines")
+    public void lines(LinesGenerator.Args args) {
+        lines.generate(args);
+    }
+
+    public Stream<LinesGenerator.Args> lines() {
+        return lines.args();
     }
 }
