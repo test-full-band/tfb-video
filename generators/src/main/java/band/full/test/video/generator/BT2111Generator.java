@@ -8,7 +8,6 @@ import static java.lang.Math.min;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.text.Font.font;
 
-import band.full.core.color.Matrix3x3;
 import band.full.test.video.encoder.DecoderY4M;
 import band.full.test.video.encoder.EncoderParameters;
 import band.full.test.video.encoder.EncoderY4M;
@@ -32,10 +31,9 @@ import javafx.scene.paint.Color;
  *      "https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.2111-0-201712-I!!PDF-E.pdf">
  *      Rec. ITU-R BT.2111-0 (12/2017)</a>
  */
-// TODO output file type and test.full.band branding
+// TODO Output DV ref meta / trims
 public class BT2111Generator extends GeneratorBase<Void> {
     private final double alpha;
-    private final Matrix3x3 bt709conv;
 
     private final int scale;
 
@@ -53,8 +51,9 @@ public class BT2111Generator extends GeneratorBase<Void> {
     private final int b12; // 90
 
     public BT2111Generator(GeneratorFactory factory,
-            EncoderParameters params, String folder, String group) {
-        super(factory, params, folder, "BT2111", group);
+            EncoderParameters params, NalUnitPostProcessor<Void> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, "BT2111", group);
 
         if (width % STD_1080p.width != 0)
             throw new IllegalArgumentException(
@@ -74,9 +73,6 @@ public class BT2111Generator extends GeneratorBase<Void> {
                 throw new IllegalArgumentException(
                         "Unsupported transfer function: " + transfer);
         }
-
-        bt709conv = BT709.PRIMARIES.RGBtoXYZ.multiply(matrix.XYZtoRGB)
-                .multiply(matrix.transfer.toLinear(alpha));
 
         scale = width / STD_1080p.width;
 
@@ -211,7 +207,16 @@ public class BT2111Generator extends GeneratorBase<Void> {
     private int fill709(FrameBuffer fb, int x, int y, int w, int h,
             double r, double g, double b) {
         double[] buf = {r, g, b};
-        bt709conv.multiply(buf, buf);
+
+        BT709.PRIMARIES.RGBtoXYZ.multiply(buf, buf);
+        matrix.XYZtoRGB.multiply(buf, buf);
+        multiply(buf, buf, matrix.transfer.toLinear(alpha));
+
+        // double[] tmp = transfer.fromLinear(buf, new double[3]);
+        // matrix.toRGBCodes(tmp, tmp);
+        // System.out.println(format("709: r%3f g%3f b%3f",
+        // tmp[0], tmp[1], tmp[2]));
+
         matrix.toCodes(matrix.fromLinearRGB(buf, buf), buf);
         fb.fillRect(x, y, w, h, round(buf));
         return x + w;
@@ -233,9 +238,10 @@ public class BT2111Generator extends GeneratorBase<Void> {
     }
 
     private String transferLabel() {
-        if (bitdepth == 10 && primaries == BT2020.PRIMARIES) {
-            if (transfer instanceof ST2084) return "HDR10";
-        }
+        if (transfer instanceof ST2084)
+            return bitdepth == 10 && primaries == BT2020.PRIMARIES
+                    ? "HDR10"
+                    : transfer.toString();
 
         String label = transfer.toString();
         if (bitdepth > 8) {

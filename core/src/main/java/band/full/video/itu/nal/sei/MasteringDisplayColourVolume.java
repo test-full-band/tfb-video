@@ -2,10 +2,9 @@ package band.full.video.itu.nal.sei;
 
 import band.full.video.itu.nal.NalContext;
 import band.full.video.itu.nal.Payload;
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
-
-import java.io.PrintStream;
 
 /**
  * @author Igor Malinin
@@ -25,10 +24,10 @@ public class MasteringDisplayColourVolume implements Payload {
 
     public MasteringDisplayColourVolume() {}
 
-    public MasteringDisplayColourVolume(NalContext context, RbspReader reader,
+    public MasteringDisplayColourVolume(NalContext context, RbspReader in,
             int size) {
         if (size != size(context)) throw new IllegalArgumentException();
-        read(context, reader);
+        read(context, in);
     }
 
     @Override
@@ -37,53 +36,48 @@ public class MasteringDisplayColourVolume implements Payload {
     }
 
     @Override
-    public void read(NalContext context, RbspReader reader) {
+    public void read(NalContext context, RbspReader in) {
         for (int i = 0; i < 3; i++) {
-            display_primaries_x[i] = reader.readUInt(16);
-            display_primaries_y[i] = reader.readUInt(16);
+            display_primaries_x[i] = in.u16();
+            display_primaries_y[i] = in.u16();
         }
 
-        white_point_x = reader.readUInt(16);
-        white_point_y = reader.readUInt(16);
-        max_display_mastering_luminance = reader.readS32();
-        min_display_mastering_luminance = reader.readS32();
+        white_point_x = in.u16();
+        white_point_y = in.u16();
+        max_display_mastering_luminance = in.i32();
+        min_display_mastering_luminance = in.i32();
     }
 
     @Override
-    public void write(NalContext context, RbspWriter writer) {
+    public void write(NalContext context, RbspWriter out) {
         for (int i = 0; i < 3; i++) {
-            writer.writeU(16, display_primaries_x[i]);
-            writer.writeU(16, display_primaries_y[i]);
+            out.u16(display_primaries_x[i]);
+            out.u16(display_primaries_y[i]);
         }
 
-        writer.writeU(16, white_point_x);
-        writer.writeU(16, white_point_y);
-        writer.writeS32(max_display_mastering_luminance);
-        writer.writeS32(min_display_mastering_luminance);
+        out.u16(white_point_x);
+        out.u16(white_point_y);
+        out.i32(max_display_mastering_luminance);
+        out.i32(min_display_mastering_luminance);
     }
 
     private static final char[] COLORS = {'G', 'B', 'R'};
 
     @Override
-    public void print(NalContext context, PrintStream ps) {
-        ps.print("      ");
+    public void print(NalContext context, RbspPrinter out) {
+        StringBuilder buf = new StringBuilder(88);
         for (int i = 0; i < 3; i++) {
-            ps.print(COLORS[i]);
-            ps.print('(');
-            ps.print(display_primaries_x[i]);
-            ps.print(',');
-            ps.print(display_primaries_y[i]);
-            ps.print(')');
+            buf.append(COLORS[i]).append('(')
+                    .append(display_primaries_x[i]).append(',')
+                    .append(display_primaries_y[i]).append(')');
         }
 
-        ps.print("WP(");
-        ps.print(white_point_x);
-        ps.print(',');
-        ps.print(white_point_y);
-        ps.print(")L(");
-        ps.print(max_display_mastering_luminance);
-        ps.print(',');
-        ps.print(min_display_mastering_luminance);
-        ps.println(')');
+        buf.append("WP(")
+                .append(white_point_x).append(',')
+                .append(white_point_y).append(")L(")
+                .append(max_display_mastering_luminance).append(',')
+                .append(min_display_mastering_luminance).append(')');
+
+        out.raw(buf.toString());
     }
 }

@@ -11,7 +11,6 @@ import band.full.core.Window;
 import band.full.test.video.encoder.DecoderY4M;
 import band.full.test.video.encoder.EncoderParameters;
 import band.full.test.video.encoder.EncoderY4M;
-import band.full.test.video.encoder.MuxerMP4;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
 import band.full.test.video.generator.Quants2DBase.Args;
@@ -23,6 +22,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Stream;
 
@@ -67,10 +68,16 @@ public abstract class Quants2DBase extends GeneratorBase<Args> {
         }
     }
 
-    /** only package private direct children are allowed */
     protected Quants2DBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String group) {
         super(factory, params, folder, "Quants2D", group);
+    }
+
+    /** only package private direct children are allowed */
+    protected Quants2DBase(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, "Quants2D", group);
     }
 
     @Override
@@ -103,10 +110,12 @@ public abstract class Quants2DBase extends GeneratorBase<Args> {
     }
 
     @Override
-    public void encode(MuxerMP4 muxer, File dir, Args args)
+    public List<String> encode(File dir, Args args)
             throws IOException, InterruptedException {
-        encode(muxer, dir, args, "intro", INTRO_SECONDS);
-        encode(muxer, dir, args, null, BODY_SECONDS);
+        var all = new ArrayList<String>(PATTERN_SECONDS);
+        all.addAll(encode(dir, args, INTRO, INTRO_SECONDS));
+        all.addAll(encode(dir, args, BODY, BODY_SECONDS));
+        return all;
     }
 
     @Override

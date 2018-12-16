@@ -26,7 +26,7 @@ public class BlackPLUGEPNG extends BlackPLUGEGenerator {
     private final double OFF;
 
     public BlackPLUGEPNG() {
-        super(null, HD_MAIN, null, null);
+        super(null, HD_MAIN, null, null, null, null);
         OFF = matrix.fromLumaCode(matrix.YMIN + step1); // intensity offset
     }
 

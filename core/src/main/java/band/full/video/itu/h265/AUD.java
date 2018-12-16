@@ -2,10 +2,9 @@ package band.full.video.itu.h265;
 
 import static band.full.video.itu.h265.NALUnitType.AUD_NUT;
 
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
-
-import java.io.PrintStream;
 
 /**
  * 7.3.2.5 Access unit delimiter RBSP syntax
@@ -15,7 +14,7 @@ import java.io.PrintStream;
  * @author Igor Malinin
  */
 public class AUD extends NALUnit {
-    public byte pic_type;
+    public byte pic_type; // u(3)
     public byte[] trailing_bits;
 
     public AUD() {
@@ -23,20 +22,19 @@ public class AUD extends NALUnit {
     }
 
     @Override
-    public void read(H265Context context, RbspReader reader) {
-        pic_type = reader.readUByte(3);
-        trailing_bits = reader.readTrailingBits();
+    public void read(H265Context context, RbspReader in) {
+        pic_type = in.u3();
+        trailing_bits = in.readTrailingBits();
     }
 
     @Override
-    public void write(H265Context context, RbspWriter writer) {
-        writer.writeU(3, pic_type);
-        writer.writeTrailingBits(trailing_bits);
+    public void write(H265Context context, RbspWriter out) {
+        out.u3(pic_type);
+        out.writeTrailingBits(trailing_bits);
     }
 
     @Override
-    public void print(H265Context context, PrintStream ps) {
-        ps.print("    pic_type: ");
-        ps.println(pic_type);
+    public void print(H265Context context, RbspPrinter out) {
+        out.u3("pic_type", pic_type);
     }
 }

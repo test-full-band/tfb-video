@@ -8,7 +8,6 @@ import static javafx.scene.text.Font.font;
 import band.full.test.video.encoder.DecoderY4M;
 import band.full.test.video.encoder.EncoderParameters;
 import band.full.test.video.encoder.EncoderY4M;
-import band.full.test.video.encoder.MuxerMP4;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
 import band.full.video.buffer.FrameBuffer;
@@ -16,6 +15,8 @@ import band.full.video.buffer.Plane;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
@@ -32,8 +33,9 @@ public class BlackPLUGEGenerator extends GeneratorBase<Void> {
     public final int step4;
 
     public BlackPLUGEGenerator(GeneratorFactory factory,
-            EncoderParameters params, String folder, String group) {
-        super(factory, params, folder, "BlackPLUGE", group);
+            EncoderParameters params, NalUnitPostProcessor<Void> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, "BlackPLUGE", group);
 
         if (matrix.range == NARROW) {
             step1 = (matrix.YMAX - matrix.YMIN) / 100;
@@ -45,10 +47,12 @@ public class BlackPLUGEGenerator extends GeneratorBase<Void> {
     }
 
     @Override
-    public void encode(MuxerMP4 muxer, File dir, Void args)
+    public List<String> encode(File dir, Void args)
             throws IOException, InterruptedException {
-        encode(muxer, dir, args, "intro", INTRO_SECONDS);
-        encode(muxer, dir, args, null, BODY_SECONDS);
+        var all = new ArrayList<String>(PATTERN_SECONDS);
+        all.addAll(encode(dir, args, INTRO, INTRO_SECONDS));
+        all.addAll(encode(dir, args, BODY, BODY_SECONDS));
+        return all;
     }
 
     @Override

@@ -21,8 +21,7 @@ public class NalReaderAnnexBTest {
         }
 
         @Override
-        protected NalUnit<NalContext> create(NalContext context,
-                RbspReader nalu, boolean zero_byte) {
+        protected NalUnit<NalContext> create(NalContext ctx, RbspReader in) {
             throw new NoSuchMethodError();
         }
     }
@@ -48,9 +47,8 @@ public class NalReaderAnnexBTest {
     private void assertRbspBytes(String expected, String in)
             throws IOException {
         try (TestReaderAnnexB test = new TestReaderAnnexB(fromHexString(in))) {
-            RbspReader reader = test.nalu();
-            assertArrayEquals(fromHexString(expected),
-                    reader.readTrailingBits());
+            RbspReader r = test.nalu();
+            assertArrayEquals(fromHexString(expected), r.readTrailingBits());
         }
     }
 }

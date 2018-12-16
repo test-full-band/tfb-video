@@ -40,6 +40,10 @@ public class Primaries {
     public final Matrix3x3 RGBtoXYZ;
     public final Matrix3x3 XYZtoRGB;
 
+    public Primaries(int code, Primaries p) {
+        this(code, p.red, p.green, p.blue, p.white);
+    }
+
     public Primaries(int code,
             CIExy red, CIExy green, CIExy blue, CIExy white) {
         this.code = code;

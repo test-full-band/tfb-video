@@ -70,4 +70,8 @@ public final class ICtCp extends ColorMatrix {
         transfer.toLinear(rgb, rgb);
         return LMStoRGB.multiply(rgb, rgb);
     }
+
+    public static void main(String[] args) {
+        System.out.println(ITPtoPQLMS.toString());
+    }
 }

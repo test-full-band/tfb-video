@@ -19,8 +19,7 @@ public class H265ReaderAnnexB extends NalReaderAnnexB<H265Context, NALUnit> {
     }
 
     @Override
-    protected NALUnit create(H265Context context, RbspReader nalu,
-            boolean zero_byte) {
-        return NALUnit.create(context, nalu, zero_byte);
+    protected NALUnit create(H265Context context, RbspReader in) {
+        return NALUnit.create(context, in);
     }
 }

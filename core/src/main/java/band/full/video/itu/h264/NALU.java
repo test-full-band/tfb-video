@@ -1,11 +1,8 @@
 package band.full.video.itu.h264;
 
-import static band.full.core.ArrayMath.toHexString;
-
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
-
-import java.io.PrintStream;
 
 /**
  * Generic NAL Unit for all unknow types, stores RBSP bytes.
@@ -25,21 +22,20 @@ public class NALU extends NALUnit {
     }
 
     @Override
-    public void read(H264Context context, RbspReader reader) {
-        bytes = reader.readTrailingBits();
+    public void read(H264Context context, RbspReader in) {
+        bytes = in.readTrailingBits();
     }
 
     @Override
-    public void write(H264Context context, RbspWriter writer) {
-        writer.writeTrailingBits(bytes);
+    public void write(H264Context context, RbspWriter out) {
+        out.writeTrailingBits(bytes);
     }
 
     @Override
-    public void print(H264Context context, PrintStream ps) {
-        ps.println("    size: " + bytes.length);
+    public void print(H264Context context, RbspPrinter out) {
+        out.i32("size", bytes.length);
         if (bytes.length <= 256) {
-            ps.print("    bytes: 0x");
-            ps.println(toHexString(bytes));
+            out.printH("bytes", bytes);
         }
     }
 }

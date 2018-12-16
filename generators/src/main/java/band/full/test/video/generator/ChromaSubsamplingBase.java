@@ -56,6 +56,13 @@ public abstract class ChromaSubsamplingBase extends GeneratorBase<Args> {
         super(factory, params, folder, "ConcentricLogSine", group);
     }
 
+    public ChromaSubsamplingBase(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer,
+                folder, "ConcentricLogSine", group);
+    }
+
     @Override
     @ParameterizedTest(name = "{arguments}")
     @MethodSource("args")

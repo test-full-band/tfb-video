@@ -12,10 +12,10 @@ public class H265WriterAnnexB extends NalWriterAnnexB<H265Context, NALUnit> {
     }
 
     @Override
-    protected void writeHeader(RbspWriter writer, NALUnit nalu) {
-        writer.writeU1(false);
-        writer.writeU(6, nalu.type.ordinal());
-        writer.writeU(6, nalu.nuh_layer_id);
-        writer.writeU(3, nalu.nuh_temporal_id_plus1);
+    protected void writeHeader(RbspWriter out, NALUnit nalu) {
+        out.u1(false);
+        out.u6(nalu.type.ordinal());
+        out.u6(nalu.nuh_layer_id);
+        out.u3(nalu.nuh_temporal_id_plus1);
     }
 }

@@ -15,6 +15,7 @@
 
   <modules>
     <module>calman</module>
+    <module>dv</module>
     <module>lg</module>
   </modules>
 </project>

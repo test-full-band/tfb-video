@@ -7,9 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public abstract class NalReaderAnnexB<C extends NalContext,
-        U extends NalUnit<C>> implements AutoCloseable {
-    private final InputStream in;
-
+        U extends NalUnit<C>> extends NalReader<C, U> {
     private byte[] buf = new byte[1_048_576]; // 1MB = 8Mb
 
     /** RBSP read state: start of unread nal_unit() bytes */
@@ -24,7 +22,7 @@ public abstract class NalReaderAnnexB<C extends NalContext,
     private boolean eof;
 
     public NalReaderAnnexB(InputStream in) throws IOException {
-        this.in = in;
+        super(in);
 
         while (limit < 4 && !eof) {
             int n = in.read(buf, limit, buf.length - limit);
@@ -43,24 +41,20 @@ public abstract class NalReaderAnnexB<C extends NalContext,
     }
 
     @Override
-    public void close() throws IOException {
-        in.close();
-    }
-
     public U read() throws IOException {
-        return next == end ? null : create(context(), nalu(), next - end > 3);
+        if (next == end) return null;
+        boolean zero_byte = next - end > 3;
+        U u = create(context(), nalu());
+        u.zero_byte = zero_byte;
+        return u;
     }
-
-    protected abstract C context();
-
-    protected abstract U create(C context, RbspReader nalu, boolean zero_byte);
 
     RbspReader nalu() throws IOException {
         loadStartCodePrefix();
-        int end = removeEmulationPreventionBytes();
-        RbspReader reader = new RbspReader(buf, offset, end - offset);
+        int j = removeEmulationPreventionBytes(buf, offset, end);
+        var in = new RbspReader(buf, offset, j - offset);
         offset = next;
-        return reader;
+        return in;
     }
 
     private void loadStartCodePrefix() throws IOException {
@@ -88,9 +82,6 @@ public abstract class NalReaderAnnexB<C extends NalContext,
         limit -= diff;
         offset = 4; // move with prefix data
     }
-
-    private static final String INVALID_NALU =
-            "Invalid byte sequence in nal_unit: ";
 
     boolean findStartCodePrefix() throws IOException {
         int pos = offset;
@@ -171,63 +162,5 @@ public abstract class NalReaderAnnexB<C extends NalContext,
 
         end = pos;
         return false;
-    }
-
-    int removeEmulationPreventionBytes() throws IOException {
-        int n = findEmulationPreventionByte(offset);
-        if (n == 0) return end;
-
-        int pos = n++;
-        while (true) {
-            int n2 = findEmulationPreventionByte(n);
-            if (n2 == 0) {
-                int len = end - n;
-                arraycopy(buf, n, buf, pos, len);
-                return pos + len;
-            }
-
-            int len = n2 - n;
-            arraycopy(buf, n, buf, pos, len);
-            n = n2 + 1;
-            pos += len;
-            if (n == end) return pos;
-        }
-    }
-
-    /** @return 0 if not found, otherwise position in buf of the 0x03 byte */
-    private int findEmulationPreventionByte(int start)
-            throws IOException {
-        for (int i = start, end = this.end - 2; i < end;) {
-            if (buf[i++] != 0x00) {
-                continue;
-            }
-
-            // 0x00
-
-            if (buf[i++] != 0x00) {
-                continue;
-            }
-
-            // 0x00_00
-
-            if (buf[i] == 0x03) {
-                if (i < end && (buf[i + 1] & 0b11111100) != 0)
-                    // 0x00_00_03_xx where xx > 0x03
-                    throw new IOException(format(
-                            INVALID_NALU + "0x000003%02X",
-                            buf[i + 1]));
-
-                // 0x00_00_03_xx where xx <= 0x03
-                // emulation prevention byte
-                return i;
-            }
-
-            if (i < end && (buf[i] & 0b11111100) == 0)
-                // 0x00_00_xx where xx < 0x03
-                throw new IOException(format(
-                        INVALID_NALU + "0x0000%02X", buf[i]));
-        }
-
-        return 0;
     }
 }

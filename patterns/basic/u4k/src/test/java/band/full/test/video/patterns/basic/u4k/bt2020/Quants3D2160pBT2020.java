@@ -14,6 +14,6 @@ import band.full.test.video.generator.Quants3DBase;
 @GenerateVideo
 public class Quants3D2160pBT2020 extends Quants3DBase {
     public Quants3D2160pBT2020() {
-        super(HEVC, UHD4K_MAIN10, "UHD4K/BT2020_10/Quants3D", "U4K_2020");
+        super(HEVC, UHD4K_MAIN10, "UHD4K/BT2020_10", "U4K_2020");
     }
 }

@@ -9,7 +9,6 @@ import static java.util.stream.IntStream.rangeClosed;
 import band.full.test.video.encoder.DecoderY4M;
 import band.full.test.video.encoder.EncoderParameters;
 import band.full.test.video.encoder.EncoderY4M;
-import band.full.test.video.encoder.MuxerMP4;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.generator.Quants3DBase.Args;
 import band.full.video.buffer.FrameBuffer;
@@ -19,6 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -56,9 +56,16 @@ public abstract class Quants3DBase extends GeneratorBase<Args> {
                 new Args("Fast", 2, lsb), new Args("Slow", 4, lsb)));
     }
 
-    protected Quants3DBase(GeneratorFactory factory,
-            EncoderParameters params, String folder, String group) {
-        super(factory, params, folder, "Quants3D", group);
+    protected Quants3DBase(GeneratorFactory factory, EncoderParameters params,
+            String folder, String group) {
+        super(factory, params, folder + "/Quants3D", "Quants3D", group);
+    }
+
+    protected Quants3DBase(GeneratorFactory factory, EncoderParameters params,
+            NalUnitPostProcessor<Args> processor, MuxerFactory muxer,
+            String folder, String group) {
+        super(factory, params, processor, muxer,
+                folder + "/Quants3D", "Quants3D", group);
     }
 
     @Override
@@ -74,9 +81,9 @@ public abstract class Quants3DBase extends GeneratorBase<Args> {
     }
 
     @Override
-    public void encode(MuxerMP4 muxer, File dir, Args args)
+    public List<String> encode(File dir, Args args)
             throws IOException, InterruptedException {
-        encode(muxer, dir, args, null, 1);
+        return encode(dir, args, BODY, 1);
     }
 
     @Override

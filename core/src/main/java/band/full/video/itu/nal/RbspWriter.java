@@ -11,28 +11,26 @@ public class RbspWriter {
         this.buf = buf;
     }
 
-    public boolean isByteAligned() {
-        return buf.isByteAligned();
+    public RbspWriter(byte[] rbsp) {
+        buf = new NalBuffer(rbsp);
     }
 
-    public void writeU1(boolean flag) {
-        int pos = buf.checkWrite(1);
+    public byte[] bytes() {
+        int size = buf.getByteIndex();
+        byte[] bytes = new byte[size];
+        arraycopy(buf.bytes, 0, bytes, 0, size);
+        return bytes;
+    }
 
-        int index = getByteIndex(pos);
-        int shift = getByteShift(pos);
-
-        if (flag) {
-            buf.bytes[index] |= (0x80 >> shift);
-        } else {
-            buf.bytes[index] &= ~(0x80 >> shift);
-        }
+    public boolean isByteAligned() {
+        return buf.isByteAligned();
     }
 
     public static int countUEbits(int ue) {
         return leadingUEbits(ue) * 2 + 1;
     }
 
-    private static int leadingUEbits(int ue) {
+    static int leadingUEbits(int ue) {
         int leadingZeroBits = 0;
         for (int ue1 = ue + 1; ue1 > 1; ue1 >>= 1) {
             ++leadingZeroBits;
@@ -40,17 +38,17 @@ public class RbspWriter {
         return leadingZeroBits;
     }
 
-    public void writeUE(int ue) {
+    public void ue(int ue) {
         int leadingZeroBits = leadingUEbits(ue);
-        writeU(leadingZeroBits + 1, 1);
-        writeU(leadingZeroBits, ue + 1 - (1 << leadingZeroBits));
+        u(leadingZeroBits + 1, 1);
+        u(leadingZeroBits, ue + 1 - (1 << leadingZeroBits));
     }
 
-    public void writeSE(int se) {
-        writeUE(UE(se));
+    public void se(int se) {
+        ue(se2ue(se));
     }
 
-    public static int UE(int se) {
+    public static int se2ue(int se) {
         return se > 0 ? se * 2 - 1 : se * -2;
     }
 
@@ -77,7 +75,7 @@ public class RbspWriter {
         buf.pos = pos; // TODO optimize
 
         for (int i = 0; i < bytes.length - 1; i++) {
-            writeS8(bytes[i]);
+            i8(bytes[i]);
         }
 
         int shift = buf.getByteShift();
@@ -85,33 +83,296 @@ public class RbspWriter {
         int mask = (1 << shift) - 1;
         byte value = bytes[bytes.length - 1];
         if ((value & mask) == 0) {
-            writeU(bits, value >> shift);
+            u(bits, value >> shift);
         } else {
-            writeS8(value);
-            writeU(bits, 0);
+            i8(value);
+            u(bits, 0);
         }
     }
 
-    public void writeS8(byte b) {
-        writeU(8, b);
+    public void u1(boolean flag) {
+        int pos = buf.checkWrite(1);
+
+        int index = getByteIndex(pos);
+        int shift = getByteShift(pos);
+
+        if (flag) {
+            buf.bytes[index] |= (0x80 >> shift);
+        } else {
+            buf.bytes[index] &= ~(0x80 >> shift);
+        }
     }
 
-    public void writeS16(short s) {
-        writeU(16, s);
+    public void u2(int value) {
+        writeInt(2, value);
     }
 
-    public void writeS32(int value) {
+    public void u3(int value) {
+        writeInt(3, value);
+    }
+
+    public void u4(int value) {
+        writeInt(4, value);
+    }
+
+    public void u5(int value) {
+        writeInt(5, value);
+    }
+
+    public void u6(int value) {
+        writeInt(6, value);
+    }
+
+    public void u7(int value) {
+        writeInt(7, value);
+    }
+
+    public void u8(int value) {
+        writeInt(8, value);
+    }
+
+    public void u9(int value) {
+        writeInt(9, value);
+    }
+
+    public void u10(int value) {
+        writeInt(10, value);
+    }
+
+    public void u11(int value) {
+        writeInt(11, value);
+    }
+
+    public void u12(int value) {
+        writeInt(12, value);
+    }
+
+    public void u13(int value) {
+        writeInt(13, value);
+    }
+
+    public void u14(int value) {
+        writeInt(14, value);
+    }
+
+    public void u15(int value) {
+        writeInt(15, value);
+    }
+
+    public void u16(int value) {
+        writeInt(16, value);
+    }
+
+    public void u17(int value) {
+        writeInt(17, value);
+    }
+
+    public void u18(int value) {
+        writeInt(18, value);
+    }
+
+    public void u19(int value) {
+        writeInt(19, value);
+    }
+
+    public void u20(int value) {
+        writeInt(20, value);
+    }
+
+    public void u21(int value) {
+        writeInt(21, value);
+    }
+
+    public void u22(int value) {
+        writeInt(22, value);
+    }
+
+    public void u23(int value) {
+        writeInt(23, value);
+    }
+
+    public void u24(int value) {
+        writeInt(24, value);
+    }
+
+    public void u25(int value) {
+        writeInt(25, value);
+    }
+
+    public void u26(int value) {
+        writeInt(26, value);
+    }
+
+    public void u27(int value) {
+        writeInt(27, value);
+    }
+
+    public void u28(int value) {
+        writeInt(28, value);
+    }
+
+    public void u29(int value) {
+        writeInt(29, value);
+    }
+
+    public void u30(int value) {
+        writeInt(30, value);
+    }
+
+    public void u31(int value) {
+        writeInt(31, value);
+    }
+
+    public void u32(long value) {
+        writeInt(32, (int) value);
+    }
+
+    public void i2(int value) {
+        writeInt(2, value);
+    }
+
+    public void i3(int value) {
+        writeInt(3, value);
+    }
+
+    public void i4(int value) {
+        writeInt(4, value);
+    }
+
+    public void i5(int value) {
+        writeInt(5, value);
+    }
+
+    public void i6(int value) {
+        writeInt(6, value);
+    }
+
+    public void i7(int value) {
+        writeInt(7, value);
+    }
+
+    public void i8(int value) {
+        writeInt(8, value);
+    }
+
+    public void i9(int value) {
+        writeInt(9, value);
+    }
+
+    public void i10(int value) {
+        writeInt(10, value);
+    }
+
+    public void i11(int value) {
+        writeInt(11, value);
+    }
+
+    public void i12(int value) {
+        writeInt(12, value);
+    }
+
+    public void i13(int value) {
+        writeInt(13, value);
+    }
+
+    public void i14(int value) {
+        writeInt(14, value);
+    }
+
+    public void i15(int value) {
+        writeInt(15, value);
+    }
+
+    public void i16(int value) {
+        writeInt(16, value);
+    }
+
+    public void i17(int value) {
+        writeInt(17, value);
+    }
+
+    public void i18(int value) {
+        writeInt(18, value);
+    }
+
+    public void i19(int value) {
+        writeInt(19, value);
+    }
+
+    public void i20(int value) {
+        writeInt(20, value);
+    }
+
+    public void i21(int value) {
+        writeInt(21, value);
+    }
+
+    public void i22(int value) {
+        writeInt(22, value);
+    }
+
+    public void i23(int value) {
+        writeInt(23, value);
+    }
+
+    public void i24(int value) {
+        writeInt(24, value);
+    }
+
+    public void i25(int value) {
+        writeInt(25, value);
+    }
+
+    public void i26(int value) {
+        writeInt(26, value);
+    }
+
+    public void i27(int value) {
+        writeInt(27, value);
+    }
+
+    public void i28(int value) {
+        writeInt(28, value);
+    }
+
+    public void i29(int value) {
+        writeInt(29, value);
+    }
+
+    public void i30(int value) {
+        writeInt(30, value);
+    }
+
+    public void i31(int value) {
+        writeInt(31, value);
+    }
+
+    public void i32(int value) {
         writeInt(32, value);
     }
 
-    public void writeU(int bits, long value) {
+    public void i64(long value) {
+        writeLong(64, value);
+    }
+
+    public void u(int bits, long value) {
         assert (bits < 32);
         writeLong(bits, value);
     }
 
-    public void writeS(int bits, int value) {
+    public void i(int bits, int value) {
         assert (bits <= 32);
-        writeU(bits, value);
+        u(bits, value);
+    }
+
+    public void writeULong(int bits, long value) {
+        assert (bits < 64);
+        writeLong(bits, value);
+    }
+
+    public void writeSLong(int bits, long value) {
+        assert (bits <= 64);
+        writeLong(bits, value);
     }
 
     public void writeInt(int bits, int value) {
@@ -161,20 +422,6 @@ public class RbspWriter {
             b |= accumulator & mask;
             buf.bytes[index] = b;
         }
-    }
-
-    public void writeS64(long value) {
-        writeLong(64, value);
-    }
-
-    public void writeULong(int bits, long value) {
-        assert (bits < 64);
-        writeLong(bits, value);
-    }
-
-    public void writeSLong(int bits, long value) {
-        assert (bits <= 64);
-        writeLong(bits, value);
     }
 
     private void writeLong(int bits, long value) {

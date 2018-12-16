@@ -1,11 +1,14 @@
 package band.full.video.dolby;
 
+import static band.full.core.CRC32.MPEG2;
+
 import band.full.video.itu.nal.NalContext;
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.itu.nal.Structure;
 
-import java.io.PrintStream;
+import java.nio.ByteBuffer;
 
 /**
  * Reference Processing Unit Metadata Message.
@@ -14,50 +17,143 @@ import java.io.PrintStream;
  *
  * @author Igor Malinin
  */
-public class RPU {
-    public class Header implements Structure {
-        public byte rpu_type; // u(6)
-        public short rpu_format; // u(11)
-        public byte vdr_rpu_profile; // u(4)
-        public byte vdr_rpu_level; // u(4)
-        public boolean vdr_seq_info_present; // u(1)
-        public boolean chroma_resampling_explicit_filter; // u(1)
-        public byte coefficient_data_type; // u(2)
-        public int coefficient_log2_denom; // ue(v)
-        public byte vdr_rpu_normalized_idc; // u(2)
-        public boolean BL_video_full_range; // u(1)
-        public int BL_bit_depth_minus8; // ue(v)
-        public int EL_bit_depth_minus8; // ue(v)
-        public int vdr_bit_depth_minus8; // ue(v)
-        public boolean spatial_resampling_filter; // u(1)
-        // reserved_zero_3bits // u(3)
-        public boolean el_spatial_resampling_filter; // u(1)
-        public boolean disable_residual; // u(1)
-        public boolean vdr_dm_metadata_present; // u(1)
-        public boolean use_prev_vdr_rpu; // u(1)
-        public int prev_vdr_rpu_id; // ue(v)
-        public int vdr_rpu_id; // ue(v)
-        public int mapping_color_space; // ue(v)
-        public int mapping_chroma_format_idc; // ue(v)
-        public int[] num_pivots_minus2; // ue(v)
-        public int[][] pred_pivot_value; // u(v)
-        public byte nlq_method_idc; // u(3)
-        public int num_x_partitions_minus1; // ue(v)
-        public int num_y_partitions_minus1; // ue(v)
+public class RPU implements Structure<NalContext> {
+    public static final int NUM_CMPS = 3;
 
-        @Override
-        public void read(NalContext context, RbspReader reader) {
-            // TODO Auto-generated method stub
+    public RpuHeader header;
+
+    public RpuDataMapping mapping;
+    public RpuDataNLQ nlq;
+
+    public VdrDmDataPayload dm;
+
+    public RPU() {
+    }
+
+    public RPU(RpuHeader header, RpuDataMapping mapping, VdrDmDataPayload dm) {
+        this(header, mapping, null, dm);
+    }
+
+    public RPU(RpuHeader header, RpuDataMapping mapping, RpuDataNLQ nlq,
+            VdrDmDataPayload dm) {
+        this.header = header;
+        this.mapping = mapping;
+        this.nlq = nlq;
+        this.dm = dm;
+    }
+
+    public RPU(byte[] bytes) {
+        RbspReader in = new RbspReader(bytes, 0, bytes.length);
+        int prefix = in.u8();
+        if (prefix != 0x19) // 25
+            throw new IllegalArgumentException("Only prefix 0x19 is supported");
+
+        int crc32 = MPEG2.checksum(bytes, 1, bytes.length - 6);
+        ByteBuffer buf = ByteBuffer.wrap(bytes, bytes.length - 5, 5); // TODO
+        if (crc32 != buf.getInt())
+            throw new IllegalArgumentException("CRC32 doesn't match");
+
+        if (-128 != buf.get()) // rbsp_trailing_bits() 0x80
+            throw new IllegalArgumentException("RPU should end with 0x80 byte");
+
+        read(null, in);
+
+        if (in.available() != 40)
+            throw new IllegalArgumentException("Unexpected offset");
+    }
+
+    public byte[] toBytes(int size) {
+        RbspWriter out = new RbspWriter(new byte[size]);
+        out.u8(0x19);
+        write(null, out);
+        out.u32(0); // CRC32 placeholder
+        out.u8(0x80); // rbsp_trailing_bits()
+        byte[] bytes = out.bytes();
+        ByteBuffer crc = ByteBuffer.wrap(bytes, bytes.length - 5, 4); // TODO
+        crc.putInt(MPEG2.checksum(bytes, 1, bytes.length - 6));
+        return bytes;
+    }
+
+    @Override
+    public void read(NalContext context, RbspReader in) {
+        header = new RpuHeader();
+        header.read(null, in);
+
+        switch (header.rpu_type) {
+            case 2:
+                if (!header.use_prev_vdr_rpu) {
+                    mapping = new RpuDataMapping();
+                    mapping.read(header, in);
+                    if ((header.rpu_format & 0x700) == 0
+                            && !header.disable_residual) {
+                        nlq = new RpuDataNLQ();
+                        nlq.read(header, in);
+                    }
+                    if (header.vdr_dm_metadata_present) {
+                        dm = new VdrDmDataPayload();
+                        dm.read(header, in);
+                    }
+                }
+                break;
+
+            default:
+                throw new IllegalStateException(
+                        "Unknown RPU type: " + header.rpu_type);
         }
 
-        @Override
-        public void write(NalContext context, RbspWriter writer) {
-            // TODO Auto-generated method stub
+        while (!in.isByteAligned())
+            if (in.u1()) throw new IllegalStateException();
+    }
+
+    @Override
+    public void write(NalContext context, RbspWriter out) {
+        header.write(null, out);
+
+        switch (header.rpu_type) {
+            case 2:
+                if (!header.use_prev_vdr_rpu) {
+                    mapping.write(header, out);
+                    if ((header.rpu_format & 0x700) == 0
+                            && !header.disable_residual) {
+                        nlq.write(header, out);
+                    }
+                    if (header.vdr_dm_metadata_present) {
+                        dm.write(header, out);
+                    }
+                }
+                break;
+
+            default:
+                throw new IllegalStateException(
+                        "Unknown RPU type: " + header.rpu_type);
         }
 
-        @Override
-        public void print(NalContext context, PrintStream ps) {
-            // TODO Auto-generated method stub
+        while (!out.isByteAligned()) {
+            out.u1(false);
+        }
+    }
+
+    @Override
+    public void print(NalContext context, RbspPrinter out) {
+        header.print(null, out);
+
+        switch (header.rpu_type) {
+            case 2:
+                if (!header.use_prev_vdr_rpu) {
+                    mapping.print(header, out);
+                    if ((header.rpu_format & 0x700) == 0
+                            && !header.disable_residual) {
+                        nlq.print(header, out);
+                    }
+                    if (header.vdr_dm_metadata_present) {
+                        dm.print(header, out);
+                    }
+                }
+                break;
+
+            default:
+                throw new IllegalStateException(
+                        "Unknown RPU type: " + header.rpu_type);
         }
     }
 }

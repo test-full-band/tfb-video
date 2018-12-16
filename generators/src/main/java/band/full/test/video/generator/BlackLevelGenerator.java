@@ -32,8 +32,9 @@ public class BlackLevelGenerator extends GeneratorBase<Void> {
     protected static final int COLS = 16;
 
     public BlackLevelGenerator(GeneratorFactory factory,
-            EncoderParameters params, String folder, String group) {
-        super(factory, params, folder, "BlackLevel", group);
+            EncoderParameters params, NalUnitPostProcessor<Void> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, "BlackLevel", group);
     }
 
     @Override

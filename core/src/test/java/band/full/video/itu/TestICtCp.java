@@ -7,8 +7,6 @@ import static band.full.video.smpte.ST2084.PQ;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import band.full.video.itu.ICtCp;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,7 +24,7 @@ public class TestICtCp {
         assertEquals(-0.009, ITPtoPQLMS.get(1, 1), 1e-3);
         assertEquals(-0.111, ITPtoPQLMS.get(1, 2), 1e-3);
         assertEquals(1.0, ITPtoPQLMS.get(2, 0));
-        assertEquals(0.56, ITPtoPQLMS.get(2, 1), 1e-3);
+        assertEquals(0.560, ITPtoPQLMS.get(2, 1), 1e-3);
         assertEquals(-0.321, ITPtoPQLMS.get(2, 2), 1e-3);
     }
 

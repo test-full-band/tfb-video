@@ -1,5 +1,7 @@
 package band.full.test.video.generator;
 
+import static band.full.test.video.encoder.EncoderAVC.AVC_SUFFIX;
+import static band.full.test.video.encoder.EncoderHEVC.HEVC_SUFFIX;
 import static java.lang.Boolean.getBoolean;
 import static java.lang.System.getProperty;
 import static java.util.Arrays.stream;
@@ -19,7 +21,7 @@ import java.util.function.Consumer;
  * @author Igor Malinin
  */
 public enum GeneratorFactory {
-    AVC(EncoderAVC::encode, "isom" /* avc1 */, "H.264-AVC") {
+    AVC(EncoderAVC::encode, AVC_SUFFIX, "isom" /* avc1 */, "H.264-AVC") {
         @Override
         EncoderParameters lossless(EncoderParameters template) {
             return template.withEncoderOptions(prepend(template.encoderOptions,
@@ -37,7 +39,7 @@ public enum GeneratorFactory {
         }
     },
 
-    HEVC(EncoderHEVC::encode, "hvc1", "H.265-HEVC") {
+    HEVC(EncoderHEVC::encode, HEVC_SUFFIX, "hvc1", "H.265-HEVC") {
         @Override
         EncoderParameters lossless(EncoderParameters template) {
             return template.withEncoderOptions(prepend(template.encoderOptions,
@@ -107,11 +109,14 @@ public enum GeneratorFactory {
     final IO OUT = IO.get("encoder.file.annexb");
 
     public final Encoder encoder;
+    public final String suffix;
     public final String brand;
     public final String folder;
 
-    GeneratorFactory(Encoder encoder, String brand, String folder) {
+    GeneratorFactory(Encoder encoder, String suffix, String brand,
+            String folder) {
         this.encoder = encoder;
+        this.suffix = suffix;
         this.brand = brand;
         this.folder = folder;
     }

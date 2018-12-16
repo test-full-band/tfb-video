@@ -2,9 +2,11 @@ package band.full.video.itu.h265;
 
 import static band.full.video.itu.h265.NALUnitType.PREFIX_SEI_NUT;
 import static band.full.video.itu.h265.SEI.PREFIX_SEI;
+import static band.full.video.itu.h265.SEI.PayloadType.user_data_registered_itu_t_t35;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.out;
 
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.sei.UserDataRegisteredT35;
 import band.full.video.scte.ATSC1;
 import band.full.video.smpte.st2094.ST2094_10;
@@ -50,35 +52,22 @@ public class InjectDV {
 
     private static SEI SEI_ST2094_10(int i) {
         var cr = new ST2094_10.ContentRange();
-        cr.min_PQ = 0;
-        cr.max_PQ = 4095;
-        cr.avg_PQ = 1024;
+        {
+            cr.min_PQ = 0;
+            cr.max_PQ = 4095;
+            cr.avg_PQ = 1024;
+        }
 
-        ST2094_10.TrimPass trim = new ST2094_10.TrimPass();
-        trim.target_max_PQ = 2048;
-        // trim.trim_power = (short) (4096 / 24 * i);
+        var trim = new ST2094_10.TrimPass();
+        {
+            trim.target_max_PQ = 2048;
+            // trim.trim_power = (short) (4096 / 24 * i);
+        }
 
-        ST2094_10.DisplayManagementBlock[] blocks = {cr, trim};
-
-        ST2094_10 dm = new ST2094_10();
-        dm.metadata_refresh = true;
-        dm.ext_blocks = blocks;
-
-        ATSC1 atsc1 = new ATSC1();
-        atsc1.user_data_type_code = 0x09;
-        atsc1.user_data_type_structure = dm;
-
-        UserDataRegisteredT35 t35 = new UserDataRegisteredT35();
-        t35.country_code = ATSC1.COUNTRY_CODE;
-        t35.provider_code = ATSC1.PROVIDER_CODE;
-        t35.user_identifier = ATSC1.USER_IDENTIFIER;
-        t35.user_structure = atsc1;
-
-        SEI.Message msg = new SEI.Message();
-        msg.payloadType =
-                SEI.PayloadType.user_data_registered_itu_t_t35
-                        .ordinal();
-        msg.payload = t35;
+        var msg = new SEI.Message(
+                user_data_registered_itu_t_t35,
+                new UserDataRegisteredT35(new ATSC1(
+                        new ST2094_10(true, cr, trim))));
 
         return PREFIX_SEI(msg);
     }
@@ -87,7 +76,7 @@ public class InjectDV {
         out.print(nalu.zero_byte ? "* " : "- ");
         out.println(nalu.getTypeString() +
                 " - " + nalu.getHeaderParamsString());
-        nalu.print(context, out);
+        nalu.print(context, new RbspPrinter(out).enter().enter());
         out.println();
     }
 }

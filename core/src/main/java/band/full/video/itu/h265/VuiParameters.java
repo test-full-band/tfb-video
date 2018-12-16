@@ -1,10 +1,9 @@
 package band.full.video.itu.h265;
 
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.itu.nal.Structure;
-
-import java.io.PrintStream;
 
 /**
  * E.2.1 VUI parameters syntax
@@ -66,264 +65,277 @@ public class VuiParameters implements Structure<H265Context> {
     }
 
     @Override
-    public void read(H265Context context, RbspReader reader) {
-        aspect_ratio_info_present = reader.readU1();
+    public void read(H265Context context, RbspReader in) {
+        aspect_ratio_info_present = in.u1();
         if (aspect_ratio_info_present) {
-            aspect_ratio_idc = reader.readUShort(8);
+            aspect_ratio_idc = in.u8();
             if (aspect_ratio_idc == 255) { // TODO EXTENDED_SAR constant
-                sar_width = reader.readUInt(16);
-                sar_height = reader.readUInt(16);
+                sar_width = in.u16();
+                sar_height = in.u16();
             }
         }
 
-        overscan_info_present = reader.readU1();
+        overscan_info_present = in.u1();
         if (overscan_info_present) {
-            overscan_appropriate = reader.readU1();
+            overscan_appropriate = in.u1();
         }
 
-        video_signal_type_present = reader.readU1();
+        video_signal_type_present = in.u1();
         if (video_signal_type_present) {
-            video_format = reader.readUByte(3);
-            video_full_range = reader.readU1();
-            colour_description_present = reader.readU1();
+            video_format = in.u3();
+            video_full_range = in.u1();
+            colour_description_present = in.u1();
             if (colour_description_present) {
-                colour_primaries = reader.readUShort(8);
-                transfer_characteristics = reader.readUShort(8);
-                matrix_coeffs = reader.readUShort(8);
+                colour_primaries = in.u8();
+                transfer_characteristics = in.u8();
+                matrix_coeffs = in.u8();
             }
         }
 
-        chroma_loc_info_present = reader.readU1();
+        chroma_loc_info_present = in.u1();
         if (chroma_loc_info_present) {
-            chroma_sample_loc_type_top_field = reader.readUE();
-            chroma_sample_loc_type_bottom_field = reader.readUE();
+            chroma_sample_loc_type_top_field = in.ue();
+            chroma_sample_loc_type_bottom_field = in.ue();
         }
 
-        neutral_chroma_indication = reader.readU1();
-        field_seq = reader.readU1();
-        frame_field_info_present = reader.readU1();
-        default_display_window = reader.readU1();
+        neutral_chroma_indication = in.u1();
+        field_seq = in.u1();
+        frame_field_info_present = in.u1();
+        default_display_window = in.u1();
         if (default_display_window) {
-            def_disp_win_left_offset = reader.readUE();
-            def_disp_win_right_offset = reader.readUE();
-            def_disp_win_top_offset = reader.readUE();
-            def_disp_win_bottom_offset = reader.readUE();
+            def_disp_win_left_offset = in.ue();
+            def_disp_win_right_offset = in.ue();
+            def_disp_win_top_offset = in.ue();
+            def_disp_win_bottom_offset = in.ue();
         }
 
-        vui_timing_info_present = reader.readU1();
+        vui_timing_info_present = in.u1();
         if (vui_timing_info_present) {
-            vui_num_units_in_tick = reader.readULong(32);
-            vui_time_scale = reader.readULong(32);
+            vui_num_units_in_tick = in.u32();
+            vui_time_scale = in.u32();
 
-            vui_poc_proportional_to_timing = reader.readU1();
+            vui_poc_proportional_to_timing = in.u1();
             if (vui_poc_proportional_to_timing) {
-                vui_num_ticks_poc_diff_one_minus1 = reader.readUE();
+                vui_num_ticks_poc_diff_one_minus1 = in.ue();
             }
 
-            vui_hrd_parameters_present = reader.readU1();
+            vui_hrd_parameters_present = in.u1();
             if (vui_hrd_parameters_present) {
                 hrd_parameters = new HrdParameters(true, maxNumSubLayersMinus1);
-                hrd_parameters.read(context, reader);
+                hrd_parameters.read(context, in);
             }
         }
 
-        bitstream_restriction = reader.readU1();
+        bitstream_restriction = in.u1();
         if (bitstream_restriction) {
-            tiles_fixed_structure = reader.readU1();
-            motion_vectors_over_pic_boundaries = reader.readU1();
-            restricted_ref_pic_lists = reader.readU1();
-            min_spatial_segmentation_idc = reader.readUE();
-            max_bytes_per_pic_denom = reader.readUE();
-            max_bits_per_min_cu_denom = reader.readUE();
-            log2_max_mv_length_horizontal = reader.readUE();
-            log2_max_mv_length_vertical = reader.readUE();
+            tiles_fixed_structure = in.u1();
+            motion_vectors_over_pic_boundaries = in.u1();
+            restricted_ref_pic_lists = in.u1();
+            min_spatial_segmentation_idc = in.ue();
+            max_bytes_per_pic_denom = in.ue();
+            max_bits_per_min_cu_denom = in.ue();
+
+            log2_max_mv_length_horizontal = in.ue();
+            log2_max_mv_length_vertical = in.ue();
         }
     }
 
     @Override
-    public void write(H265Context context, RbspWriter writer) {
-        writer.writeU1(aspect_ratio_info_present);
+    public void write(H265Context context, RbspWriter out) {
+        out.u1(aspect_ratio_info_present);
         if (aspect_ratio_info_present) {
-            writer.writeU(8, aspect_ratio_idc);
+            out.u8(aspect_ratio_idc);
             if (aspect_ratio_idc == 255) { // TODO EXTENDED_SAR constant
-                writer.writeU(16, sar_width);
-                writer.writeU(16, sar_height);
+                out.u16(sar_width);
+                out.u16(sar_height);
             }
         }
 
-        writer.writeU1(overscan_info_present);
+        out.u1(overscan_info_present);
         if (overscan_info_present) {
-            writer.writeU1(overscan_appropriate);
+            out.u1(overscan_appropriate);
         }
 
-        writer.writeU1(video_signal_type_present);
+        out.u1(video_signal_type_present);
         if (video_signal_type_present) {
-            writer.writeU(3, video_format);
-            writer.writeU1(video_full_range);
-            writer.writeU1(colour_description_present);
+            out.u3(video_format);
+            out.u1(video_full_range);
+            out.u1(colour_description_present);
             if (colour_description_present) {
-                writer.writeU(8, colour_primaries);
-                writer.writeU(8, transfer_characteristics);
-                writer.writeU(8, matrix_coeffs);
+                out.u8(colour_primaries);
+                out.u8(transfer_characteristics);
+                out.u8(matrix_coeffs);
             }
         }
 
-        writer.writeU1(chroma_loc_info_present);
+        out.u1(chroma_loc_info_present);
         if (chroma_loc_info_present) {
-            writer.writeUE(chroma_sample_loc_type_top_field);
-            writer.writeUE(chroma_sample_loc_type_bottom_field);
+            out.ue(chroma_sample_loc_type_top_field);
+            out.ue(chroma_sample_loc_type_bottom_field);
         }
 
-        writer.writeU1(neutral_chroma_indication);
-        writer.writeU1(field_seq);
-        writer.writeU1(frame_field_info_present);
-        writer.writeU1(default_display_window);
+        out.u1(neutral_chroma_indication);
+        out.u1(field_seq);
+        out.u1(frame_field_info_present);
+        out.u1(default_display_window);
         if (default_display_window) {
-            writer.writeUE(def_disp_win_left_offset);
-            writer.writeUE(def_disp_win_right_offset);
-            writer.writeUE(def_disp_win_top_offset);
-            writer.writeUE(def_disp_win_bottom_offset);
+            out.ue(def_disp_win_left_offset);
+            out.ue(def_disp_win_right_offset);
+            out.ue(def_disp_win_top_offset);
+            out.ue(def_disp_win_bottom_offset);
         }
 
-        writer.writeU1(vui_timing_info_present);
+        out.u1(vui_timing_info_present);
         if (vui_timing_info_present) {
-            writer.writeULong(32, vui_num_units_in_tick);
-            writer.writeULong(32, vui_time_scale);
+            out.u32(vui_num_units_in_tick);
+            out.u32(vui_time_scale);
 
-            writer.writeU1(vui_poc_proportional_to_timing);
+            out.u1(vui_poc_proportional_to_timing);
             if (vui_poc_proportional_to_timing) {
-                writer.writeUE(vui_num_ticks_poc_diff_one_minus1);
+                out.ue(vui_num_ticks_poc_diff_one_minus1);
             }
 
-            writer.writeU1(vui_hrd_parameters_present);
+            out.u1(vui_hrd_parameters_present);
             if (vui_hrd_parameters_present) {
-                hrd_parameters.write(context, writer);
+                hrd_parameters.write(context, out);
             }
         }
 
-        writer.writeU1(bitstream_restriction);
+        out.u1(bitstream_restriction);
         if (bitstream_restriction) {
-            writer.writeU1(tiles_fixed_structure);
-            writer.writeU1(motion_vectors_over_pic_boundaries);
-            writer.writeU1(restricted_ref_pic_lists);
-            writer.writeUE(min_spatial_segmentation_idc);
-            writer.writeUE(max_bytes_per_pic_denom);
-            writer.writeUE(max_bits_per_min_cu_denom);
-            writer.writeUE(log2_max_mv_length_horizontal);
-            writer.writeUE(log2_max_mv_length_vertical);
+            out.u1(tiles_fixed_structure);
+            out.u1(motion_vectors_over_pic_boundaries);
+            out.u1(restricted_ref_pic_lists);
+            out.ue(min_spatial_segmentation_idc);
+            out.ue(max_bytes_per_pic_denom);
+            out.ue(max_bits_per_min_cu_denom);
+
+            out.ue(log2_max_mv_length_horizontal);
+            out.ue(log2_max_mv_length_vertical);
         }
     }
 
     @Override
-    public void print(H265Context context, PrintStream ps) {
-        ps.print("      aspect_ratio_info_present: ");
-        ps.println(aspect_ratio_info_present);
+    public void print(H265Context context, RbspPrinter out) {
+        out.u1("aspect_ratio_info_present", aspect_ratio_info_present);
         if (aspect_ratio_info_present) {
-            ps.print("        aspect_ratio_idc: ");
-            ps.println(aspect_ratio_idc);
+            out.enter();
+
+            out.u8("aspect_ratio_idc", aspect_ratio_idc);
             if (aspect_ratio_idc == 255) { // TODO EXTENDED_SAR constant
-                ps.print("          sar_width: ");
-                ps.println(sar_width);
-                ps.print("          sar_height: ");
-                ps.println(sar_height);
+                out.enter();
+                out.u16("sar_width", sar_width);
+                out.u16("sar_height", sar_height);
+                out.leave();
             }
+
+            out.leave();
         }
 
-        ps.print("      overscan_info_present: ");
-        ps.println(overscan_info_present);
+        out.u1("overscan_info_present", overscan_info_present);
         if (overscan_info_present) {
-            ps.print("        overscan_appropriate: ");
-            ps.println(overscan_appropriate);
+            out.enter();
+            out.u1("overscan_appropriate", overscan_appropriate);
+            out.leave();
         }
 
-        ps.print("      video_signal_type_present: ");
-        ps.println(video_signal_type_present);
+        out.u1("video_signal_type_present", video_signal_type_present);
         if (video_signal_type_present) {
-            ps.print("        video_format: ");
-            ps.println(video_format);
-            ps.print("        video_full_range: ");
-            ps.println(video_full_range);
-            ps.print("        colour_description_present: ");
-            ps.println(colour_description_present);
+            out.enter();
+
+            out.u3("video_format", video_format);
+            out.u1("video_full_range", video_full_range);
+
+            out.u1("colour_description_present",
+                    colour_description_present);
             if (colour_description_present) {
-                ps.print("          colour_primaries: ");
-                ps.println(colour_primaries);
-                ps.print("          transfer_characteristics: ");
-                ps.println(transfer_characteristics);
-                ps.print("          matrix_coeffs: ");
-                ps.println(matrix_coeffs);
+                out.enter();
+
+                out.u8("colour_primaries", colour_primaries);
+                out.u8("transfer_characteristics", transfer_characteristics);
+                out.u8("matrix_coeffs", matrix_coeffs);
+
+                out.leave();
             }
+
+            out.leave();
         }
 
-        ps.print("      chroma_loc_info_present: ");
-        ps.println(chroma_loc_info_present);
+        out.u1("chroma_loc_info_present", chroma_loc_info_present);
         if (chroma_loc_info_present) {
-            ps.print("        chroma_sample_loc_type_top_field: ");
-            ps.println(chroma_sample_loc_type_top_field);
-            ps.print("        chroma_sample_loc_type_bottom_field: ");
-            ps.println(chroma_sample_loc_type_bottom_field);
+            out.enter();
+
+            out.ue("chroma_sample_loc_type_top_field",
+                    chroma_sample_loc_type_top_field);
+            out.ue("chroma_sample_loc_type_bottom_field",
+                    chroma_sample_loc_type_bottom_field);
+
+            out.leave();
         }
 
-        ps.print("      neutral_chroma_indication: ");
-        ps.println(neutral_chroma_indication);
-        ps.print("      field_seq: ");
-        ps.println(field_seq);
-        ps.print("      frame_field_info_present: ");
-        ps.println(frame_field_info_present);
-        ps.print("      default_display_window: ");
-        ps.println(default_display_window);
+        out.u1("neutral_chroma_indication", neutral_chroma_indication);
+        out.u1("field_seq", field_seq);
+        out.u1("frame_field_info_present", frame_field_info_present);
+        out.u1("default_display_window", default_display_window);
         if (default_display_window) {
-            ps.print("        def_disp_win_left_offset: ");
-            ps.println(def_disp_win_left_offset);
-            ps.print("        def_disp_win_right_offset: ");
-            ps.println(def_disp_win_right_offset);
-            ps.print("        def_disp_win_top_offset: ");
-            ps.println(def_disp_win_top_offset);
-            ps.print("        def_disp_win_bottom_offset: ");
-            ps.println(def_disp_win_bottom_offset);
+            out.enter();
+
+            out.ue("def_disp_win_left_offset", def_disp_win_left_offset);
+            out.ue("def_disp_win_right_offset", def_disp_win_right_offset);
+            out.ue("def_disp_win_top_offset", def_disp_win_top_offset);
+            out.ue("def_disp_win_bottom_offset",
+                    def_disp_win_bottom_offset);
+
+            out.leave();
         }
 
-        ps.print("      vui_timing_info_present: ");
-        ps.println(vui_timing_info_present);
+        out.u1("vui_timing_info_present", vui_timing_info_present);
         if (vui_timing_info_present) {
-            ps.print("        vui_num_units_in_tick: ");
-            ps.println(vui_num_units_in_tick);
-            ps.print("        vui_time_scale: ");
-            ps.println(vui_time_scale);
+            out.enter();
 
-            ps.print("        vui_poc_proportional_to_timing: ");
-            ps.println(vui_poc_proportional_to_timing);
+            out.u32("vui_num_units_in_tick", vui_num_units_in_tick);
+            out.u32("vui_time_scale", vui_time_scale);
+
+            out.u1("vui_poc_proportional_to_timing",
+                    vui_poc_proportional_to_timing);
             if (vui_poc_proportional_to_timing) {
-                ps.print("          vui_num_ticks_poc_diff_one_minus1: ");
-                ps.println(vui_num_ticks_poc_diff_one_minus1);
+                out.enter();
+
+                out.ue("vui_num_ticks_poc_diff_one_minus1",
+                        vui_num_ticks_poc_diff_one_minus1);
+
+                out.leave();
             }
 
-            ps.print("        vui_hrd_parameters_present: ");
-            ps.println(vui_hrd_parameters_present);
+            out.u1("vui_hrd_parameters_present",
+                    vui_hrd_parameters_present);
             if (vui_hrd_parameters_present) {
-                hrd_parameters.print(context, ps);
+                out.enter();
+                hrd_parameters.print(context, out);
+                out.leave();
             }
+
+            out.leave();
         }
 
-        ps.print("      bitstream_restriction: ");
-        ps.println(bitstream_restriction);
+        out.u1("bitstream_restriction", bitstream_restriction);
         if (bitstream_restriction) {
-            ps.print("        tiles_fixed_structure: ");
-            ps.println(tiles_fixed_structure);
-            ps.print("        motion_vectors_over_pic_boundaries: ");
-            ps.println(motion_vectors_over_pic_boundaries);
-            ps.print("        restricted_ref_pic_lists: ");
-            ps.println(restricted_ref_pic_lists);
-            ps.print("        min_spatial_segmentation_idc: ");
-            ps.println(min_spatial_segmentation_idc);
-            ps.print("        max_bytes_per_pic_denom: ");
-            ps.println(max_bytes_per_pic_denom);
-            ps.print("        max_bits_per_min_cu_denom: ");
-            ps.println(max_bits_per_min_cu_denom);
-            ps.print("        log2_max_mv_length_horizontal: ");
-            ps.println(log2_max_mv_length_horizontal);
-            ps.print("        log2_max_mv_length_vertical: ");
-            ps.println(log2_max_mv_length_vertical);
+            out.enter();
+
+            out.u1("tiles_fixed_structure", tiles_fixed_structure);
+            out.u1("motion_vectors_over_pic_boundaries",
+                    motion_vectors_over_pic_boundaries);
+            out.u1("restricted_ref_pic_lists", restricted_ref_pic_lists);
+            out.ue("min_spatial_segmentation_idc",
+                    min_spatial_segmentation_idc);
+            out.ue("max_bytes_per_pic_denom", max_bytes_per_pic_denom);
+            out.ue("max_bits_per_min_cu_denom", max_bits_per_min_cu_denom);
+
+            out.ue("log2_max_mv_length_horizontal",
+                    log2_max_mv_length_horizontal);
+            out.ue("log2_max_mv_length_vertical", log2_max_mv_length_vertical);
+
+            out.leave();
         }
     }
 }

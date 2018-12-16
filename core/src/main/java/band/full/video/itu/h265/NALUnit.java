@@ -11,6 +11,21 @@ public abstract class NALUnit extends NalUnit<H265Context> {
 
     public NALUnit(NALUnitType type) {
         this.type = type;
+        zero_byte = isZeroByteRequired();
+    }
+
+    @Override
+    public boolean isZeroByteRequired() {
+        switch (type) {
+            case VPS_NUT:
+            case SPS_NUT:
+            case PPS_NUT:
+            case AUD_NUT:
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -24,25 +39,19 @@ public abstract class NALUnit extends NalUnit<H265Context> {
                 ", TemporalID " + (nuh_temporal_id_plus1 - 1);
     }
 
-    public static NALUnit create(H265Context context, RbspReader reader) {
-        return create(context, reader, false);
-    }
-
-    public static NALUnit create(H265Context context, RbspReader reader,
-            boolean zero_byte) {
+    public static NALUnit create(H265Context context, RbspReader in) {
         // nal_unit_header
-        if (reader.readU1())
+        if (in.u1())
             throw new IllegalStateException("forbidden_zero_bit is 1");
 
-        NALUnitType type = NALUnitType.get(reader.readUInt(6));
+        NALUnitType type = NALUnitType.get(in.u6());
         NALUnit nalu = type.createNALU();
 
-        nalu.zero_byte = zero_byte;
-        nalu.nuh_layer_id = reader.readUByte(6);
-        nalu.nuh_temporal_id_plus1 = reader.readUByte(3);
+        nalu.nuh_layer_id = in.u6();
+        nalu.nuh_temporal_id_plus1 = in.u3();
 
         // *_rbsp()
-        nalu.read(context, reader);
+        nalu.read(context, in);
         return nalu;
     }
 }

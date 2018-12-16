@@ -14,6 +14,6 @@ import band.full.test.video.generator.Quants3DBase;
 @GenerateVideo
 public class Quants3D2160pHDR10 extends Quants3DBase {
     public Quants3D2160pHDR10() {
-        super(HEVC, HDR10, "UHD4K/HDR10/Quants3D", "U4K_HDR10");
+        super(HEVC, HDR10, "UHD4K/HDR10", "U4K_HDR10");
     }
 }

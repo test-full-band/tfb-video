@@ -1,8 +1,10 @@
 package band.full.test.video.generator;
 
+import static band.full.test.video.generator.NalUnitPostProcessor.defaultNalUnitPostProcessor;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import band.full.test.video.encoder.EncoderParameters;
+import band.full.test.video.encoder.MuxerMP4Box;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -19,39 +21,65 @@ import java.util.stream.Stream;
  */
 @TestInstance(PER_CLASS)
 public abstract class BasicSetupBase {
+    @FunctionalInterface
+    protected static interface Generator<T extends GeneratorBase<A>, A> {
+        @SuppressWarnings("rawtypes")
+        T create(GeneratorFactory factory, EncoderParameters params,
+                NalUnitPostProcessor processor, MuxerFactory muxer,
+                String folder, String group);
+    }
+
+    protected <T extends GeneratorBase<A>, A> T create(Generator<T, A> gen) {
+        return gen.create(factory, params, processor, muxer, folder, group);
+    }
+
     protected final GeneratorFactory factory;
     protected final EncoderParameters params;
+    protected final NalUnitPostProcessor<?> processor;
+    protected final MuxerFactory muxer;
     protected final String folder;
     protected final String group;
 
     protected final CheckerboardGenerator checkerboard;
     protected final LinesGenerator lines;
+    protected final GammaGenerator gamma;
 
     protected BasicSetupBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String group) {
+        this(factory, params, defaultNalUnitPostProcessor(), MuxerMP4Box::new,
+                folder, group);
+    }
+
+    protected BasicSetupBase(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<?> processor,
+            MuxerFactory muxer, String folder, String group) {
         this.factory = factory;
         this.params = params;
+        this.processor = processor;
+        this.muxer = muxer;
         this.folder = folder + "/Basic";
         this.group = group;
 
-        checkerboard = new CheckerboardGenerator(
-                factory, params, this.folder, group);
-
-        lines = new LinesGenerator(
-                factory, params, this.folder, group);
+        checkerboard = create(CheckerboardGenerator::new);
+        lines = create(LinesGenerator::new);
+        gamma = create(GammaGenerator::new);
     }
 
     @Test
     @Disabled("TODO")
     public void blackLevel() {
-        new BlackLevelGenerator(factory, params, folder, group)
-                .generate(null);
+        create(BlackLevelGenerator::new).generate(null);
     }
 
     @Test
     public void blackPLUGE() {
-        new BlackPLUGEGenerator(factory, params, folder, group)
-                .generate(null);
+        create(BlackPLUGEGenerator::new).generate(null);
+    }
+
+    @Disabled
+    @Test // TODO check into account dynamic metadata (DV)
+    public void gamma() {
+        create(GammaGenerator::new).generate(null);
     }
 
     @ParameterizedTest

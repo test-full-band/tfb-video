@@ -23,7 +23,6 @@ import band.full.core.color.CIExyY;
 import band.full.test.video.encoder.DecoderY4M;
 import band.full.test.video.encoder.EncoderParameters;
 import band.full.test.video.encoder.EncoderY4M;
-import band.full.test.video.encoder.MuxerMP4;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
 import band.full.test.video.generator.CalibratePatchesBase.Args;
@@ -35,6 +34,8 @@ import org.junit.jupiter.api.TestInstance;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 
 import javafx.geometry.Insets;
@@ -89,6 +90,12 @@ public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
     public CalibratePatchesBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String group) {
         super(factory, params, folder, x -> x.file, group);
+    }
+
+    public CalibratePatchesBase(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, x -> x.file, group);
     }
 
     protected String formatCIE(CIExyY xyY) {
@@ -162,10 +169,12 @@ public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
     }
 
     @Override
-    public void encode(MuxerMP4 muxer, File dir, Args args)
+    public List<String> encode(File dir, Args args)
             throws IOException, InterruptedException {
-        encode(muxer, dir, args, "intro", INTRO_SECONDS);
-        encode(muxer, dir, args, null, BODY_SECONDS);
+        var all = new ArrayList<String>(PATTERN_SECONDS);
+        all.addAll(encode(dir, args, INTRO, INTRO_SECONDS));
+        all.addAll(encode(dir, args, BODY, BODY_SECONDS));
+        return all;
     }
 
     @Override

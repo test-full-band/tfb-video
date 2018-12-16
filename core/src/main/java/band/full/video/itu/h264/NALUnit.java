@@ -10,6 +10,20 @@ public abstract class NALUnit extends NalUnit<H264Context> {
 
     public NALUnit(NALUnitType type) {
         this.type = type;
+        zero_byte = isZeroByteRequired();
+    }
+
+    @Override
+    public boolean isZeroByteRequired() {
+        switch (type) {
+            case SPS_NUT:
+            case PPS_NUT:
+            case AUD_NUT:
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -22,25 +36,19 @@ public abstract class NALUnit extends NalUnit<H264Context> {
         return "RefIDC " + nal_ref_idc;
     }
 
-    public static NALUnit create(H264Context context, RbspReader reader) {
-        return create(context, reader, false);
-    }
-
-    public static NALUnit create(H264Context context, RbspReader reader,
-            boolean zero_byte) {
+    public static NALUnit create(H264Context context, RbspReader in) {
         // nal_unit_header
-        if (reader.readU1())
+        if (in.u1())
             throw new IllegalStateException("forbidden_zero_bit is 1");
 
-        byte nal_ref_idc = reader.readUByte(2);
-        NALUnitType type = NALUnitType.get(reader.readUInt(5));
+        byte nal_ref_idc = in.u2();
+        NALUnitType type = NALUnitType.get(in.u5());
         NALUnit nalu = type.createNALU();
 
-        nalu.zero_byte = zero_byte;
         nalu.nal_ref_idc = nal_ref_idc;
 
         // *_rbsp()
-        nalu.read(context, reader);
+        nalu.read(context, in);
         return nalu;
     }
 }

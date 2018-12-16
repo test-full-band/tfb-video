@@ -17,8 +17,15 @@ import java.util.stream.Stream;
 @GenerateVideo
 public abstract class Quants2DBase10HDR extends Quants2DBase {
     protected Quants2DBase10HDR(GeneratorFactory factory,
-            EncoderParameters params, String folder, String group) {
+            EncoderParameters params,
+            String folder, String group) {
         super(factory, params, folder, group);
+    }
+
+    protected Quants2DBase10HDR(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, group);
     }
 
     @Override

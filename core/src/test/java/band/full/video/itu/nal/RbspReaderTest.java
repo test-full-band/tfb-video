@@ -1,61 +1,99 @@
 package band.full.video.itu.nal;
 
-import static band.full.video.itu.nal.RbspReader.SE;
+import static band.full.video.itu.nal.RbspReader.ue2se;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
 public class RbspReaderTest {
     @Test
-    public void testReadU1() {
-        RbspReader reader = reader(0b01001101, 0b01001101);
+    public void uFlag() {
+        var in = reader(0b01001101, 0b01001101);
 
         for (int i = 0; i < 2; i++) {
-            assertEquals(false, reader.readU1());
-            assertEquals(true, reader.readU1());
-            assertEquals(false, reader.readU1());
-            assertEquals(false, reader.readU1());
-            assertEquals(true, reader.readU1());
-            assertEquals(true, reader.readU1());
-            assertEquals(false, reader.readU1());
-            assertEquals(true, reader.readU1());
+            assertEquals(false, in.u1());
+            assertEquals(true, in.u1());
+            assertEquals(false, in.u1());
+            assertEquals(false, in.u1());
+            assertEquals(true, in.u1());
+            assertEquals(true, in.u1());
+            assertEquals(false, in.u1());
+            assertEquals(true, in.u1());
         }
     }
 
     @Test
-    public void testReadUByte() {
-        RbspReader reader = reader(0b01001101, 0b01001101, 0b01001101);
+    public void uByte() {
+        var in = reader(0b01001101, 0b01001101, 0b01001101);
 
-        assertEquals(0b010, reader.readUByte(3));
-        assertEquals(0b011, reader.readUByte(3));
-        assertEquals(0b010, reader.readUByte(3));
-        assertEquals(0b100, reader.readUByte(3));
-        assertEquals(0b110, reader.readUByte(3));
-        assertEquals(0b101, reader.readUByte(3));
-        assertEquals(0b001, reader.readUByte(3));
-        assertEquals(0b101, reader.readUByte(3));
+        assertEquals(0b010, in.u3());
+        assertEquals(0b011, in.u3());
+        assertEquals(0b010, in.u3());
+        assertEquals(0b100, in.u3());
+        assertEquals(0b110, in.u3());
+        assertEquals(0b101, in.u3());
+        assertEquals(0b001, in.u3());
+        assertEquals(0b101, in.u3());
     }
 
     @Test
-    public void testReadUInt() {
-        RbspReader reader = reader(0b01001101, 0b01001101,
+    public void iByte() {
+        var in = reader(0b01001101, 0b01001101, 0b01001101);
+
+        assertEquals((byte) 0b00000_010, in.i3());
+        assertEquals((byte) 0b00000_011, in.i3());
+        assertEquals((byte) 0b00000_010, in.i3());
+        assertEquals((byte) 0b11111_100, in.i3());
+        assertEquals((byte) 0b11111_110, in.i3());
+        assertEquals((byte) 0b11111_101, in.i3());
+        assertEquals((byte) 0b00000_001, in.i3());
+        assertEquals((byte) 0b11111_101, in.i3());
+    }
+
+    @Test
+    public void uInt() {
+        var in = reader(0b01001101, 0b01001101,
                 0b01001101, 0b01001101, 0b01001101);
 
-        assertEquals(0b01001101010011010100, reader.readUInt(20));
-        assertEquals(0b11010100110101001101, reader.readUInt(20));
+        assertEquals(0b01001101010011010100, in.u20());
+        assertEquals(0b11010100110101001101, in.u20());
     }
 
     @Test
-    public void testReadULong() {
-        RbspReader reader = reader(0b01001101, 0b01001101,
+    public void iInt() {
+        var in = reader(0b01001101, 0b01001101,
+                0b01001101, 0b01001101, 0b01001101);
+
+        assertEquals(0b000000000000_01001101010011010100, in.i20());
+        assertEquals(0b111111111111_11010100110101001101, in.i20());
+    }
+
+    @Test
+    public void uLong() {
+        var in = reader(0b01001101, 0b01001101,
                 0b01001101, 0b01001101, 0b01001101, 0b01001101,
                 0b01001101, 0b01001101, 0b01001101, 0b01001101);
 
         assertEquals(0b01001101010011010100110101001101010011010100L,
-                reader.readULong(44));
+                in.readULong(44));
 
         assertEquals(0b110101001101010011010100110101001101L,
-                reader.readULong(36));
+                in.readULong(36));
+    }
+
+    @Test
+    public void iLong() {
+        var in = reader(0b01001101, 0b01001101,
+                0b01001101, 0b01001101, 0b01001101, 0b01001101,
+                0b01001101, 0b01001101, 0b01001101, 0b01001101);
+
+        assertEquals(
+                0b00000000000000000000_01001101010011010100110101001101010011010100L,
+                in.readLong(44));
+
+        assertEquals(
+                0b1111111111111111111111111111_110101001101010011010100110101001101L,
+                in.readLong(36));
     }
 
     @Test
@@ -78,18 +116,18 @@ public class RbspReaderTest {
     }
 
     private void assertUE(int expected, byte[] in) {
-        assertEquals(expected, reader(in).readUE());
+        assertEquals(expected, reader(in).ue());
     }
 
     @Test
     public void testSE() {
-        assertEquals(0, SE(0));
-        assertEquals(1, SE(1));
-        assertEquals(-1, SE(2));
-        assertEquals(2, SE(3));
-        assertEquals(-2, SE(4));
-        assertEquals(3, SE(5));
-        assertEquals(-3, SE(6));
+        assertEquals(0, ue2se(0));
+        assertEquals(1, ue2se(1));
+        assertEquals(-1, ue2se(2));
+        assertEquals(2, ue2se(3));
+        assertEquals(-2, ue2se(4));
+        assertEquals(3, ue2se(5));
+        assertEquals(-3, ue2se(6));
     }
 
     // @Test

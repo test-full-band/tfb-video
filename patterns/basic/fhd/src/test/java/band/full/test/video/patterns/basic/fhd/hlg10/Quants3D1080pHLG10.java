@@ -18,6 +18,6 @@ import band.full.test.video.generator.Quants3DBase;
 public class Quants3D1080pHLG10 extends Quants3DBase {
     public Quants3D1080pHLG10() {
         super(HEVC, new EncoderParameters(STD_1080p, HLG10, FPS_23_976),
-                "FullHD/HLG10/Quants3D", "FHD_HLG10");
+                "FullHD/HLG10", "FHD_HLG10");
     }
 }

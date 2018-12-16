@@ -34,8 +34,9 @@ public class LinesGenerator extends GeneratorBase<Args> {
     }
 
     public LinesGenerator(GeneratorFactory factory,
-            EncoderParameters params, String folder, String group) {
-        super(factory, params, folder, "Lines", group);
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, "Lines", group);
     }
 
     public Stream<Args> args() {
@@ -72,6 +73,7 @@ public class LinesGenerator extends GeneratorBase<Args> {
 
     @Override
     protected void verify(DecoderY4M d, Args args) {
-        d.read(fb -> {});
+        d.read(fb -> {
+        });
     }
 }

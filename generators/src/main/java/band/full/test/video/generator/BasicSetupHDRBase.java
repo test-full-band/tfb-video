@@ -15,8 +15,14 @@ public abstract class BasicSetupHDRBase extends BasicSetupBase {
         super(factory, params, folder, group);
     }
 
+    protected BasicSetupHDRBase(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<?> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, group);
+    }
+
     @Test
     public void bt2111() {
-        new BT2111Generator(factory, params, folder, group).generate(null);
+        create(BT2111Generator::new).generate(null);
     }
 }

@@ -1,15 +1,12 @@
 package band.full.video.itu.nal.sei;
 
-import static band.full.core.ArrayMath.toHexString;
-
 import band.full.video.itu.T35;
 import band.full.video.itu.nal.NalContext;
 import band.full.video.itu.nal.Payload;
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.scte.ATSC1;
-
-import java.io.PrintStream;
 
 /**
  * D.2.6 User data registered by Recommendation ITU-T T.35 SEI message syntax
@@ -21,18 +18,26 @@ import java.io.PrintStream;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class UserDataRegisteredT35 implements T35, Payload {
-    public short country_code;
-    public int provider_code;
-    public int user_identifier;
+    public short country_code; // u8
+    public short provider_code; // u16 stored as i16
+    public int user_identifier; // u32 stored as i32
+
     public Payload user_structure;
 
     public UserDataRegisteredT35() {}
 
-    public UserDataRegisteredT35(NalContext context, RbspReader reader,
+    public UserDataRegisteredT35(ATSC1 atsc1) {
+        country_code = ATSC1.COUNTRY_CODE;
+        provider_code = ATSC1.PROVIDER_CODE;
+        user_identifier = ATSC1.USER_IDENTIFIER;
+        user_structure = atsc1;
+    }
+
+    public UserDataRegisteredT35(NalContext context, RbspReader in,
             int size) {
-        int start = reader.available();
-        read(context, reader);
-        if (start - reader.available() != size << 3)
+        int start = in.available();
+        read(context, in);
+        if (start - in.available() != size << 3)
             throw new IllegalArgumentException();
     }
 
@@ -52,57 +57,53 @@ public class UserDataRegisteredT35 implements T35, Payload {
     }
 
     @Override
-    public void read(NalContext context, RbspReader reader) {
-        country_code = reader.readUShort(8);
-
+    public void read(NalContext context, RbspReader in) {
+        country_code = in.u8();
         if (country_code == UNITED_STATES) {
-            provider_code = reader.readUInt(16);
+            provider_code = in.i16();
             if (provider_code == ATSC1.PROVIDER_CODE) {
-                user_identifier = reader.readS32();
+                user_identifier = in.i32();
                 if (user_identifier == ATSC1.USER_IDENTIFIER) {
-                    user_structure = new ATSC1(reader);
+                    user_structure = new ATSC1(in);
                     return;
                 }
             }
         }
 
-        user_structure = new Payload.Bytes(reader);
+        user_structure = new Payload.Bytes(in);
     }
 
     @Override
-    public void write(NalContext context, RbspWriter writer) {
-        writer.writeU(8, country_code);
+    public void write(NalContext context, RbspWriter out) {
+        out.u8(country_code);
         if (country_code == UNITED_STATES) {
-            writer.writeU(16, provider_code);
+            out.u16(provider_code);
             if (provider_code == ATSC1.PROVIDER_CODE) {
-                writer.writeS32(user_identifier);
+                out.i32(user_identifier);
                 if (user_identifier == ATSC1.USER_IDENTIFIER) {
-                    user_structure.write(context, writer);
+                    user_structure.write(context, out);
                     return;
                 }
             }
         }
 
-        user_structure.write(context, writer);
+        user_structure.write(context, out);
     }
 
     @Override
-    public void print(NalContext context, PrintStream ps) {
-        ps.print("      country_code: ");
-        ps.println(country_code);
+    public void print(NalContext context, RbspPrinter out) {
+        out.u8("country_code", country_code);
         if (country_code == UNITED_STATES) {
-            ps.print("      provider_code: 0x");
-            ps.println(toHexString((short) provider_code));
+            out.printH("provider_code", 16, provider_code);
             if (provider_code == ATSC1.PROVIDER_CODE) {
-                ps.print("      user_identifier: 0x");
-                ps.println(toHexString(user_identifier));
+                out.printH("user_identifier", 32, user_identifier);
                 if (user_identifier == ATSC1.USER_IDENTIFIER) {
-                    user_structure.print(context, ps);
+                    user_structure.print(context, out);
                     return;
                 }
             }
         }
 
-        user_structure.print(context, ps);
+        user_structure.print(context, out);
     }
 }

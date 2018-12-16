@@ -1,9 +1,5 @@
 package band.full.video.itu.nal;
 
-import static band.full.core.ArrayMath.toHexString;
-
-import java.io.PrintStream;
-
 public interface Payload<C extends NalContext> extends Structure<C> {
     int size(C context);
 
@@ -13,12 +9,12 @@ public interface Payload<C extends NalContext> extends Structure<C> {
 
         public Bytes() {}
 
-        public Bytes(RbspReader reader) {
-            read(null, reader);
+        public Bytes(RbspReader in) {
+            read(null, in);
         }
 
-        public Bytes(RbspReader reader, int size) {
-            bytes = reader.readBytes(size);
+        public Bytes(RbspReader in, int size) {
+            bytes = in.readBytes(size);
         }
 
         @Override
@@ -27,19 +23,18 @@ public interface Payload<C extends NalContext> extends Structure<C> {
         }
 
         @Override
-        public void read(NalContext context, RbspReader reader) {
-            bytes = reader.readTrailingBits();
+        public void read(NalContext context, RbspReader in) {
+            bytes = in.readTrailingBits();
         }
 
         @Override
-        public void write(NalContext context, RbspWriter writer) {
-            writer.writeBytes(bytes);
+        public void write(NalContext context, RbspWriter out) {
+            out.writeBytes(bytes);
         }
 
         @Override
-        public void print(NalContext context, PrintStream ps) {
-            ps.print("      payload: 0x");
-            ps.println(toHexString(bytes));
+        public void print(NalContext context, RbspPrinter out) {
+            out.printH("payload", bytes);
         }
     }
 }

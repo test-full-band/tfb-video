@@ -2,11 +2,10 @@ package band.full.video.itu.h265;
 
 import static java.util.Arrays.setAll;
 
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.itu.nal.Structure;
-
-import java.io.PrintStream;
 
 /**
  * E.2.2 HRD parameters syntax
@@ -38,103 +37,98 @@ public class HrdParameters implements Structure<H265Context> {
         public byte dpb_output_delay_length_minus1; // u5
 
         @Override
-        public void read(H265Context context, RbspReader reader) {
-            nal_hrd_parameters_present = reader.readU1();
-            vcl_hrd_parameters_present = reader.readU1();
+        public void read(H265Context context, RbspReader in) {
+            nal_hrd_parameters_present = in.u1();
+            vcl_hrd_parameters_present = in.u1();
 
             if (nal_hrd_parameters_present || vcl_hrd_parameters_present) {
-                sub_pic_hrd_params_present = reader.readU1();
+                sub_pic_hrd_params_present = in.u1();
 
                 if (sub_pic_hrd_params_present) {
-                    tick_divisor_minus2 = reader.readUShort(8);
-                    du_cpb_removal_delay_increment_length_minus1 =
-                            reader.readUByte(5);
-                    sub_pic_cpb_params_in_pic_timing_sei = reader.readU1();
-                    dpb_output_delay_du_length_minus1 = reader.readUByte(5);
+                    tick_divisor_minus2 = in.u8();
+                    du_cpb_removal_delay_increment_length_minus1 = in.u5();
+                    sub_pic_cpb_params_in_pic_timing_sei = in.u1();
+                    dpb_output_delay_du_length_minus1 = in.u5();
                 }
 
-                bit_rate_scale = reader.readUByte(4);
-                cpb_size_scale = reader.readUByte(4);
+                bit_rate_scale = in.u4();
+                cpb_size_scale = in.u4();
 
                 if (sub_pic_hrd_params_present) {
-                    cpb_size_du_scale = reader.readUByte(4);
+                    cpb_size_du_scale = in.u4();
                 }
 
-                initial_cpb_removal_delay_length_minus1 = reader.readUByte(5);
-                au_cpb_removal_delay_length_minus1 = reader.readUByte(5);
-                dpb_output_delay_length_minus1 = reader.readUByte(5);
+                initial_cpb_removal_delay_length_minus1 = in.u5();
+                au_cpb_removal_delay_length_minus1 = in.u5();
+                dpb_output_delay_length_minus1 = in.u5();
             }
         }
 
         @Override
-        public void write(H265Context context, RbspWriter writer) {
-            writer.writeU1(nal_hrd_parameters_present);
-            writer.writeU1(vcl_hrd_parameters_present);
+        public void write(H265Context context, RbspWriter out) {
+            out.u1(nal_hrd_parameters_present);
+            out.u1(vcl_hrd_parameters_present);
 
             if (nal_hrd_parameters_present || vcl_hrd_parameters_present) {
-                writer.writeU1(sub_pic_hrd_params_present);
+                out.u1(sub_pic_hrd_params_present);
 
                 if (sub_pic_hrd_params_present) {
-                    writer.writeU(8, tick_divisor_minus2);
-                    writer.writeU(5,
+                    out.u8(tick_divisor_minus2);
+                    out.u5(du_cpb_removal_delay_increment_length_minus1);
+                    out.u1(sub_pic_cpb_params_in_pic_timing_sei);
+                    out.u5(dpb_output_delay_du_length_minus1);
+                }
+
+                out.u4(bit_rate_scale);
+                out.u4(cpb_size_scale);
+
+                if (sub_pic_hrd_params_present) {
+                    out.u4(cpb_size_du_scale);
+                }
+
+                out.u5(initial_cpb_removal_delay_length_minus1);
+                out.u5(au_cpb_removal_delay_length_minus1);
+                out.u5(dpb_output_delay_length_minus1);
+            }
+        }
+
+        @Override
+        public void print(H265Context context, RbspPrinter out) {
+            out.u1("nal_hrd_parameters_present", nal_hrd_parameters_present);
+            out.u1("vcl_hrd_parameters_present", vcl_hrd_parameters_present);
+
+            if (nal_hrd_parameters_present || vcl_hrd_parameters_present) {
+                out.u1("sub_pic_hrd_params_present",
+                        sub_pic_hrd_params_present);
+
+                if (sub_pic_hrd_params_present) {
+                    out.u8("tick_divisor_minus2", tick_divisor_minus2);
+
+                    out.u5("du_cpb_removal_delay_increment_length_minus1",
                             du_cpb_removal_delay_increment_length_minus1);
-                    writer.writeU1(sub_pic_cpb_params_in_pic_timing_sei);
-                    writer.writeU(5, dpb_output_delay_du_length_minus1);
+
+                    out.u1("sub_pic_cpb_params_in_pic_timing_sei",
+                            sub_pic_cpb_params_in_pic_timing_sei);
+
+                    out.u5("dpb_output_delay_du_length_minus1",
+                            dpb_output_delay_du_length_minus1);
                 }
 
-                writer.writeU(4, bit_rate_scale);
-                writer.writeU(4, cpb_size_scale);
+                out.u4("bit_rate_scale", bit_rate_scale);
+                out.u4("cpb_size_scale", cpb_size_scale);
 
                 if (sub_pic_hrd_params_present) {
-                    writer.writeU(4, cpb_size_du_scale);
+                    out.u4("cpb_size_du_scale", cpb_size_du_scale);
                 }
 
-                writer.writeU(5, initial_cpb_removal_delay_length_minus1);
-                writer.writeU(5, au_cpb_removal_delay_length_minus1);
-                writer.writeU(5, dpb_output_delay_length_minus1);
-            }
-        }
+                out.u5("initial_cpb_removal_delay_length_minus1",
+                        initial_cpb_removal_delay_length_minus1);
 
-        @Override
-        public void print(H265Context context, PrintStream ps) {
-            ps.print("          nal_hrd_parameters_present: ");
-            ps.println(nal_hrd_parameters_present);
-            ps.print("          vcl_hrd_parameters_present: ");
-            ps.println(vcl_hrd_parameters_present);
+                out.u5("au_cpb_removal_delay_length_minus1",
+                        au_cpb_removal_delay_length_minus1);
 
-            if (nal_hrd_parameters_present || vcl_hrd_parameters_present) {
-                ps.print("          sub_pic_hrd_params_present: ");
-                ps.println(sub_pic_hrd_params_present);
-
-                if (sub_pic_hrd_params_present) {
-                    ps.print("          tick_divisor_minus2: ");
-                    ps.println(tick_divisor_minus2);
-                    ps.print(
-                            "          du_cpb_removal_delay_increment_length_minus1: ");
-                    ps.println(du_cpb_removal_delay_increment_length_minus1);
-                    ps.print(
-                            "          sub_pic_cpb_params_in_pic_timing_sei: ");
-                    ps.println(sub_pic_cpb_params_in_pic_timing_sei);
-                    ps.print("          dpb_output_delay_du_length_minus1: ");
-                    ps.println(dpb_output_delay_du_length_minus1);
-                }
-
-                ps.print("          bit_rate_scale: ");
-                ps.println(bit_rate_scale);
-                ps.print("          cpb_size_scale: ");
-                ps.println(cpb_size_scale);
-
-                if (sub_pic_hrd_params_present) {
-                    ps.print("          cpb_size_du_scale: ");
-                    ps.println(cpb_size_du_scale);
-                }
-
-                ps.print("          initial_cpb_removal_delay_length_minus1: ");
-                ps.println(initial_cpb_removal_delay_length_minus1);
-                ps.print("          au_cpb_removal_delay_length_minus1: ");
-                ps.println(au_cpb_removal_delay_length_minus1);
-                ps.print("          dpb_output_delay_length_minus1: ");
-                ps.println(dpb_output_delay_length_minus1);
+                out.u5("dpb_output_delay_length_minus1",
+                        dpb_output_delay_length_minus1);
             }
         }
     }
@@ -151,17 +145,16 @@ public class HrdParameters implements Structure<H265Context> {
         public SubLayerParameters[] vcl_hrd_parameters;
 
         @Override
-        public void read(H265Context context, RbspReader reader) {
-            fixed_pic_rate_general = reader.readU1();
-            fixed_pic_rate_within_cvs = fixed_pic_rate_general
-                    || reader.readU1();
+        public void read(H265Context context, RbspReader in) {
+            fixed_pic_rate_general = in.u1();
+            fixed_pic_rate_within_cvs = fixed_pic_rate_general || in.u1();
             if (fixed_pic_rate_within_cvs) {
-                elemental_duration_in_tc_minus1 = reader.readUE();
+                elemental_duration_in_tc_minus1 = in.ue();
             } else {
-                low_delay_hrd = reader.readU1();
+                low_delay_hrd = in.u1();
             }
             if (!low_delay_hrd) {
-                cpb_cnt_minus1 = reader.readUE();
+                cpb_cnt_minus1 = in.ue();
             }
 
             int CbpCnt = cpb_cnt_minus1 + 1;
@@ -170,7 +163,7 @@ public class HrdParameters implements Structure<H265Context> {
                 nal_hrd_parameters = new SubLayerParameters[CbpCnt];
                 setAll(nal_hrd_parameters, i -> new SubLayerParameters());
                 for (SubLayerParameters nhp : nal_hrd_parameters) {
-                    nhp.read(context, reader);
+                    nhp.read(context, in);
                 }
             }
 
@@ -178,27 +171,27 @@ public class HrdParameters implements Structure<H265Context> {
                 vcl_hrd_parameters = new SubLayerParameters[CbpCnt];
                 setAll(vcl_hrd_parameters, i -> new SubLayerParameters());
                 for (SubLayerParameters vhp : vcl_hrd_parameters) {
-                    vhp.read(context, reader);
+                    vhp.read(context, in);
                 }
             }
         }
 
         @Override
-        public void write(H265Context context, RbspWriter writer) {
-            writer.writeU1(fixed_pic_rate_general);
+        public void write(H265Context context, RbspWriter out) {
+            out.u1(fixed_pic_rate_general);
             if (fixed_pic_rate_general) {
                 if (!fixed_pic_rate_within_cvs)
                     throw new IllegalStateException();
             } else {
-                writer.writeU1(fixed_pic_rate_within_cvs);
+                out.u1(fixed_pic_rate_within_cvs);
             }
             if (fixed_pic_rate_within_cvs) {
-                writer.writeUE(elemental_duration_in_tc_minus1);
+                out.ue(elemental_duration_in_tc_minus1);
             } else {
-                writer.writeU1(low_delay_hrd);
+                out.u1(low_delay_hrd);
             }
             if (!low_delay_hrd) {
-                writer.writeUE(cpb_cnt_minus1);
+                out.ue(cpb_cnt_minus1);
             }
 
             int CbpCnt = cpb_cnt_minus1 + 1;
@@ -208,7 +201,7 @@ public class HrdParameters implements Structure<H265Context> {
                     throw new IllegalStateException();
 
                 for (SubLayerParameters nhp : nal_hrd_parameters) {
-                    nhp.write(context, writer);
+                    nhp.write(context, out);
                 }
             }
 
@@ -217,43 +210,47 @@ public class HrdParameters implements Structure<H265Context> {
                     throw new IllegalStateException();
 
                 for (SubLayerParameters vhp : vcl_hrd_parameters) {
-                    vhp.write(context, writer);
+                    vhp.write(context, out);
                 }
             }
         }
 
         @Override
-        public void print(H265Context context, PrintStream ps) {
-            ps.print("          fixed_pic_rate_general: ");
-            ps.println(fixed_pic_rate_general);
+        public void print(H265Context context, RbspPrinter out) {
+            out.u1("fixed_pic_rate_general", fixed_pic_rate_general);
             if (!fixed_pic_rate_general) {
-                ps.print("          fixed_pic_rate_within_cvs: ");
-                ps.println(fixed_pic_rate_within_cvs);
+                out.u1("fixed_pic_rate_within_cvs", fixed_pic_rate_within_cvs);
             }
             if (fixed_pic_rate_within_cvs) {
-                ps.print("          elemental_duration_in_tc_minus1: ");
-                ps.println(elemental_duration_in_tc_minus1);
+                out.ue("elemental_duration_in_tc_minus1",
+                        elemental_duration_in_tc_minus1);
             } else {
-                ps.print("          low_delay_hrd: ");
-                ps.println(low_delay_hrd);
+                out.u1("low_delay_hrd", low_delay_hrd);
             }
             if (!low_delay_hrd) {
-                ps.print("          cpb_cnt_minus1: ");
-                ps.println(cpb_cnt_minus1);
+                out.ue("cpb_cnt_minus1", cpb_cnt_minus1);
             }
 
             if (common_inf.nal_hrd_parameters_present) {
-                ps.println("          nal_hrd_parameters");
+                out.raw("nal_hrd_parameters");
+                out.enter();
+
                 for (SubLayerParameters nhp : nal_hrd_parameters) {
-                    nhp.print(context, ps);
+                    nhp.print(context, out);
                 }
+
+                out.leave();
             }
 
             if (common_inf.vcl_hrd_parameters_present) {
-                ps.print("          vcl_hrd_parameters");
+                out.raw("vcl_hrd_parameters");
+                out.enter();
+
                 for (SubLayerParameters vhp : vcl_hrd_parameters) {
-                    vhp.print(context, ps);
+                    vhp.print(context, out);
                 }
+
+                out.leave();
             }
         }
     }
@@ -271,47 +268,42 @@ public class HrdParameters implements Structure<H265Context> {
         public boolean cbr;
 
         @Override
-        public void read(H265Context context, RbspReader reader) {
-            bit_rate_value_minus1 = reader.readUE();
-            cpb_size_value_minus1 = reader.readUE();
+        public void read(H265Context context, RbspReader in) {
+            bit_rate_value_minus1 = in.ue();
+            cpb_size_value_minus1 = in.ue();
 
             if (common_inf.sub_pic_hrd_params_present) {
-                cpb_size_du_value_minus1 = reader.readUE();
-                bit_rate_du_value_minus1 = reader.readUE();
+                cpb_size_du_value_minus1 = in.ue();
+                bit_rate_du_value_minus1 = in.ue();
             }
 
-            cbr = reader.readU1();
+            cbr = in.u1();
         }
 
         @Override
-        public void write(H265Context context, RbspWriter writer) {
-            writer.writeUE(bit_rate_value_minus1);
-            writer.writeUE(cpb_size_value_minus1);
+        public void write(H265Context context, RbspWriter out) {
+            out.ue(bit_rate_value_minus1);
+            out.ue(cpb_size_value_minus1);
 
             if (common_inf.sub_pic_hrd_params_present) {
-                writer.writeUE(cpb_size_du_value_minus1);
-                writer.writeUE(bit_rate_du_value_minus1);
+                out.ue(cpb_size_du_value_minus1);
+                out.ue(bit_rate_du_value_minus1);
             }
 
-            writer.writeU1(cbr);
+            out.u1(cbr);
         }
 
         @Override
-        public void print(H265Context context, PrintStream ps) {
-            ps.print("            bit_rate_value_minus1: ");
-            ps.println(bit_rate_value_minus1);
-            ps.print("            cpb_size_value_minus1: ");
-            ps.println(cpb_size_value_minus1);
+        public void print(H265Context context, RbspPrinter out) {
+            out.ue("bit_rate_value_minus1", bit_rate_value_minus1);
+            out.ue("cpb_size_value_minus1", cpb_size_value_minus1);
 
             if (common_inf.sub_pic_hrd_params_present) {
-                ps.print("            cpb_size_du_value_minus1: ");
-                ps.println(cpb_size_du_value_minus1);
-                ps.print("            bit_rate_du_value_minus1: ");
-                ps.println(bit_rate_du_value_minus1);
+                out.ue("cpb_size_du_value_minus1", cpb_size_du_value_minus1);
+                out.ue("bit_rate_du_value_minus1", bit_rate_du_value_minus1);
             }
 
-            ps.print("            cbr: ");
-            ps.println(cbr);
+            out.u1("cbr", cbr);
         }
     }
 
@@ -325,38 +317,42 @@ public class HrdParameters implements Structure<H265Context> {
     }
 
     @Override
-    public void read(H265Context context, RbspReader reader) {
+    public void read(H265Context context, RbspReader in) {
         if (commonInfPresentFlag) {
-            common_inf.read(context, reader);
+            common_inf.read(context, in);
         }
 
         for (SubLayer sl : sub_layers) {
-            sl.read(context, reader);
+            sl.read(context, in);
         }
     }
 
     @Override
-    public void write(H265Context context, RbspWriter writer) {
+    public void write(H265Context context, RbspWriter out) {
         if (commonInfPresentFlag) {
-            common_inf.write(context, writer);
+            common_inf.write(context, out);
         }
 
         for (SubLayer sl : sub_layers) {
-            sl.write(context, writer);
+            sl.write(context, out);
         }
     }
 
     @Override
-    public void print(H265Context context, PrintStream ps) {
-        ps.println("        hrd_parameters");
+    public void print(H265Context context, RbspPrinter out) {
+        out.raw("hrd_parameters"); // TODO
         if (commonInfPresentFlag) {
-            common_inf.print(context, ps);
+            out.enter();
+            common_inf.print(context, out);
+            out.leave();
         }
 
         for (int i = 0; i < sub_layers.length; i++) {
-            ps.print("        sub_layer_");
-            ps.println(i);
-            sub_layers[i].print(context, ps);
+            out.i32("sub_layer", i);
+
+            out.enter();
+            sub_layers[i].print(context, out);
+            out.leave();
         }
     }
 }

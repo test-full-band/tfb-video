@@ -27,6 +27,12 @@ public abstract class CalibrateGrayscaleBase extends CalibratePatchesBase {
         super(factory, params, folder + "/Calibrate", group);
     }
 
+    public CalibrateGrayscaleBase(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder + "/Calibrate", group);
+    }
+
     @ParameterizedTest(name = "{arguments}")
     @MethodSource("grayscale")
     public void grayscale(Args args) {

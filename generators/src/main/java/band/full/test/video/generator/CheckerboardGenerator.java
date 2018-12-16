@@ -37,8 +37,9 @@ public class CheckerboardGenerator extends GeneratorBase<Args> {
     }
 
     public CheckerboardGenerator(GeneratorFactory factory,
-            EncoderParameters params, String folder, String group) {
-        super(factory, params, folder, "Checkerboard", group);
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, "Checkerboard", group);
     }
 
     public Stream<Args> args() {
@@ -82,6 +83,7 @@ public class CheckerboardGenerator extends GeneratorBase<Args> {
 
     @Override
     protected void verify(DecoderY4M d, Args args) {
-        d.read(fb -> {});
+        d.read(fb -> {
+        });
     }
 }

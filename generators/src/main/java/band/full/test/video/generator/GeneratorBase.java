@@ -1,8 +1,11 @@
 package band.full.test.video.generator;
 
 import static band.full.test.video.generator.GeneratorFactory.LOSSLESS;
+import static band.full.test.video.generator.NalUnitPostProcessor.defaultNalUnitPostProcessor;
+import static java.lang.Math.min;
 import static java.lang.Math.round;
-import static java.util.Collections.emptyList;
+import static java.lang.ProcessBuilder.Redirect.INHERIT;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static javafx.scene.text.Font.font;
 
@@ -12,13 +15,18 @@ import band.full.core.color.Primaries;
 import band.full.test.video.encoder.DecoderY4M;
 import band.full.test.video.encoder.EncoderParameters;
 import band.full.test.video.encoder.EncoderY4M;
-import band.full.test.video.encoder.MuxerMP4;
+import band.full.test.video.encoder.MuxerMP4Box;
 import band.full.video.buffer.Framerate;
 import band.full.video.itu.ColorMatrix;
 import band.full.video.itu.TransferCharacteristics;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 import java.util.function.Function;
 
 import javafx.geometry.Pos;
@@ -32,7 +40,11 @@ import javafx.scene.text.TextAlignment;
  */
 public abstract class GeneratorBase<A> {
     protected static final int PATTERN_SECONDS = 60;
+
+    protected static final String INTRO = "intro";
     protected static final int INTRO_SECONDS = 5;
+
+    protected static final String BODY = "body";
     protected static final int BODY_SECONDS = PATTERN_SECONDS - INTRO_SECONDS;
 
     protected static final char PG_SEPARATOR = LOSSLESS ? '=' : '~';
@@ -41,6 +53,8 @@ public abstract class GeneratorBase<A> {
     public final EncoderParameters params;
     public final String folder, group;
     private final Function<A, String> pattern;
+    private final NalUnitPostProcessor<A> processor;
+    private final MuxerFactory muxer;
 
     // direct access to commonly used parameters
     public final Resolution resolution;
@@ -50,20 +64,42 @@ public abstract class GeneratorBase<A> {
     public final TransferCharacteristics transfer;
     public final int bitdepth, width, height, gop;
 
-    public GeneratorBase(GeneratorFactory factory,
-            EncoderParameters params, String folder,
-            String pattern, String group) {
-        this(factory, params, folder, noargs -> pattern, group);
+    public GeneratorBase(GeneratorFactory factory, EncoderParameters params,
+            String folder, String pattern, String group) {
+        this(factory, params, defaultNalUnitPostProcessor(), MuxerMP4Box::new,
+                folder, noargs -> pattern, group);
     }
 
-    public GeneratorBase(GeneratorFactory factory,
-            EncoderParameters params, String folder,
-            Function<A, String> pattern, String group) {
+    public GeneratorBase(GeneratorFactory factory, EncoderParameters params,
+            String folder, Function<A, String> pattern, String group) {
+        this(factory, params, defaultNalUnitPostProcessor(), MuxerMP4Box::new,
+                folder, pattern, group);
+    }
+
+    public GeneratorBase(GeneratorFactory factory, EncoderParameters params,
+            NalUnitPostProcessor<A> processor,
+            String folder, String pattern, String group) {
+        this(factory, params, processor, MuxerMP4Box::new,
+                folder, noargs -> pattern, group);
+    }
+
+    public GeneratorBase(GeneratorFactory factory, EncoderParameters params,
+            NalUnitPostProcessor<A> processor, MuxerFactory muxer,
+            String folder, String pattern, String group) {
+        this(factory, params, processor, muxer,
+                folder, noargs -> pattern, group);
+    }
+
+    public GeneratorBase(GeneratorFactory factory, EncoderParameters params,
+            NalUnitPostProcessor<A> processor, MuxerFactory muxer,
+            String folder, Function<A, String> pattern, String group) {
         this.factory = factory;
         this.params = params;
         this.folder = folder;
         this.pattern = pattern;
         this.group = group;
+        this.processor = processor;
+        this.muxer = muxer;
 
         resolution = params.resolution;
         matrix = params.matrix;
@@ -80,15 +116,33 @@ public abstract class GeneratorBase<A> {
     }
 
     public void generate(A args) {
-        String pattern = getPattern(args);
-        File dir = factory.greet(getFolder(args), pattern);
+        var pattern = getPattern(args);
+        var dir = factory.greet(getFolder(args), pattern);
         try {
-            MuxerMP4 muxer = new MuxerMP4(dir,
-                    pattern, factory.brand, emptyList());
+            String audio = audio();
 
-            encode(muxer, dir, args);
-            String mp4 = muxer.mux();
-            muxer.deleteInputs();
+            var inputs = encode(dir, args);
+            var joined = new File(dir, pattern + factory.suffix);
+
+            try (OutputStream out = new FileOutputStream(joined)) {
+                int fragment = 0;
+                for (String input : inputs) {
+                    File file = new File(dir, input);
+                    try (InputStream in = new FileInputStream(file)) {
+                        processor.process(args, fragment++, in, out);
+                    }
+                }
+            }
+
+            if (!dir.isDirectory() && !dir.mkdirs())
+                throw new IOException("Cannot create directory: " + dir);
+
+            String mp4 = muxer.create(dir, pattern, factory.brand)
+                    .mux(pattern + factory.suffix, audio);
+
+            // joined.delete();
+            inputs.stream().distinct()
+                    .forEach(input -> new File(dir, input).delete());
 
             verify(dir, mp4, args);
         } catch (IOException | InterruptedException e) {
@@ -96,13 +150,54 @@ public abstract class GeneratorBase<A> {
         }
     }
 
-    public void encode(MuxerMP4 muxer, File dir, A args)
-            throws IOException, InterruptedException {
-        encode(muxer, dir, args, null, PATTERN_SECONDS);
+    protected String audio() {
+        return silence(PATTERN_SECONDS);
     }
 
-    public final void encode(MuxerMP4 muxer, File dir,
-            A args, String phase, int repeat)
+    /**
+     * In help to avoid messages about missing audio during play back generate
+     * placeholder digital silence audio track.
+     */
+    protected String silence(int seconds) {
+        String name = "target/silence" + seconds + "s.ac3";
+
+        if (new File(name).exists()) return name;
+
+        var builder = new ProcessBuilder(
+                "ffmpeg", "-f", "s16le", "-ar", "48000", "-ac", "2",
+                "-i", "pipe:0", name
+        ).redirectOutput(INHERIT).redirectError(INHERIT);
+
+        try {
+            System.out.println(builder.command());
+
+            var process = builder.start();
+
+            try (var out = process.getOutputStream()) {
+                var buf = new byte[8192]; // silence
+                int length = 4 * 48000 * seconds;
+                do {
+                    out.write(buf, 0, min(length, buf.length));
+                    length -= buf.length;
+                } while (length > 0);
+            }
+
+            int result = process.waitFor();
+            if (result != 0)
+                throw new IOException("ffmpeg failed: " + result);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        return name;
+    }
+
+    public List<String> encode(File dir, A args)
+            throws IOException, InterruptedException {
+        return encode(dir, args, BODY, PATTERN_SECONDS);
+    }
+
+    public final List<String> encode(File dir, A args, String phase, int repeat)
             throws IOException, InterruptedException {
         String pattern = getPattern(args);
         String name = phase == null ? pattern : pattern + "-" + phase;
@@ -110,7 +205,7 @@ public abstract class GeneratorBase<A> {
         String out = factory.encode(dir, name, params,
                 e -> encode(e, args, phase));
 
-        range(0, repeat).forEach(i -> muxer.addInput(out));
+        return range(0, repeat).boxed().map(i -> out).collect(toList());
     }
 
     protected void verify(File dir, String mp4, A args) {
@@ -124,6 +219,9 @@ public abstract class GeneratorBase<A> {
     }
 
     protected void verify(File dir, String mp4, String ss, String to, A args) {
+        if (muxer != (MuxerFactory) MuxerMP4Box::new)
+            return; // Skip verification of non-standard content (such as DV)
+
         DecoderY4M.decode(dir, mp4, params, ss, to, d -> verify(d, args));
     }
 

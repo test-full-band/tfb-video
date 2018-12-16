@@ -1,6 +1,6 @@
 package band.full.video.itu.nal;
 
-import static band.full.video.itu.nal.RbspWriter.UE;
+import static band.full.video.itu.nal.RbspWriter.se2ue;
 import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,7 +15,7 @@ public class RbspWriterTest {
         RbspWriter writer = new RbspWriter(buf);
 
         range(0, 2).flatMap(i -> IntStream.of(0, 1, 0, 0, 1, 1, 0, 1))
-                .forEach(b -> writer.writeU1(b != 0));
+                .forEach(b -> writer.u1(b != 0));
 
         assertEquals(16, buf.pos);
         range(0, 2).forEach(i -> assertEquals(0b01001101, buf.bytes[i]));
@@ -26,14 +26,14 @@ public class RbspWriterTest {
         NalBuffer buf = new NalBuffer();
         RbspWriter writer = new RbspWriter(buf);
 
-        writer.writeU(3, 0b010);
-        writer.writeU(3, 0b011);
-        writer.writeU(3, 0b010);
-        writer.writeU(3, 0b100);
-        writer.writeU(3, 0b110);
-        writer.writeU(3, 0b101);
-        writer.writeU(3, 0b001);
-        writer.writeU(3, 0b101);
+        writer.u3(0b010);
+        writer.u3(0b011);
+        writer.u3(0b010);
+        writer.u3(0b100);
+        writer.u3(0b110);
+        writer.u3(0b101);
+        writer.u3(0b001);
+        writer.u3(0b101);
 
         assertEquals(24, buf.pos);
         range(0, 3).forEach(i -> assertEquals(0b01001101, buf.bytes[i]));
@@ -44,8 +44,8 @@ public class RbspWriterTest {
         NalBuffer buf = new NalBuffer();
         RbspWriter writer = new RbspWriter(buf);
 
-        writer.writeU(20, 0b01001101010011010100);
-        writer.writeU(20, 0b11010100110101001101);
+        writer.u20(0b01001101010011010100);
+        writer.u20(0b11010100110101001101);
 
         assertEquals(40, buf.pos);
         range(0, 5).forEach(i -> assertEquals(0b01001101, buf.bytes[i]));
@@ -86,7 +86,7 @@ public class RbspWriterTest {
         NalBuffer buf = new NalBuffer();
         RbspWriter writer = new RbspWriter(buf);
 
-        writer.writeUE(ue);
+        writer.ue(ue);
 
         assertEquals(bits, buf.pos);
         assertEquals((byte) expected, buf.bytes[0]);
@@ -94,12 +94,12 @@ public class RbspWriterTest {
 
     @Test
     public void testUE() {
-        assertEquals(0, UE(0));
-        assertEquals(1, UE(1));
-        assertEquals(2, UE(-1));
-        assertEquals(3, UE(2));
-        assertEquals(4, UE(-2));
-        assertEquals(5, UE(3));
-        assertEquals(6, UE(-3));
+        assertEquals(0, se2ue(0));
+        assertEquals(1, se2ue(1));
+        assertEquals(2, se2ue(-1));
+        assertEquals(3, se2ue(2));
+        assertEquals(4, se2ue(-2));
+        assertEquals(5, se2ue(3));
+        assertEquals(6, se2ue(-3));
     }
 }

@@ -29,7 +29,7 @@ public abstract class NalWriterAnnexB<C extends NalContext,
         out.close();
     }
 
-    private void flush() throws IOException {
+    public void flush() throws IOException {
         out.write(buf.bytes, buf.offset, buf.getByteIndex());
         buf.offset = buf.pos = buf.end = 0;
     }
@@ -37,13 +37,13 @@ public abstract class NalWriterAnnexB<C extends NalContext,
     public void write(C context, U nalu) throws IOException {
         writeStartCodePrefix(nalu.zero_byte);
 
-        RbspWriter writer = new RbspWriter(buf);
+        RbspWriter out = new RbspWriter(buf);
 
         if (buf.getByteShift() != 0)
             throw new IllegalStateException("RBSP buffer is unaligned!");
 
-        writeHeader(writer, nalu);
-        nalu.write(context, writer);
+        writeHeader(out, nalu);
+        nalu.write(context, out);
         insertEmulationPreventionBytes();
         if (buf.pos >= 524_288) { // 64kB*8bit
             flush();
@@ -62,7 +62,7 @@ public abstract class NalWriterAnnexB<C extends NalContext,
         buf.end = buf.pos += 24;
     }
 
-    protected abstract void writeHeader(RbspWriter writer, U nalu);
+    protected abstract void writeHeader(RbspWriter out, U nalu);
 
     void insertEmulationPreventionBytes() throws IOException {
         int count = countEmulationPreventionByte();
@@ -72,9 +72,11 @@ public abstract class NalWriterAnnexB<C extends NalContext,
 
         int end = pos;
         for (; count > 0;) {
-            while (bytes[--pos] != 0x00 || (bytes[pos + 1] & 0xFC) != 0) {}
+            while (bytes[--pos] != 0x00 || (bytes[pos + 1] & 0xFC) != 0) {
+            }
             int z = pos + 1, n = 1;
-            for (; bytes[--pos] == 0x00; n++) {}
+            for (; bytes[--pos] == 0x00; n++) {
+            }
             ++pos;
 
             if (n > 1) {

@@ -3,6 +3,7 @@ package band.full.test.video.generator;
 import static java.lang.String.format;
 
 import band.full.test.video.encoder.EncoderParameters;
+import band.full.video.dolby.IPTPQc2;
 import band.full.video.itu.ICtCp;
 
 import java.text.DecimalFormat;
@@ -19,18 +20,28 @@ public abstract class CalibrateColorPatchesBase extends CalibratePatchesBase {
         super(factory, params, folder, group);
     }
 
+    public CalibrateColorPatchesBase(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder, group);
+    }
+
     @Override
     protected String getBottomCenterText(Args args) {
-        String fmt = matrix instanceof ICtCp ? "I%d T%d P%d" : "Y%d U%d V%d";
-
         double[] buf = matrix.fromCodes(args.yuv, new double[3]);
         matrix.toRGBCodes(matrix.toRGB(buf, buf), buf);
 
         var df = new DecimalFormat("#.#");
 
-        return format(fmt + "    |    R%s G%s B%s",
+        return format(getYuvFormat() + "    |    R%s G%s B%s",
                 args.yuv[0], args.yuv[1], args.yuv[2],
                 df.format(buf[0]), df.format(buf[1]), df.format(buf[2]));
+    }
+
+    private String getYuvFormat() {
+        if (matrix instanceof ICtCp) return "I%d T%d P%d";
+        if (matrix instanceof IPTPQc2) return "I%d P%d T%d";
+        return "Y%d U%d V%d";
     }
 
     @Override

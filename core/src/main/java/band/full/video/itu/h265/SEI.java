@@ -7,13 +7,13 @@ import static java.util.Arrays.stream;
 
 import band.full.video.itu.h265.sei.PicTiming;
 import band.full.video.itu.nal.Payload;
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.itu.nal.Structure;
 import band.full.video.itu.nal.sei.MasteringDisplayColourVolume;
 import band.full.video.itu.nal.sei.UserDataRegisteredT35;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,76 +119,92 @@ public class SEI extends NALUnit {
 
         public Message() {}
 
-        public Message(H265Context context, RbspReader reader) {
-            read(context, reader);
+        public Message(PayloadType payloadType, Payload payload) {
+            this(payloadType.ordinal(), payload);
+        }
+
+        public Message(int payloadType, Payload payload) {
+            this.payloadType = payloadType;
+            this.payload = payload;
+        }
+
+        public Message(H265Context context, RbspReader in) {
+            read(context, in);
         }
 
         @Override
-        public void read(H265Context context, RbspReader reader) {
-            payloadType = readValue(reader);
-            int size = readValue(reader);
+        public void read(H265Context context, RbspReader in) {
+            payloadType = readValue(in);
+            int size = readValue(in);
             PayloadType type = PayloadType.get(payloadType);
             if (type != null) {
                 switch (type) {
                     case pic_timing:
-                        payload = new PicTiming(context, reader, size);
+                        if (context.sps == null) {
+                            break; // will not be able to parse it
+                        }
+                        payload = new PicTiming(context, in, size);
                         return;
 
                     case user_data_registered_itu_t_t35:
                         payload = new UserDataRegisteredT35(
-                                context, reader, size);
+                                context, in, size);
                         return;
 
                     case mastering_display_colour_volume:
                         payload = new MasteringDisplayColourVolume(
-                                context, reader, size);
+                                context, in, size);
                         return;
 
                     default: // default
                 }
             }
 
-            payload = new Payload.Bytes(reader, size);
+            payload = new Payload.Bytes(in, size);
         }
 
-        int readValue(RbspReader reader) {
+        int readValue(RbspReader in) {
             int value = 0;
-            int last = reader.readUInt(8);
+            int last = in.u8();
             while (last == 255) { // 0xFF
                 value += 255;
-                last = reader.readUInt(8);
+                last = in.u8();
             }
             return value + last;
         }
 
         @Override
-        public void write(H265Context context, RbspWriter writer) {
-            writeValue(writer, payloadType);
-            writeValue(writer, payload.size(context));
-            payload.write(context, writer);
+        public void write(H265Context context, RbspWriter out) {
+            writeValue(out, payloadType);
+            writeValue(out, payload.size(context));
+            payload.write(context, out);
         }
 
-        void writeValue(RbspWriter writer, int value) {
+        void writeValue(RbspWriter out, int value) {
             while (value >= 255) {
-                writer.writeU(8, 255);
+                out.u8(255);
                 value -= 255;
             }
-            writer.writeU(8, value);
+            out.u8(value);
         }
 
         @Override
-        public void print(H265Context context, PrintStream ps) {
+        public void print(H265Context context, RbspPrinter out) {
+            StringBuilder buf = new StringBuilder();
+            buf.append("SEI Message ").append(payloadType);
+
             PayloadType type = PayloadType.get(payloadType);
-            ps.print("    SEI Message ");
-            ps.print(payloadType);
             if (type != null) {
-                ps.print(" [");
-                ps.print(type);
-                ps.print("]");
+                buf.append(" [").append(type).append("]");
             }
-            ps.print(", size: ");
-            ps.println(payload.size(context));
-            payload.print(context, ps);
+
+            buf.append(", size: ").append(payload.size(context));
+
+            out.raw(buf.toString());
+
+            out.enter();
+            payload.print(context, out);
+            out.leave();
         }
     }
 
@@ -211,28 +227,28 @@ public class SEI extends NALUnit {
     }
 
     @Override
-    public void read(H265Context context, RbspReader reader) {
+    public void read(H265Context context, RbspReader in) {
         messages = new ArrayList<>();
         do {
-            messages.add(new Message(context, reader));
-        } while (reader.available() > 8);
-        if (!reader.isByteAligned()) throw new IllegalStateException();
-        if (reader.readUShort(8) != 0x80) throw new IllegalStateException();
+            messages.add(new Message(context, in));
+        } while (in.available() > 8);
+        if (!in.isByteAligned()) throw new IllegalStateException();
+        if (in.u8() != 0x80) throw new IllegalStateException();
     }
 
     @Override
-    public void write(H265Context context, RbspWriter writer) {
+    public void write(H265Context context, RbspWriter out) {
         for (Message m : messages) {
-            m.write(context, writer);
+            m.write(context, out);
         }
-        if (!writer.isByteAligned()) throw new IllegalStateException();
-        writer.writeU(8, 0x80);
+        if (!out.isByteAligned()) throw new IllegalStateException();
+        out.u8(0x80);
     }
 
     @Override
-    public void print(H265Context context, PrintStream ps) {
+    public void print(H265Context context, RbspPrinter out) {
         for (Message m : messages) {
-            m.print(context, ps);
+            m.print(context, out);
         }
     }
 }

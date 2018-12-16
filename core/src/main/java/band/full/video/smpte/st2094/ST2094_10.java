@@ -1,15 +1,13 @@
 package band.full.video.smpte.st2094;
 
-import static band.full.core.ArrayMath.toHexString;
 import static band.full.video.itu.nal.RbspWriter.countUEbits;
 
 import band.full.video.itu.nal.NalContext;
 import band.full.video.itu.nal.Payload;
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.itu.nal.Structure;
-
-import java.io.PrintStream;
 
 /**
  * SMPTE ST 2094-10 Metadata Message.
@@ -36,6 +34,7 @@ public class ST2094_10 implements Payload {
         }
     }
 
+    /** Level 1 Metadata – Content Range */
     public static class ContentRange extends DisplayManagementBlock {
         public static final short LEVEL = 1;
 
@@ -48,39 +47,36 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void read(NalContext context, RbspReader reader) {
-            min_PQ = reader.readUShort(12);
-            max_PQ = reader.readUShort(12);
-            avg_PQ = reader.readUShort(12);
+        public void read(NalContext context, RbspReader in) {
+            min_PQ = in.u12();
+            max_PQ = in.u12();
+            avg_PQ = in.u12();
 
-            if (reader.readUByte(4) != 0)
-                throw new IllegalStateException();
+            if (in.u4() != 0) throw new IllegalStateException();
         }
 
         @Override
-        public void write(NalContext context, RbspWriter writer) {
-            writer.writeU(12, min_PQ);
-            writer.writeU(12, max_PQ);
-            writer.writeU(12, avg_PQ);
+        public void write(NalContext context, RbspWriter out) {
+            out.u12(min_PQ);
+            out.u12(max_PQ);
+            out.u12(avg_PQ);
 
-            writer.writeU(4, 0);
+            out.u4(0);
         }
 
         @Override
-        public void print(NalContext context, PrintStream ps) {
-            ps.print("    Level ");
-            ps.print(level);
-            ps.println(" - Content Range");
+        public void print(NalContext context, RbspPrinter out) {
+            out.raw("Level 1 - Content Range");
 
-            ps.print("      min_PQ: ");
-            ps.println(min_PQ);
-            ps.print("      max_PQ: ");
-            ps.println(max_PQ);
-            ps.print("      avg_PQ: ");
-            ps.println(avg_PQ);
+            out.enter();
+            out.u12("min_PQ", min_PQ);
+            out.u12("max_PQ", max_PQ);
+            out.u12("avg_PQ", avg_PQ);
+            out.leave();
         }
     }
 
+    /** Level 2 Metadata – Trim Pass */
     public static class TrimPass extends DisplayManagementBlock {
         public static final short LEVEL = 2;
 
@@ -97,55 +93,99 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void read(NalContext context, RbspReader reader) {
-            target_max_PQ = reader.readUShort(12);
-            trim_slope = reader.readUShort(12);
-            trim_offset = reader.readUShort(12);
-            trim_power = reader.readUShort(12);
-            trim_chroma_weight = reader.readUShort(12);
-            trim_saturation_gain = reader.readUShort(12);
-            ms_weight = reader.readSShort(13);
+        public void read(NalContext context, RbspReader in) {
+            target_max_PQ = in.u12();
+            trim_slope = in.u12();
+            trim_offset = in.u12();
+            trim_power = in.u12();
+            trim_chroma_weight = in.u12();
+            trim_saturation_gain = in.u12();
+            ms_weight = in.i13();
 
-            if (reader.readUByte(3) != 0)
-                throw new IllegalStateException();
+            if (in.u3() != 0) throw new IllegalStateException();
         }
 
         @Override
-        public void write(NalContext context, RbspWriter writer) {
-            writer.writeU(12, target_max_PQ);
-            writer.writeU(12, trim_slope);
-            writer.writeU(12, trim_offset);
-            writer.writeU(12, trim_power);
-            writer.writeU(12, trim_chroma_weight);
-            writer.writeU(12, trim_saturation_gain);
-            writer.writeS(13, ms_weight);
+        public void write(NalContext context, RbspWriter out) {
+            out.u12(target_max_PQ);
+            out.u12(trim_slope);
+            out.u12(trim_offset);
+            out.u12(trim_power);
+            out.u12(trim_chroma_weight);
+            out.u12(trim_saturation_gain);
+            out.i13(ms_weight);
 
-            writer.writeU(3, 0);
+            out.u3(0);
         }
 
         @Override
-        public void print(NalContext context, PrintStream ps) {
-            ps.print("    Level ");
-            ps.print(level);
-            ps.println(" - Trim Pass");
+        public void print(NalContext context, RbspPrinter out) {
+            out.raw("Level " + level + " - Trim Pass");
 
-            ps.print("      target_max_PQ: ");
-            ps.println(target_max_PQ);
-            ps.print("      trim_slope: ");
-            ps.println(trim_slope);
-            ps.print("      trim_offset: ");
-            ps.println(trim_offset);
-            ps.print("      trim_power: ");
-            ps.println(trim_power);
-            ps.print("      trim_chroma_weight: ");
-            ps.println(trim_chroma_weight);
-            ps.print("      trim_saturation_gain: ");
-            ps.println(trim_saturation_gain);
-            ps.print("      ms_weight: ");
-            ps.println(ms_weight);
+            out.enter();
+            out.u12("target_max_PQ", target_max_PQ);
+            out.u12("trim_slope", trim_slope);
+            out.u12("trim_offset", trim_offset);
+            out.u12("trim_power", trim_power);
+            out.u12("trim_chroma_weight", trim_chroma_weight);
+            out.u12("trim_saturation_gain", trim_saturation_gain);
+            out.i13("ms_weight", ms_weight);
+            out.leave();
         }
     }
 
+    /**
+     * NB! Non-ST.2094-10!<br>
+     * Level 3 Metadata – Content Range Offsets
+     *
+     * @see <a href=
+     *      "https://standards.cta.tech/kwspub/published_docs/CTA-861-G_FINAL_revised_2017.pdf">
+     *      CTA‐861‐G final revised 2017</a>
+     */
+    public static class ContentRangeOffsets extends DisplayManagementBlock {
+        public static final short LEVEL = 3;
+
+        public short min_PQ_offset;
+        public short max_PQ_offset;
+        public short avg_PQ_offset;
+
+        public ContentRangeOffsets() {
+            super(5, LEVEL);
+        }
+
+        @Override
+        public void read(NalContext context, RbspReader in) {
+            min_PQ_offset = in.u12();
+            max_PQ_offset = in.u12();
+            avg_PQ_offset = in.u12();
+
+            if (in.u4() != 0) throw new IllegalStateException();
+        }
+
+        @Override
+        public void write(NalContext context, RbspWriter out) {
+            out.u12(min_PQ_offset);
+            out.u12(max_PQ_offset);
+            out.u12(avg_PQ_offset);
+
+            out.u4(0);
+        }
+
+        @Override
+        public void print(NalContext context, RbspPrinter out) {
+            out.raw("Level 3 - Content Range Offsets");
+
+            out.enter();
+            out.u12("min_PQ_offset", min_PQ_offset);
+            out.u12("max_PQ_offset", max_PQ_offset);
+            out.u12("avg_PQ_offset", avg_PQ_offset);
+            out.leave();
+        }
+    }
+
+    // TODO Level 4 Metadata – Global Dimming (DV, Non-ST.2094-10)
+
+    /** Level 5 Metadata - Active Area */
     public static class ActiveArea extends DisplayManagementBlock {
         public static final short LEVEL = 5;
 
@@ -159,44 +199,41 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void read(NalContext context, RbspReader reader) {
-            left_offset = reader.readUShort(13);
-            right_offset = reader.readUShort(13);
-            top_offset = reader.readUShort(13);
-            bottom_offset = reader.readUShort(13);
+        public void read(NalContext context, RbspReader in) {
+            left_offset = in.u13();
+            right_offset = in.u13();
+            top_offset = in.u13();
+            bottom_offset = in.u13();
 
-            if (reader.readUByte(4) != 0)
-                throw new IllegalStateException();
+            if (in.u4() != 0) throw new IllegalStateException();
         }
 
         @Override
-        public void write(NalContext context, RbspWriter writer) {
-            writer.writeU(13, left_offset);
-            writer.writeU(13, right_offset);
-            writer.writeU(13, top_offset);
-            writer.writeU(13, bottom_offset);
+        public void write(NalContext context, RbspWriter out) {
+            out.u13(left_offset);
+            out.u13(right_offset);
+            out.u13(top_offset);
+            out.u13(bottom_offset);
 
-            writer.writeU(4, 0);
+            out.u4(0);
         }
 
         @Override
-        public void print(NalContext context, PrintStream ps) {
-            ps.print("    Level ");
-            ps.print(level);
-            ps.println(" - Active Area");
+        public void print(NalContext context, RbspPrinter out) {
+            out.raw("Level " + level + " - Active Area");
 
-            ps.print("      left_offset: ");
-            ps.println(left_offset);
-            ps.print("      right_offset: ");
-            ps.println(right_offset);
-            ps.print("      top_offset: ");
-            ps.println(top_offset);
-            ps.print("      bottom_offset: ");
-            ps.println(bottom_offset);
+            out.enter();
+            out.u13("left_offset: ", left_offset);
+            out.u13("right_offset: ", right_offset);
+            out.u13("top_offset: ", top_offset);
+            out.u13("bottom_offset: ", bottom_offset);
+            out.leave();
         }
     }
 
-    public class Reserved extends DisplayManagementBlock {
+    // TODO Level 6 Metadata – [unknown] (DV, Non-ST.2094-10)
+
+    public static class Reserved extends DisplayManagementBlock {
         public byte[] bytes;
 
         public Reserved(int length, short level) {
@@ -204,28 +241,36 @@ public class ST2094_10 implements Payload {
         }
 
         @Override
-        public void read(NalContext context, RbspReader reader) {
-            bytes = reader.readBytes(length);
+        public void read(NalContext context, RbspReader in) {
+            bytes = in.readBytes(length);
         }
 
         @Override
-        public void write(NalContext context, RbspWriter writer) {
-            writer.writeBytes(bytes);
+        public void write(NalContext context, RbspWriter out) {
+            out.writeBytes(bytes);
         }
 
         @Override
-        public void print(NalContext context, PrintStream ps) {
-            ps.print("    Level ");
-            ps.println(level);
-            ps.print("      bytes: ");
-            ps.println(toHexString(bytes));
+        public void print(NalContext context, RbspPrinter out) {
+            out.raw("Level " + level);
+
+            out.enter();
+            out.printH("bytes", bytes);
+            out.leave();
         }
     }
 
-    public ST2094_10() {}
+    public ST2094_10() {
+    }
 
-    public ST2094_10(NalContext context, RbspReader reader) {
-        read(context, reader);
+    public ST2094_10(boolean metadata_refresh,
+            DisplayManagementBlock... ext_blocks) {
+        this.metadata_refresh = metadata_refresh;
+        this.ext_blocks = ext_blocks;
+    }
+
+    public ST2094_10(NalContext context, RbspReader in) {
+        read(context, in);
     }
 
     public int app_identifier = 1;
@@ -253,21 +298,21 @@ public class ST2094_10 implements Payload {
     }
 
     @Override
-    public void read(NalContext context, RbspReader reader) {
-        app_identifier = reader.readUE();
-        app_version = reader.readUE();
+    public void read(NalContext context, RbspReader in) {
+        app_identifier = in.ue();
+        app_version = in.ue();
 
-        metadata_refresh = reader.readU1();
+        metadata_refresh = in.u1();
         if (metadata_refresh) {
-            int num_ext_blocks = reader.readUE();
+            int num_ext_blocks = in.ue();
             if (num_ext_blocks > 0) {
-                while (!reader.isByteAligned())
-                    if (reader.readU1()) throw new IllegalStateException();
+                while (!in.isByteAligned())
+                    if (in.u1()) throw new IllegalStateException();
 
                 ext_blocks = new DisplayManagementBlock[num_ext_blocks];
                 for (int i = 0; i < num_ext_blocks; i++) {
-                    int length = reader.readUE();
-                    short level = reader.readUShort(8);
+                    int length = in.ue();
+                    short level = in.u8();
 
                     DisplayManagementBlock block;
                     switch (level) {
@@ -277,6 +322,10 @@ public class ST2094_10 implements Payload {
 
                         case TrimPass.LEVEL:
                             block = new TrimPass();
+                            break;
+
+                        case ContentRangeOffsets.LEVEL:
+                            block = new ContentRangeOffsets();
                             break;
 
                         case ActiveArea.LEVEL:
@@ -291,68 +340,62 @@ public class ST2094_10 implements Payload {
                     if (length != block.length)
                         throw new IllegalStateException();
 
-                    block.read(context, reader);
-
-                    while (!reader.isByteAligned())
-                        if (reader.readU1()) throw new IllegalStateException();
+                    block.read(context, in);
 
                     ext_blocks[i] = block;
                 }
             }
         }
 
-        while (!reader.isByteAligned())
-            if (reader.readU1()) throw new IllegalStateException();
+        while (!in.isByteAligned())
+            if (in.u1()) throw new IllegalStateException();
     }
 
     @Override
-    public void write(NalContext context, RbspWriter writer) {
-        writer.writeUE(app_identifier);
-        writer.writeUE(app_version);
+    public void write(NalContext context, RbspWriter out) {
+        out.ue(app_identifier);
+        out.ue(app_version);
 
-        writer.writeU1(metadata_refresh);
+        out.u1(metadata_refresh);
         if (metadata_refresh) {
-            writer.writeUE(ext_blocks == null ? 0 : ext_blocks.length);
+            out.ue(ext_blocks == null ? 0 : ext_blocks.length);
             if (ext_blocks != null && ext_blocks.length > 0) {
-                while (!writer.isByteAligned()) {
-                    writer.writeU1(false);
+                while (!out.isByteAligned()) {
+                    out.u1(false);
                 }
 
-                for (int i = 0; i < ext_blocks.length; i++) {
-                    DisplayManagementBlock block = ext_blocks[i];
+                for (var block : ext_blocks) {
+                    out.ue(block.length);
+                    out.u8(block.level);
 
-                    writer.writeUE(block.length);
-                    writer.writeU(8, block.level);
+                    block.write(context, out);
 
-                    block.write(context, writer);
-
-                    while (!writer.isByteAligned()) {
-                        writer.writeU1(false);
+                    while (!out.isByteAligned()) {
+                        out.u1(false);
                     }
-
-                    ext_blocks[i] = block;
                 }
             }
         }
 
-        while (!writer.isByteAligned()) {
-            writer.writeU1(false);
+        while (!out.isByteAligned()) {
+            out.u1(false);
         }
     }
 
     @Override
-    public void print(NalContext context, PrintStream ps) {
-        ps.println("    Display Management");
-        ps.print("      app_identifier: ");
-        ps.println(app_identifier);
-        ps.print("      app_version: ");
-        ps.println(app_version);
+    public void print(NalContext context, RbspPrinter out) {
+        out.raw("Display Management");
 
-        ps.print("      metadata_refresh: ");
-        ps.println(metadata_refresh);
+        out.enter();
+        out.ue("app_identifier", app_identifier);
+        out.ue("app_version", app_version);
+
+        out.u1("metadata_refresh", metadata_refresh);
+        out.leave();
+
         if (metadata_refresh && ext_blocks != null && ext_blocks.length > 0) {
             for (var ext_block : ext_blocks) {
-                ext_block.print(context, ps);
+                ext_block.print(context, out);
             }
         }
     }

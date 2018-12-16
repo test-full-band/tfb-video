@@ -15,6 +15,6 @@ import band.full.test.video.generator.Quants3DBase;
 @GenerateVideo(MAIN)
 public class Quants3D1080p extends Quants3DBase {
     public Quants3D1080p() {
-        super(AVC, FULLHD_MAIN8, "FullHD/Quants3D", "1080p");
+        super(AVC, FULLHD_MAIN8, "FullHD", "1080p");
     }
 }

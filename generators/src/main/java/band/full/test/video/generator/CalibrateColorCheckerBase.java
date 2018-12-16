@@ -38,6 +38,14 @@ public abstract class CalibrateColorCheckerBase
         ADAPTATION = bradford(ILLUMINANT_D50, primaries.white.CIEXYZ());
     }
 
+    public CalibrateColorCheckerBase(GeneratorFactory factory,
+            EncoderParameters params, NalUnitPostProcessor<Args> processor,
+            MuxerFactory muxer, String folder, String group) {
+        super(factory, params, processor, muxer, folder + "/Calibrate", group);
+
+        ADAPTATION = bradford(ILLUMINANT_D50, primaries.white.CIEXYZ());
+    }
+
     @Override
     @ParameterizedTest(name = "{arguments}")
     @MethodSource("args")

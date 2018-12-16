@@ -5,11 +5,10 @@ import static band.full.core.ArrayMath.toHexString;
 import band.full.video.itu.T35;
 import band.full.video.itu.nal.NalContext;
 import band.full.video.itu.nal.Payload;
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.smpte.st2094.ST2094_10;
-
-import java.io.PrintStream;
 
 /**
  * <code>ATSC1_data()</code>
@@ -29,7 +28,7 @@ public class ATSC1 implements T35, Payload {
     /**
      * A fixed 16-bit field registered by the ATSC. The value shall be 0x0031.
      */
-    public static final int PROVIDER_CODE = 0x0031;
+    public static final short PROVIDER_CODE = 0x0031;
 
     /**
      * This is a 32 bit code that indicates the contents of the
@@ -42,10 +41,16 @@ public class ATSC1 implements T35, Payload {
     public short user_data_type_code; // u8
     public Payload user_data_type_structure;
 
-    public ATSC1() {}
+    public ATSC1() {
+    }
 
-    public ATSC1(RbspReader reader) {
-        read(null, reader);
+    public ATSC1(ST2094_10 dm) {
+        user_data_type_code = 0x09;
+        user_data_type_structure = dm;
+    }
+
+    public ATSC1(RbspReader in) {
+        read(null, in);
     }
 
     @Override
@@ -54,50 +59,46 @@ public class ATSC1 implements T35, Payload {
     }
 
     @Override
-    public void read(NalContext context, RbspReader reader) {
-        user_data_type_code = reader.readUShort(8);
+    public void read(NalContext context, RbspReader in) {
+        user_data_type_code = in.u8();
 
         switch (user_data_type_code) {
             case 0x09: {
-                user_data_type_structure = new ST2094_10(context, reader);
+                user_data_type_structure = new ST2094_10(context, in);
                 break;
             }
 
             default:
-                int available = reader.available() >> 3;
+                int available = in.available() >> 3;
                 user_data_type_structure =
-                        new Payload.Bytes(reader, available - 1);
+                        new Payload.Bytes(in, available - 1);
         }
 
-        int marker_bits = reader.readByte();
+        int marker_bits = in.i8();
         if (marker_bits != -1) throw new IllegalStateException();
     }
 
     @Override
-    public void write(NalContext context, RbspWriter writer) {
+    public void write(NalContext context, RbspWriter out) {
         // ATSC1_data()
-        writer.writeU(8, user_data_type_code);
-        user_data_type_structure.write(context, writer);
-        writer.writeS8(MARKER_BITS);
+        out.u8(user_data_type_code);
+        user_data_type_structure.write(context, out);
+        out.i8(MARKER_BITS);
     }
 
     @Override
-    public void print(NalContext context, PrintStream ps) {
-        ps.println("      country_code: 0xB5 [United States]");
-        ps.println("      provider_code: 0x0031 [ATSC]");
-        ps.println("      user_identifier: 0x47413934 \"GA94\" [ATSC1]");
+    public void print(NalContext context, RbspPrinter out) {
+        out.raw("country_code: 0xB5 [United States]");
+        out.raw("provider_code: 0x0031 [ATSC]");
+        out.raw("user_identifier: 0x47413934 \"GA94\" [ATSC1]");
 
-        ps.print("      user_data_type_code: 0x");
-        ps.print(toHexString((byte) user_data_type_code));
-        switch (user_data_type_code) {
-            case 0x09:
-                ps.println(", SMPTE ST.2094-10");
-                break;
-
-            default:
-                ps.println();
+        String udtc = toHexString((byte) user_data_type_code);
+        if (user_data_type_code == 0x09) {
+            out.raw("user_data_type_code: 0x09, SMPTE ST.2094-10");
+        } else {
+            out.raw("user_data_type_code: 0x" + udtc);
         }
 
-        user_data_type_structure.print(context, ps);
+        user_data_type_structure.print(context, out);
     }
 }

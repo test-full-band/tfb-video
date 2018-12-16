@@ -36,7 +36,17 @@ public class ST2084 implements TransferCharacteristics {
     private static final double C2 = 2413.0 / 4096 * 32;
     private static final double C3 = 2392.0 / 4096 * 32;
 
-    protected ST2084() {}
+    private final int code;
+    private final String name;
+
+    protected ST2084() {
+        this(16, "PQ");
+    }
+
+    public ST2084(int code, String name) {
+        this.code = code;
+        this.name = name;
+    }
 
     /**
      * transfer_characteristics = 16
@@ -47,12 +57,12 @@ public class ST2084 implements TransferCharacteristics {
      */
     @Override
     public int code() {
-        return 16;
+        return code;
     }
 
     @Override
     public String toString() {
-        return "PQ";
+        return name;
     }
 
     @Override

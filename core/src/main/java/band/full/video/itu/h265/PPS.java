@@ -2,10 +2,9 @@ package band.full.video.itu.h265;
 
 import static band.full.video.itu.h265.NALUnitType.PPS_NUT;
 
+import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
-
-import java.io.PrintStream;
 
 /**
  * 7.3.2.3 Picture parameter set RBSP syntax<br>
@@ -104,292 +103,303 @@ public class PPS extends NALUnit {
     }
 
     @Override
-    public void read(H265Context context, RbspReader reader) {
-        pps_pic_parameter_set_id = reader.readUE();
-        pps_seq_parameter_set_id = reader.readUE();
-        dependent_slice_segments_enabled_flag = reader.readU1();
-        output_flag_present_flag = reader.readU1();
-        num_extra_slice_header_bits = reader.readUByte(3);
-        sign_data_hiding_enabled_flag = reader.readU1();
-        cabac_init_present_flag = reader.readU1();
+    public void read(H265Context context, RbspReader in) {
+        pps_pic_parameter_set_id = in.ue();
+        pps_seq_parameter_set_id = in.ue();
+        dependent_slice_segments_enabled_flag = in.u1();
+        output_flag_present_flag = in.u1();
+        num_extra_slice_header_bits = in.u3();
+        sign_data_hiding_enabled_flag = in.u1();
+        cabac_init_present_flag = in.u1();
 
-        num_ref_idx_l0_default_active_minus1 = reader.readUE();
-        num_ref_idx_l1_default_active_minus1 = reader.readUE();
-        init_qp_minus26 = reader.readSE();
-        constrained_intra_pred_flag = reader.readU1();
-        transform_skip_enabled_flag = reader.readU1();
+        num_ref_idx_l0_default_active_minus1 = in.ue();
+        num_ref_idx_l1_default_active_minus1 = in.ue();
+        init_qp_minus26 = in.se();
+        constrained_intra_pred_flag = in.u1();
+        transform_skip_enabled_flag = in.u1();
 
-        cu_qp_delta_enabled_flag = reader.readU1();
+        cu_qp_delta_enabled_flag = in.u1();
         if (cu_qp_delta_enabled_flag) {
-            diff_cu_qp_delta_depth = reader.readUE();
+            diff_cu_qp_delta_depth = in.ue();
         }
 
-        pps_cb_qp_offset = reader.readSE();
-        pps_cr_qp_offset = reader.readSE();
-        pps_slice_chroma_qp_offsets_present_flag = reader.readU1();
-        weighted_pred_flag = reader.readU1();
-        weighted_bipred_flag = reader.readU1();
-        transquant_bypass_enabled_flag = reader.readU1();
+        pps_cb_qp_offset = in.se();
+        pps_cr_qp_offset = in.se();
+        pps_slice_chroma_qp_offsets_present_flag = in.u1();
+        weighted_pred_flag = in.u1();
+        weighted_bipred_flag = in.u1();
+        transquant_bypass_enabled_flag = in.u1();
 
-        tiles_enabled_flag = reader.readU1();
-        entropy_coding_sync_enabled_flag = reader.readU1();
+        tiles_enabled_flag = in.u1();
+        entropy_coding_sync_enabled_flag = in.u1();
         if (tiles_enabled_flag) {
-            num_tile_columns_minus1 = reader.readUE();
-            num_tile_rows_minus1 = reader.readUE();
+            num_tile_columns_minus1 = in.ue();
+            num_tile_rows_minus1 = in.ue();
 
-            uniform_spacing_flag = reader.readU1();
+            uniform_spacing_flag = in.u1();
             if (!uniform_spacing_flag) {
                 column_width_minus1 = new int[num_tile_columns_minus1];
                 for (int i = 0; i < num_tile_columns_minus1; i++) {
-                    column_width_minus1[i] = reader.readUE();
+                    column_width_minus1[i] = in.ue();
                 }
 
                 row_height_minus1 = new int[num_tile_rows_minus1];
                 for (int i = 0; i < num_tile_rows_minus1; i++) {
-                    row_height_minus1[i] = reader.readUE();
+                    row_height_minus1[i] = in.ue();
                 }
             }
 
-            loop_filter_across_tiles_enabled_flag = reader.readU1();
+            loop_filter_across_tiles_enabled_flag = in.u1();
         }
 
-        pps_loop_filter_across_slices_enabled_flag = reader.readU1();
+        pps_loop_filter_across_slices_enabled_flag = in.u1();
 
-        deblocking_filter_control_present_flag = reader.readU1();
+        deblocking_filter_control_present_flag = in.u1();
         if (deblocking_filter_control_present_flag) {
-            deblocking_filter_override_enabled_flag = reader.readU1();
-            pps_deblocking_filter_disabled_flag = reader.readU1();
+            deblocking_filter_override_enabled_flag = in.u1();
+            pps_deblocking_filter_disabled_flag = in.u1();
             if (!pps_deblocking_filter_disabled_flag) {
-                pps_beta_offset_div2 = reader.readSE();
-                pps_tc_offset_div2 = reader.readSE();
+                pps_beta_offset_div2 = in.se();
+                pps_tc_offset_div2 = in.se();
             }
         }
 
-        pps_scaling_list_data_present_flag = reader.readU1();
+        pps_scaling_list_data_present_flag = in.u1();
         if (pps_scaling_list_data_present_flag) {
             scaling_list_data = new ScalingListData();
-            scaling_list_data.read(context, reader);
+            scaling_list_data.read(context, in);
         }
 
-        lists_modification_present_flag = reader.readU1();
-        log2_parallel_merge_level_minus2 = reader.readUE();
-        slice_segment_header_extension_present_flag = reader.readU1();
+        lists_modification_present_flag = in.u1();
+        log2_parallel_merge_level_minus2 = in.ue();
+        slice_segment_header_extension_present_flag = in.u1();
 
-        pps_extension_present_flag = reader.readU1();
+        pps_extension_present_flag = in.u1();
         if (pps_extension_present_flag) {
-            pps_range_extension_flag = reader.readU1();
-            pps_multilayer_extension_flag = reader.readU1();
-            pps_3d_extension_flag = reader.readU1();
-            pps_scc_extension_flag = reader.readU1();
-            pps_extension_4bits = reader.readUByte(4);
+            pps_range_extension_flag = in.u1();
+            pps_multilayer_extension_flag = in.u1();
+            pps_3d_extension_flag = in.u1();
+            pps_scc_extension_flag = in.u1();
+            pps_extension_4bits = in.u4();
         }
 
-        trailing_bits = reader.readTrailingBits();
+        trailing_bits = in.readTrailingBits();
     }
 
     @Override
-    public void write(H265Context context, RbspWriter writer) {
-        writer.writeUE(pps_pic_parameter_set_id);
-        writer.writeUE(pps_seq_parameter_set_id);
-        writer.writeU1(dependent_slice_segments_enabled_flag);
-        writer.writeU1(output_flag_present_flag);
-        writer.writeU(3, num_extra_slice_header_bits);
-        writer.writeU1(sign_data_hiding_enabled_flag);
-        writer.writeU1(cabac_init_present_flag);
+    public void write(H265Context context, RbspWriter out) {
+        out.ue(pps_pic_parameter_set_id);
+        out.ue(pps_seq_parameter_set_id);
+        out.u1(dependent_slice_segments_enabled_flag);
+        out.u1(output_flag_present_flag);
+        out.u3(num_extra_slice_header_bits);
+        out.u1(sign_data_hiding_enabled_flag);
+        out.u1(cabac_init_present_flag);
 
-        writer.writeUE(num_ref_idx_l0_default_active_minus1);
-        writer.writeUE(num_ref_idx_l1_default_active_minus1);
-        writer.writeSE(init_qp_minus26);
-        writer.writeU1(constrained_intra_pred_flag);
-        writer.writeU1(transform_skip_enabled_flag);
+        out.ue(num_ref_idx_l0_default_active_minus1);
+        out.ue(num_ref_idx_l1_default_active_minus1);
+        out.se(init_qp_minus26);
+        out.u1(constrained_intra_pred_flag);
+        out.u1(transform_skip_enabled_flag);
 
-        writer.writeU1(cu_qp_delta_enabled_flag);
+        out.u1(cu_qp_delta_enabled_flag);
         if (cu_qp_delta_enabled_flag) {
-            writer.writeUE(diff_cu_qp_delta_depth);
+            out.ue(diff_cu_qp_delta_depth);
         }
 
-        writer.writeSE(pps_cb_qp_offset);
-        writer.writeSE(pps_cr_qp_offset);
-        writer.writeU1(pps_slice_chroma_qp_offsets_present_flag);
-        writer.writeU1(weighted_pred_flag);
-        writer.writeU1(weighted_bipred_flag);
-        writer.writeU1(transquant_bypass_enabled_flag);
+        out.se(pps_cb_qp_offset);
+        out.se(pps_cr_qp_offset);
+        out.u1(pps_slice_chroma_qp_offsets_present_flag);
+        out.u1(weighted_pred_flag);
+        out.u1(weighted_bipred_flag);
+        out.u1(transquant_bypass_enabled_flag);
 
-        writer.writeU1(tiles_enabled_flag);
-        writer.writeU1(entropy_coding_sync_enabled_flag);
+        out.u1(tiles_enabled_flag);
+        out.u1(entropy_coding_sync_enabled_flag);
         if (tiles_enabled_flag) {
-            writer.writeUE(num_tile_columns_minus1);
-            writer.writeUE(num_tile_rows_minus1);
+            out.ue(num_tile_columns_minus1);
+            out.ue(num_tile_rows_minus1);
 
-            writer.writeU1(uniform_spacing_flag);
+            out.u1(uniform_spacing_flag);
             if (!uniform_spacing_flag) {
                 for (int i = 0; i < num_tile_columns_minus1; i++) {
-                    writer.writeUE(column_width_minus1[i]);
+                    out.ue(column_width_minus1[i]);
                 }
 
                 for (int i = 0; i < num_tile_rows_minus1; i++) {
-                    writer.writeUE(row_height_minus1[i]);
+                    out.ue(row_height_minus1[i]);
                 }
             }
 
-            writer.writeU1(loop_filter_across_tiles_enabled_flag);
+            out.u1(loop_filter_across_tiles_enabled_flag);
         }
 
-        writer.writeU1(pps_loop_filter_across_slices_enabled_flag);
+        out.u1(pps_loop_filter_across_slices_enabled_flag);
 
-        writer.writeU1(deblocking_filter_control_present_flag);
+        out.u1(deblocking_filter_control_present_flag);
         if (deblocking_filter_control_present_flag) {
-            writer.writeU1(deblocking_filter_override_enabled_flag);
-            writer.writeU1(pps_deblocking_filter_disabled_flag);
+            out.u1(deblocking_filter_override_enabled_flag);
+            out.u1(pps_deblocking_filter_disabled_flag);
             if (!pps_deblocking_filter_disabled_flag) {
-                writer.writeSE(pps_beta_offset_div2);
-                writer.writeSE(pps_tc_offset_div2);
+                out.se(pps_beta_offset_div2);
+                out.se(pps_tc_offset_div2);
             }
         }
 
-        writer.writeU1(pps_scaling_list_data_present_flag);
+        out.u1(pps_scaling_list_data_present_flag);
         if (pps_scaling_list_data_present_flag) {
-            scaling_list_data.write(context, writer);
+            scaling_list_data.write(context, out);
         }
 
-        writer.writeU1(lists_modification_present_flag);
-        writer.writeUE(log2_parallel_merge_level_minus2);
-        writer.writeU1(slice_segment_header_extension_present_flag);
+        out.u1(lists_modification_present_flag);
+        out.ue(log2_parallel_merge_level_minus2);
+        out.u1(slice_segment_header_extension_present_flag);
 
-        writer.writeU1(pps_extension_present_flag);
+        out.u1(pps_extension_present_flag);
         if (pps_extension_present_flag) {
-            writer.writeU1(pps_range_extension_flag);
-            writer.writeU1(pps_multilayer_extension_flag);
-            writer.writeU1(pps_3d_extension_flag);
-            writer.writeU1(pps_scc_extension_flag);
-            writer.writeU(4, pps_extension_4bits);
+            out.u1(pps_range_extension_flag);
+            out.u1(pps_multilayer_extension_flag);
+            out.u1(pps_3d_extension_flag);
+            out.u1(pps_scc_extension_flag);
+            out.u4(pps_extension_4bits);
         }
 
-        writer.writeTrailingBits(trailing_bits);
+        out.writeTrailingBits(trailing_bits);
     }
 
     @Override
-    public void print(H265Context context, PrintStream ps) {
-        ps.print("    pps_pic_parameter_set_id: ");
-        ps.println(pps_pic_parameter_set_id);
-        ps.print("    pps_seq_parameter_set_id: ");
-        ps.println(pps_seq_parameter_set_id);
-        ps.print("    dependent_slice_segments_enabled_flag: ");
-        ps.println(dependent_slice_segments_enabled_flag);
-        ps.print("    output_flag_present_flag: ");
-        ps.println(output_flag_present_flag);
-        ps.print("    num_extra_slice_header_bits: ");
-        ps.println(num_extra_slice_header_bits);
-        ps.print("    sign_data_hiding_enabled_flag: ");
-        ps.println(sign_data_hiding_enabled_flag);
-        ps.print("    cabac_init_present_flag: ");
-        ps.println(cabac_init_present_flag);
+    public void print(H265Context context, RbspPrinter out) {
+        out.ue("pps_pic_parameter_set_id", pps_pic_parameter_set_id);
+        out.ue("pps_seq_parameter_set_id", pps_seq_parameter_set_id);
 
-        ps.print("    num_ref_idx_l0_default_active_minus1: ");
-        ps.println(num_ref_idx_l0_default_active_minus1);
-        ps.print("    num_ref_idx_l1_default_active_minus1: ");
-        ps.println(num_ref_idx_l1_default_active_minus1);
-        ps.print("    init_qp_minus26: ");
-        ps.println(init_qp_minus26);
-        ps.print("    constrained_intra_pred_flag: ");
-        ps.println(constrained_intra_pred_flag);
-        ps.print("    transform_skip_enabled_flag: ");
-        ps.println(transform_skip_enabled_flag);
+        out.u1("dependent_slice_segments_enabled_flag",
+                dependent_slice_segments_enabled_flag);
 
-        ps.print("    cu_qp_delta_enabled_flag: ");
-        ps.println(cu_qp_delta_enabled_flag);
+        out.u1("output_flag_present_flag", output_flag_present_flag);
+        out.u3("num_extra_slice_header_bits", num_extra_slice_header_bits);
+        out.u1("sign_data_hiding_enabled_flag", sign_data_hiding_enabled_flag);
+        out.u1("cabac_init_present_flag", cabac_init_present_flag);
+
+        out.ue("num_ref_idx_l0_default_active_minus1",
+                num_ref_idx_l0_default_active_minus1);
+
+        out.ue("num_ref_idx_l1_default_active_minus1",
+                num_ref_idx_l1_default_active_minus1);
+
+        out.se("init_qp_minus26", init_qp_minus26);
+        out.u1("constrained_intra_pred_flag", constrained_intra_pred_flag);
+        out.u1("transform_skip_enabled_flag", transform_skip_enabled_flag);
+
+        out.u1("cu_qp_delta_enabled_flag", cu_qp_delta_enabled_flag);
         if (cu_qp_delta_enabled_flag) {
-            ps.print("      diff_cu_qp_delta_depth: ");
-            ps.println(diff_cu_qp_delta_depth);
+            out.enter();
+            out.ue("diff_cu_qp_delta_depth", diff_cu_qp_delta_depth);
+            out.leave();
         }
 
-        ps.print("    pps_cb_qp_offset: ");
-        ps.println(pps_cb_qp_offset);
-        ps.print("    pps_cr_qp_offset: ");
-        ps.println(pps_cr_qp_offset);
-        ps.print("    pps_slice_chroma_qp_offsets_present_flag: ");
-        ps.println(pps_slice_chroma_qp_offsets_present_flag);
-        ps.print("    weighted_pred_flag: ");
-        ps.println(weighted_pred_flag);
-        ps.print("    weighted_bipred_flag: ");
-        ps.println(weighted_bipred_flag);
-        ps.print("    transquant_bypass_enabled_flag: ");
-        ps.println(transquant_bypass_enabled_flag);
+        out.se("pps_cb_qp_offset", pps_cb_qp_offset);
+        out.se("pps_cr_qp_offset", pps_cr_qp_offset);
 
-        ps.print("    tiles_enabled_flag: ");
-        ps.println(tiles_enabled_flag);
-        ps.print("    entropy_coding_sync_enabled_flag: ");
-        ps.println(entropy_coding_sync_enabled_flag);
+        out.u1("pps_slice_chroma_qp_offsets_present_flag",
+                pps_slice_chroma_qp_offsets_present_flag);
+
+        out.u1("weighted_pred_flag", weighted_pred_flag);
+        out.u1("weighted_bipred_flag", weighted_bipred_flag);
+
+        out.u1("transquant_bypass_enabled_flag",
+                transquant_bypass_enabled_flag);
+
+        out.u1("tiles_enabled_flag", tiles_enabled_flag);
+
+        out.u1("entropy_coding_sync_enabled_flag",
+                entropy_coding_sync_enabled_flag);
+
         if (tiles_enabled_flag) {
-            ps.print("      num_tile_columns_minus1: ");
-            ps.println(num_tile_columns_minus1);
-            ps.print("      num_tile_rows_minus1: ");
-            ps.println(num_tile_rows_minus1);
+            out.ue("num_tile_columns_minus1", num_tile_columns_minus1);
+            out.ue("num_tile_rows_minus1", num_tile_rows_minus1);
 
-            ps.print("      uniform_spacing_flag: ");
-            ps.println(uniform_spacing_flag);
+            out.enter();
+
+            out.u1("uniform_spacing_flag", uniform_spacing_flag);
             if (!uniform_spacing_flag) {
+                out.enter();
+
                 for (int i = 0; i < num_tile_columns_minus1; i++) {
-                    ps.print("        column_width_minus1[i]: ");
-                    ps.println(column_width_minus1[i]);
+                    out.ue("column_width_minus1[i]", column_width_minus1[i]);
                 }
 
                 for (int i = 0; i < num_tile_rows_minus1; i++) {
-                    ps.print("        row_height_minus1[i]: ");
-                    ps.println(row_height_minus1[i]);
+                    out.ue("row_height_minus1[i]", row_height_minus1[i]);
                 }
+
+                out.leave();
             }
 
-            ps.print("      loop_filter_across_tiles_enabled_flag: ");
-            ps.println(loop_filter_across_tiles_enabled_flag);
+            out.u1("loop_filter_across_tiles_enabled_flag",
+                    loop_filter_across_tiles_enabled_flag);
+
+            out.leave();
         }
 
-        ps.print("    pps_loop_filter_across_slices_enabled_flag: ");
-        ps.println(pps_loop_filter_across_slices_enabled_flag);
+        out.u1("pps_loop_filter_across_slices_enabled_flag",
+                pps_loop_filter_across_slices_enabled_flag);
 
-        ps.print("    deblocking_filter_control_present_flag: ");
-        ps.println(deblocking_filter_control_present_flag);
+        out.u1("deblocking_filter_control_present_flag",
+                deblocking_filter_control_present_flag);
+
         if (deblocking_filter_control_present_flag) {
-            ps.print("      deblocking_filter_override_enabled_flag: ");
-            ps.println(deblocking_filter_override_enabled_flag);
-            ps.print("      pps_deblocking_filter_disabled_flag: ");
-            ps.println(pps_deblocking_filter_disabled_flag);
+            out.enter();
+
+            out.u1("deblocking_filter_override_enabled_flag",
+                    deblocking_filter_override_enabled_flag);
+            out.u1("pps_deblocking_filter_disabled_flag",
+                    pps_deblocking_filter_disabled_flag);
             if (!pps_deblocking_filter_disabled_flag) {
-                ps.print("        pps_beta_offset_div2: ");
-                ps.println(pps_beta_offset_div2);
-                ps.print("        pps_tc_offset_div2: ");
-                ps.println(pps_tc_offset_div2);
+                out.enter();
+
+                out.se("pps_beta_offset_div2", pps_beta_offset_div2);
+                out.se("pps_tc_offset_div2", pps_tc_offset_div2);
+
+                out.leave();
             }
+
+            out.leave();
         }
 
-        ps.print("    pps_scaling_list_data_present_flag: ");
-        ps.println(pps_scaling_list_data_present_flag);
+        out.u1("pps_scaling_list_data_present_flag",
+                pps_scaling_list_data_present_flag);
+
         if (pps_scaling_list_data_present_flag) {
-            scaling_list_data.print(context, ps);
+            out.enter();
+            scaling_list_data.print(context, out);
+            out.leave();
         }
 
-        ps.print("    lists_modification_present_flag: ");
-        ps.println(lists_modification_present_flag);
-        ps.print("    log2_parallel_merge_level_minus2: ");
-        ps.println(log2_parallel_merge_level_minus2);
-        ps.print("    slice_segment_header_extension_present_flag: ");
-        ps.println(slice_segment_header_extension_present_flag);
+        out.u1("lists_modification_present_flag",
+                lists_modification_present_flag);
 
-        ps.print("    pps_extension_present_flag: ");
-        ps.println(pps_extension_present_flag);
+        out.ue("log2_parallel_merge_level_minus2",
+                log2_parallel_merge_level_minus2);
+
+        out.u1("slice_segment_header_extension_present_flag",
+                slice_segment_header_extension_present_flag);
+
+        out.u1("pps_extension_present_flag", pps_extension_present_flag);
         if (pps_extension_present_flag) {
-            ps.print("      pps_range_extension_flag: ");
-            ps.println(pps_range_extension_flag);
-            ps.print("      pps_multilayer_extension_flag: ");
-            ps.println(pps_multilayer_extension_flag);
-            ps.print("      pps_3d_extension_flag: ");
-            ps.println(pps_3d_extension_flag);
-            ps.print("      pps_scc_extension_flag: ");
-            ps.println(pps_scc_extension_flag);
-            ps.print("      pps_extension_4bits: ");
-            ps.println(pps_extension_4bits);
+            out.enter();
+
+            out.u1("pps_range_extension_flag", pps_range_extension_flag);
+            out.u1("pps_multilayer_extension_flag",
+                    pps_multilayer_extension_flag);
+            out.u1("pps_3d_extension_flag", pps_3d_extension_flag);
+            out.u1("pps_scc_extension_flag", pps_scc_extension_flag);
+            out.u4("pps_extension_4bits", pps_extension_4bits);
+
+            out.leave();
         }
 
-        // writer.writeTrailingBits(trailing_bits);
+        if (trailing_bits.length > 0) {
+            out.printH("trailing_bits", trailing_bits);
+        }
     }
 }

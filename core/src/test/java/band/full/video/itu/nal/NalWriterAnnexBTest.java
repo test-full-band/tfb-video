@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 
 public class NalWriterAnnexBTest {
     private static final class TestWriterAnnexB
@@ -18,8 +17,8 @@ public class NalWriterAnnexBTest {
         }
 
         @Override
-        protected void writeHeader(RbspWriter writer, TestNALU nalu) {
-            writer.writeS8(nalu.type);
+        protected void writeHeader(RbspWriter out, TestNALU nalu) {
+            out.i8(nalu.type);
         }
     }
 
@@ -34,6 +33,11 @@ public class NalWriterAnnexBTest {
         }
 
         @Override
+        public boolean isZeroByteRequired() {
+            return false;
+        }
+
+        @Override
         public String getTypeString() {
             return null;
         }
@@ -44,15 +48,17 @@ public class NalWriterAnnexBTest {
         }
 
         @Override
-        public void read(NalContext context, RbspReader reader) {}
-
-        @Override
-        public void write(NalContext context, RbspWriter writer) {
-            writer.writeTrailingBits(bytes);
+        public void read(NalContext context, RbspReader in) {
         }
 
         @Override
-        public void print(NalContext context, PrintStream ps) {}
+        public void write(NalContext context, RbspWriter out) {
+            out.writeTrailingBits(bytes);
+        }
+
+        @Override
+        public void print(NalContext context, RbspPrinter out) {
+        }
     }
 
     @Test
