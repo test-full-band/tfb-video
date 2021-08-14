@@ -5,8 +5,6 @@ import static java.lang.Double.MAX_VALUE;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import band.full.video.itu.HybridLogGamma;
-
 import org.junit.jupiter.api.Test;
 
 /**

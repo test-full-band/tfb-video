@@ -11,6 +11,7 @@ import band.full.video.itu.nal.RbspPrinter;
 import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 import band.full.video.itu.nal.Structure;
+import band.full.video.itu.nal.sei.ContentLightLevelInfo;
 import band.full.video.itu.nal.sei.MasteringDisplayColourVolume;
 import band.full.video.itu.nal.sei.UserDataRegisteredT35;
 
@@ -153,6 +154,11 @@ public class SEI extends NALUnit {
 
                     case mastering_display_colour_volume:
                         payload = new MasteringDisplayColourVolume(
+                                context, in, size);
+                        return;
+
+                    case content_light_level_info:
+                        payload = new ContentLightLevelInfo(
                                 context, in, size);
                         return;
 

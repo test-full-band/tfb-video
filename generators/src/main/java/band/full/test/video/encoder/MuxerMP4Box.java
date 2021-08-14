@@ -21,7 +21,7 @@ public class MuxerMP4Box extends Muxer {
 
         var builder = new ProcessBuilder(
                 "MP4Box", "-noprog", "-new", out.getPath(), "-brand", brand,
-                "-add", in.getPath(), "-add", "target/silence.ac3"
+                "-add", in.getPath(), "-add", audio
         ).redirectOutput(INHERIT).redirectError(INHERIT);
 
         System.out.println();

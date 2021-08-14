@@ -3,8 +3,6 @@ package band.full.video.itu;
 import static band.full.video.itu.BT1886.TRUE_BLACK_TRANSFER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import band.full.video.itu.BT1886;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

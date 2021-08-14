@@ -24,7 +24,7 @@ public class DCI_P3 {
      * <li>SMPTE RP 431-2 (2011)
      * </ul>
      */
-    public static Primaries PRIMARIES_THEATER =
+    public static final Primaries PRIMARIES_THEATER =
             new Primaries(11, CIE_R, CIE_G, CIE_B, CIE_W);
 
     /**
@@ -34,6 +34,6 @@ public class DCI_P3 {
      * <li>SMPTE EG 432-1 (2010)
      * </ul>
      */
-    public static Primaries PRIMARIES_D65 =
+    public static final Primaries PRIMARIES_D65 =
             new Primaries(12, CIE_R, CIE_G, CIE_B, CIE_D65);
 }

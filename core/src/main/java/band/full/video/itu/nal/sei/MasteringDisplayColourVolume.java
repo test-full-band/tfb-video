@@ -7,6 +7,10 @@ import band.full.video.itu.nal.RbspReader;
 import band.full.video.itu.nal.RbspWriter;
 
 /**
+ * D.2.28 Mastering display colour volume SEI message syntax
+ * <p>
+ * <code>mastering_display_colour_volume()</code>
+ * 
  * @author Igor Malinin
  */
 @SuppressWarnings("rawtypes")

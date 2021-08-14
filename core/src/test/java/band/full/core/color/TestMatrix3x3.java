@@ -3,8 +3,6 @@ package band.full.core.color;
 import static java.lang.Double.MIN_VALUE;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-import band.full.core.color.Matrix3x3;
-
 import org.junit.jupiter.api.Test;
 
 /**

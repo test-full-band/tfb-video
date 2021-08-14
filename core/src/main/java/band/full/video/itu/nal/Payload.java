@@ -1,6 +1,7 @@
 package band.full.video.itu.nal;
 
 public interface Payload<C extends NalContext> extends Structure<C> {
+    /** Number of bytes in the payload */
     int size(C context);
 
     @SuppressWarnings("rawtypes")

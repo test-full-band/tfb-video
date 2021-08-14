@@ -28,7 +28,7 @@ public class BT2020 {
      * <li>Rec. ITU-R BT.2100-0
      * </ul>
      */
-    public static Primaries PRIMARIES =
+    public static final Primaries PRIMARIES =
             new Primaries(9, CIE_R, CIE_G, CIE_B, CIE_D65);
 
     /**
@@ -63,10 +63,10 @@ public class BT2020 {
      * <li>See Equations E-28 to E-30
      * </ul>
      */
-    public static YCbCr BT2020_10bit =
+    public static final YCbCr BT2020_10bit =
             new YCbCr(9, TRANSFER_10bit, PRIMARIES, 10);
 
-    public static YCbCr BT2020_12bit =
+    public static final YCbCr BT2020_12bit =
             new YCbCr(9, TRANSFER_12bit, PRIMARIES, 12);
 
     private BT2020() {}

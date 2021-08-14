@@ -150,7 +150,7 @@ public class DolbyVisionProfile5 {
                     new RpuDataMapping.Param();
             param.poly_order_minus1 = 0;
             param.linear_interp_flag = false;
-            // nominal (0.5 + 2.0 * x) P' reshaping
+            // nominal (-0.5 + 2.0 * x) P' reshaping
             param.f_poly_coef = new int[] {-1 << 22, 2 << 23};
         }
 
@@ -163,7 +163,7 @@ public class DolbyVisionProfile5 {
                     new RpuDataMapping.Param();
             param.poly_order_minus1 = 0;
             param.linear_interp_flag = false;
-            // nominal (0.5 + 2.0 * x) T' reshaping
+            // nominal (-0.5 + 2.0 * x) T' reshaping
             param.f_poly_coef = new int[] {-1 << 22, 2 << 23};
         }
 
