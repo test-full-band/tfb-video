@@ -10,9 +10,9 @@ see our web site: [test.full.band](https://test.full.band).
 
 ## Development environment
 
-The test generator is written in Java 11 and you need Java Development Kit
+The test generator is written in Java 16 and you need Java Development Kit
 (JDK) installed to build the project. You can get Java for your platform
-from [here](http://jdk.java.net/11/).
+from [here](http://jdk.java.net/16/).
 
 Also you will need Apache Maven 3.5+ to build the project. x264, x265,
 MP4Box and ffmpeg executables need to be installed and available in the
