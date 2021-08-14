@@ -32,6 +32,8 @@ public final class IPTPQc2 extends ColorMatrix {
     public static final IPTPQc2 PQ10IPTc2 = new IPTPQc2(10);
     public static final IPTPQc2 PQ12IPTc2 = new IPTPQc2(12);
 
+    private static final double[] RESHAPING = {1.0, 2.0, 2.0};
+
     /**
      * <pre>
      * [1.0,  0.09753,  0.20520]
@@ -39,8 +41,10 @@ public final class IPTPQc2 extends ColorMatrix {
      * [1.0,  0.03259, -0.67688]
      * </pre>
      */
-    public static final Matrix3x3 IPTtoPQLMS =
-            getYCCtoRGB(IPTPQ_YCCtoRGB_coef);
+    public static final Matrix3x3 IPTtoPQLMS = getYCCtoRGB(IPTPQ_YCCtoRGB_coef);
+
+    private static final Matrix3x3 IPTtoPQLMS_RESHAPED =
+            IPTtoPQLMS.multiplyColumns(RESHAPING);
 
     /**
      * <pre>
@@ -50,6 +54,9 @@ public final class IPTPQc2 extends ColorMatrix {
      * </pre>
      */
     public static final Matrix3x3 PQLMStoIPT = IPTtoPQLMS.invert();
+
+    private static final Matrix3x3 PQLMStoIPT_RESHAPED =
+            IPTtoPQLMS_RESHAPED.invert();
 
     /**
      * <pre>
@@ -93,10 +100,7 @@ public final class IPTPQc2 extends ColorMatrix {
         RGBtoLMS.multiply(rgb, ipt); // TODO combine with cross talk
         CROSS_TALK.multiply(ipt, ipt);
         transfer.fromLinear(ipt, ipt);
-        PQLMStoIPT.multiply(ipt, ipt);
-        for (int i = 0; i < 3; i++) {
-            ipt[i] /= reshaping[i];
-        }
+        PQLMStoIPT_RESHAPED.multiply(ipt, ipt);
         return ipt;
     }
 
@@ -107,10 +111,7 @@ public final class IPTPQc2 extends ColorMatrix {
 
     @Override
     public double[] toLinearRGB(double[] ipt, double[] rgb) {
-        for (int i = 0; i < 3; i++) {
-            rgb[i] = ipt[i] * reshaping[i];
-        }
-        IPTtoPQLMS.multiply(rgb, rgb);
+        IPTtoPQLMS_RESHAPED.multiply(ipt, rgb);
         transfer.toLinear(rgb, rgb);
         CROSS_TALK_INVERSE.multiply(rgb, rgb);
         return LMStoRGB.multiply(rgb, rgb); // TODO combine with cross talk
