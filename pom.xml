@@ -9,11 +9,11 @@
 
   <name>test.full.band Video Patterns</name>
   <description>Calibration and test video pattern sets</description>
-  <url>https://github.com/testing-av/testing-video</url>
+  <url>https://github.com/test-full-band/tfb-video</url>
 
   <organization>
     <name>test.full.band</name>
-    <url>http://test.full.band/</url>
+    <url>https://test.full.band/</url>
   </organization>
 
   <properties>

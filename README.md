@@ -1,4 +1,4 @@
-# testing-video
+# test.full.band tfb-video
 
 The project is aimed to create a set of videos usable for testing
 media playback for correctness and evaluating quality of decoding
@@ -30,8 +30,7 @@ Required executables can be installed from following sources:
 
  * [x264](http://download.videolan.org/pub/x264/binaries/)
  * [x265 multilib](http://msystem.waw.pl/x265/)
- * [MP4Box](https://www.videohelp.com/software/MP4Box/old-versions) -
-   NB! Use gpac-0.7.0-rev27 version or newer.
+ * [MP4Box](https://www.videohelp.com/software/MP4Box/)
  * [ffmpeg](http://ffmpeg.zeranoe.com/builds/)
 
 ### macOS
