@@ -54,7 +54,7 @@ public enum GeneratorFactory {
                     "--level-idc", "5.1", "--high-tier", "--hrd",
                     "--vbv-maxrate", "160000", "--vbv-bufsize", "160000",
                     "--crf", "0", "--qpmax", "4", "--cu-lossless",
-                    "--no-rskip", "--psnr", "--ssim"));
+                    "--rskip", "0", "--psnr", "--ssim"));
         }
     };
 
