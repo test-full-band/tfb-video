@@ -8,6 +8,8 @@ import java.io.OutputStream;
 public interface NalUnitPostProcessor<A> {
     /** Just copy all phases by default. */
     static <A> NalUnitPostProcessor<A> defaultNalUnitPostProcessor() {
+        // FIXME acutually need to parse input and filter only first codec
+        // description SEI -> TO BE MOVED TO GeneratorFactory for AVC/HEVC
         return (args, fragment, in, out) -> {
             byte[] buf = new byte[16 * 1024];
             while (true) {

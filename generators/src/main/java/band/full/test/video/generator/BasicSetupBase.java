@@ -29,13 +29,23 @@ public abstract class BasicSetupBase {
                 String folder, String group);
     }
 
-    protected <T extends GeneratorBase<A>, A> T create(Generator<T, A> gen) {
+    protected <T extends GeneratorBase<A>, A> T create(Generator<T, A> gen,
+            NalUnitPostProcessor<?> processor) {
         return gen.create(factory, params, processor, muxer, folder, group);
+    }
+
+    protected <T extends GeneratorBase<A>, A> void generate(Generator<T, A> gen,
+            NalUnitPostProcessor<?> processor) {
+        create(gen, processor).generate();
+    }
+
+    protected <T extends GeneratorBase<A>, A> void generate(Generator<T, A> gen,
+            NalUnitPostProcessor<?> processor, A args) {
+        create(gen, processor).generate(args);
     }
 
     protected final GeneratorFactory factory;
     protected final EncoderParameters params;
-    protected final NalUnitPostProcessor<?> processor;
     protected final MuxerFactory muxer;
     protected final String folder;
     protected final String group;
@@ -43,43 +53,70 @@ public abstract class BasicSetupBase {
     protected final CheckerboardGenerator checkerboard;
     protected final LinesGenerator lines;
     protected final GammaGenerator gamma;
+    protected final ColorRampsGenerator colorRamps;
 
     protected BasicSetupBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String group) {
-        this(factory, params, defaultNalUnitPostProcessor(), MuxerMP4Box::new,
-                folder, group);
+        this(factory, params, MuxerMP4Box::new, folder, group);
     }
 
     protected BasicSetupBase(GeneratorFactory factory,
-            EncoderParameters params, NalUnitPostProcessor<?> processor,
-            MuxerFactory muxer, String folder, String group) {
+            EncoderParameters params, MuxerFactory muxer,
+            String folder, String group) {
         this.factory = factory;
         this.params = params;
-        this.processor = processor;
         this.muxer = muxer;
         this.folder = folder + "/Basic";
         this.group = group;
 
-        checkerboard = create(CheckerboardGenerator::new);
-        lines = create(LinesGenerator::new);
-        gamma = create(GammaGenerator::new);
+        checkerboard = create(CheckerboardGenerator::new, processor());
+        lines = create(LinesGenerator::new, processor());
+        gamma = create(GammaGenerator::new, processor());
+        colorRamps = create(ColorRampsGenerator::new, processorSDR());
+    }
+
+    protected NalUnitPostProcessor<?> processor() {
+        return defaultNalUnitPostProcessor();
+    }
+
+    /**
+     * For patterns that are by design limited with SDR
+     * <p>
+     * To be customized separately for static or dynamic HDR metadata
+     */
+    protected NalUnitPostProcessor<?> processorSDR() {
+        return defaultNalUnitPostProcessor();
     }
 
     @Test
     @Disabled("TODO")
     public void blackLevel() {
-        create(BlackLevelGenerator::new).generate(null);
+        generate(BlackLevelGenerator::new, processor());
     }
 
     @Test
     public void blackPLUGE() {
-        create(BlackPLUGEGenerator::new).generate(null);
+        generate(BlackPLUGEGenerator::new, processorSDR());
     }
 
-    @Disabled
+    @Test
+    public void colorChecker24() {
+        generate(ColorCheckerGenerator.Classic24::new, processorSDR());
+    }
+
+    @Test
+    public void colorCheckerSG() {
+        generate(ColorCheckerGenerator.DigitalSG::new, processorSDR());
+    }
+
+    @Test
+    public void colorRamps() {
+        colorRamps.generate();
+    }
+
     @Test // TODO check into account dynamic metadata (DV)
     public void gamma() {
-        create(GammaGenerator::new).generate(null);
+        gamma.generate();
     }
 
     @ParameterizedTest

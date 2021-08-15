@@ -16,13 +16,13 @@ public abstract class BasicSetupHDRBase extends BasicSetupBase {
     }
 
     protected BasicSetupHDRBase(GeneratorFactory factory,
-            EncoderParameters params, NalUnitPostProcessor<?> processor,
-            MuxerFactory muxer, String folder, String group) {
-        super(factory, params, processor, muxer, folder, group);
+            EncoderParameters params, MuxerFactory muxer,
+            String folder, String group) {
+        super(factory, params, muxer, folder, group);
     }
 
     @Test
     public void bt2111() {
-        create(BT2111Generator::new).generate(null);
+        generate(BT2111Generator::new, processor());
     }
 }

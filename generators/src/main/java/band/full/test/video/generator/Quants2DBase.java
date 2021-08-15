@@ -122,9 +122,11 @@ public abstract class Quants2DBase extends GeneratorBase<Args> {
     protected void encode(EncoderY4M e, Args args, String phase) {
         var fb = e.newFrameBuffer();
         fill(fb, args);
-        if (phase != null) {
+
+        if (phase == INTRO) {
             marks(fb, args);
         }
+
         e.render(gop, () -> fb);
     }
 

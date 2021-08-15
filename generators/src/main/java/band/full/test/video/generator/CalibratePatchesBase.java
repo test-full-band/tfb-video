@@ -182,7 +182,7 @@ public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
         var fb = e.newFrameBuffer();
         fb.fillRect(getWindow(args.window), args.yuv);
 
-        if (phase != null) {
+        if (phase == INTRO) {
             FxImage.overlay(overlay(args), fb);
         }
 

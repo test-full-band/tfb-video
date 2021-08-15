@@ -115,6 +115,10 @@ public abstract class GeneratorBase<A> {
         gop = round(framerate.rate);
     }
 
+    public void generate() {
+        generate(null);
+    }
+
     public void generate(A args) {
         var pattern = getPattern(args);
         var dir = factory.greet(getFolder(args), pattern);
@@ -199,10 +203,7 @@ public abstract class GeneratorBase<A> {
 
     public final List<String> encode(File dir, A args, String phase, int repeat)
             throws IOException, InterruptedException {
-        String pattern = getPattern(args);
-        String name = phase == null ? pattern : pattern + "-" + phase;
-
-        String out = factory.encode(dir, name, params,
+        String out = factory.encode(dir, getPattern(args) + "-" + phase, params,
                 e -> encode(e, args, phase));
 
         return range(0, repeat).boxed().map(i -> out).collect(toList());
