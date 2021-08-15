@@ -5,17 +5,18 @@ import static java.lang.Math.max;
 import static javafx.scene.layout.Background.EMPTY;
 import static javafx.scene.text.Font.font;
 
+import band.full.core.Quantizer;
 import band.full.test.video.encoder.DecoderY4M;
 import band.full.test.video.encoder.EncoderParameters;
 import band.full.test.video.encoder.EncoderY4M;
 import band.full.test.video.executor.FrameVerifier;
 import band.full.test.video.executor.FxImage;
 import band.full.video.buffer.FrameBuffer;
-import band.full.video.buffer.Plane;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javafx.scene.Parent;
@@ -28,22 +29,23 @@ import javafx.scene.paint.Color;
  * @author Igor Malinin
  */
 public class BlackPLUGEGenerator extends GeneratorBase<Void> {
-    public final int step1;
-    public final int step2;
-    public final int step4;
+    private final double fine;
 
     public BlackPLUGEGenerator(GeneratorFactory factory,
             EncoderParameters params, NalUnitPostProcessor<Void> processor,
             MuxerFactory muxer, String folder, String group) {
         super(factory, params, processor, muxer, folder, "BlackPLUGE", group);
 
-        if (matrix.range == NARROW) {
-            step1 = (matrix.YMAX - matrix.YMIN) / 100;
-            step2 = (matrix.YMAX - matrix.YMIN) / 50;
-            step4 = (matrix.YMAX - matrix.YMIN) / 25;
-        } else {
-            step1 = step2 = step4 = matrix.YMIN;
-        }
+        fine = matrix.fromLumaCode(matrix.YMIN + max(1, 1 << bitdepth - 8));
+    }
+
+    private int[] yuv(double y) {
+        double[] buf = {y, y, y};
+
+        int[] codes = matrix.toCodes(matrix.fromRGB(buf, buf),
+                Quantizer::round, new int[3]);
+        System.out.println(Arrays.toString(codes));
+        return codes;
     }
 
     @Override
@@ -61,7 +63,7 @@ public class BlackPLUGEGenerator extends GeneratorBase<Void> {
 
         draw(fb);
 
-        if (phase != null) {
+        if (phase == INTRO) {
             FxImage.overlay(overlay(params), fb);
         }
 
@@ -74,45 +76,49 @@ public class BlackPLUGEGenerator extends GeneratorBase<Void> {
      * next column.
      */
     public FrameBuffer draw(FrameBuffer fb) {
-        fillVerticalBars(fb.Y);
-        fillLeftBars(fb.Y);
+        fillVerticalBars(fb);
+
+        double fine = matrix.fromLumaCode(
+                matrix.YMIN + max(1, 1 << bitdepth - 8));
+
+        fillLeftBars(fb, fine);
 
         if (matrix.range == NARROW) {
-            fillRightBars(fb.Y);
+            fillRightBars(fb, fine);
         }
 
         return fb;
     }
 
-    private void fillVerticalBars(Plane luma) {
+    private void fillVerticalBars(FrameBuffer fb) {
         if (matrix.range == NARROW) {
-            fillVerticalBar(luma, 0, matrix.YMIN - step2);
-            fillVerticalBar(luma, 1, matrix.YMIN - step1);
+            fillVerticalBar(fb, 0, yuv(-0.04));
+            fillVerticalBar(fb, 1, yuv(-0.02));
         }
 
-        fillVerticalBar(luma, 2, matrix.YMIN + step1);
-        fillVerticalBar(luma, 3, matrix.YMIN + step2);
+        fillVerticalBar(fb, 2, yuv(0.02));
+        fillVerticalBar(fb, 3, yuv(0.04));
     }
 
-    private void fillVerticalBar(Plane luma, int n, int code) {
-        luma.fillRect(width / 24 * (n * 4 + 5), 0, width / 12, height, code);
+    private void fillVerticalBar(FrameBuffer fb, int n, int[] yuv) {
+        fb.fillRect(width / 24 * (n * 4 + 5), 0, width / 12, height, yuv);
     }
 
-    private void fillLeftBars(Plane luma) {
-        int fine = max(1, 1 << bitdepth - 9);
+    private void fillLeftBars(FrameBuffer fb, double fine) {
         int w = width / 24 * 5;
         int h = height / 27, h5 = h * 5;
-        luma.fillRect(0, 0, w, h5, matrix.YMIN + fine * 2);
-        luma.fillRect(0, h5 * 2, w, h5 * 2, matrix.YMIN + fine);
-        luma.fillRect(0, h5 * 5, w, height - h5 * 5, matrix.YMIN + fine * 3);
+        fb.fillRect(0, 0, w, h5, yuv(fine * 2));
+        fb.fillRect(0, h5 * 2, w, h5 * 2, yuv(fine));
+        fb.fillRect(0, h5 * 5, w, height - h5 * 5, yuv(fine * 3));
     }
 
-    private void fillRightBars(Plane luma) {
+    private void fillRightBars(FrameBuffer fb, double fine) {
         int x = width / 24 * 19, w = width - x;
         int h = height / 27, h5 = h * 5;
-        luma.fillRect(x, 0, w, h5, matrix.YMIN - step2);
-        luma.fillRect(x, h5 * 2, w, h5 * 2, matrix.VMIN);
-        luma.fillRect(x, h5 * 5, w, height - h5 * 5, matrix.YMIN - step4);
+
+        fb.fillRect(x, 0, w, h5, yuv(fine * -2));
+        fb.fillRect(x, h5 * 2, w, h5 * 2, yuv(fine * -1));
+        fb.fillRect(x, h5 * 5, w, height - h5 * 5, yuv(fine * -3));
     }
 
     @Override
@@ -129,8 +135,7 @@ public class BlackPLUGEGenerator extends GeneratorBase<Void> {
             int x = width / 24 * 19, w = width - x;
             int h5 = height / 27 * 5;
 
-            fb.Y.fillRect(x, h5 * 5, w, height - h5 * 5,
-                    matrix.YMIN - step4);
+            fb.fillRect(x, h5 * 5, w, height - h5 * 5, yuv(fine * -3));
 
             FrameVerifier.verify(expected, fb, 4, 0.002);
         });

@@ -22,19 +22,15 @@ import java.io.IOException;
  */
 @GenerateVideo(MAIN)
 public class BlackPLUGEPNG extends BlackPLUGEGenerator {
-    private static final double AMP = 16.0; // intensity amplification factor
-    private final double OFF;
-
     public BlackPLUGEPNG() {
         super(null, HD_MAIN, null, null, null, null);
-        OFF = matrix.fromLumaCode(matrix.YMIN + step1); // intensity offset
     }
 
     @Test
     public void image() throws IOException {
         var fb = newFrameBuffer();
         draw(fb);
-        write(fb, "BlackPLUGE.png", rgb -> transform(amplify(rgb, AMP)));
+        write(fb, "BlackPLUGE.png", rgb -> transform(amplify(rgb, 12.0)));
     }
 
     @Test
@@ -42,7 +38,7 @@ public class BlackPLUGEPNG extends BlackPLUGEGenerator {
         var fb = newFrameBuffer();
         draw(fb);
         write(fb, "BlackPLUGEdark.png",
-                rgb -> transform(amplify(offset(rgb, -OFF), AMP)));
+                rgb -> transform(amplify(offset(rgb, -0.02), 14.0)));
     }
 
     @Test
@@ -50,7 +46,7 @@ public class BlackPLUGEPNG extends BlackPLUGEGenerator {
         var fb = newFrameBuffer();
         draw(fb);
         write(fb, "BlackPLUGEbright.png",
-                rgb -> transform(amplify(offset(rgb, OFF), AMP)));
+                rgb -> transform(amplify(offset(rgb, 0.03), 10.0)));
     }
 
     private FrameBuffer newFrameBuffer() {
