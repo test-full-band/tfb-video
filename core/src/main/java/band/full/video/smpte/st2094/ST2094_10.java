@@ -1,5 +1,6 @@
 package band.full.video.smpte.st2094;
 
+import static band.full.video.dolby.IPTPQc2.PQ12IPTc2;
 import static band.full.video.itu.nal.RbspWriter.countUEbits;
 
 import band.full.video.itu.nal.NalContext;
@@ -69,10 +70,15 @@ public class ST2094_10 implements Payload {
             out.raw("Level 1 - Content Range");
 
             out.enter();
-            out.u12("min_PQ", min_PQ);
-            out.u12("max_PQ", max_PQ);
-            out.u12("avg_PQ", avg_PQ);
+            out.raw("min_PQ: " + min_PQ + ", " + pq12(min_PQ));
+            out.raw("max_PQ: " + max_PQ + ", " + pq12(max_PQ));
+            out.raw("avg_PQ: " + avg_PQ + ", " + pq12(avg_PQ));
             out.leave();
+        }
+
+        private static double pq12(int code) {
+            return PQ12IPTc2.transfer.toLinear(PQ12IPTc2.fromLumaCode(code))
+                    * PQ12IPTc2.transfer.getNominalDisplayPeakLuminance();
         }
     }
 
@@ -123,14 +129,23 @@ public class ST2094_10 implements Payload {
             out.raw("Level " + level + " - Trim Pass");
 
             out.enter();
-            out.u12("target_max_PQ", target_max_PQ);
+
+            out.raw("target_max_PQ: " + target_max_PQ
+                    + ", " + pq12(target_max_PQ));
+
             out.u12("trim_slope", trim_slope);
             out.u12("trim_offset", trim_offset);
             out.u12("trim_power", trim_power);
             out.u12("trim_chroma_weight", trim_chroma_weight);
             out.u12("trim_saturation_gain", trim_saturation_gain);
             out.i13("ms_weight", ms_weight);
+
             out.leave();
+        }
+
+        private static double pq12(int code) {
+            return PQ12IPTc2.transfer.toLinear(PQ12IPTc2.fromLumaCode(code))
+                    * PQ12IPTc2.transfer.getNominalDisplayPeakLuminance();
         }
     }
 
@@ -183,7 +198,40 @@ public class ST2094_10 implements Payload {
         }
     }
 
-    // TODO Level 4 Metadata – Global Dimming (DV, Non-ST.2094-10)
+    // (DV, Non-ST.2094-10)
+    /** Level 4 Metadata - unknown */
+    public static class L4 extends DisplayManagementBlock {
+        public static final short LEVEL = 4;
+
+        public short f1_PQ;
+        public short f2_PQ;
+
+        public L4() {
+            super(3, LEVEL);
+        }
+
+        @Override
+        public void read(NalContext context, RbspReader in) {
+            f1_PQ = in.u12();
+            f2_PQ = in.u12();
+        }
+
+        @Override
+        public void write(NalContext context, RbspWriter out) {
+            out.u12(f1_PQ);
+            out.u12(f2_PQ);
+        }
+
+        @Override
+        public void print(NalContext context, RbspPrinter out) {
+            out.raw("Level " + level + " - unknown");
+
+            out.enter();
+            out.u12("f1", f1_PQ);
+            out.u12("f2", f2_PQ);
+            out.leave();
+        }
+    }
 
     /** Level 5 Metadata - Active Area */
     public static class ActiveArea extends DisplayManagementBlock {
@@ -231,7 +279,44 @@ public class ST2094_10 implements Payload {
         }
     }
 
-    // TODO Level 6 Metadata – [unknown] (DV, Non-ST.2094-10)
+    // (DV, Non-ST.2094-10)
+    /** Level 6 Metadata - Optional MaxFALL/MaxCLL metadata (Static) */
+    public static class ContentLightLevel extends DisplayManagementBlock {
+        public static final short LEVEL = 6;
+
+        public int max_content_light_level; // u(16)
+        public int max_pic_average_light_level; // u(16)
+        public int reserved; // i(32)
+
+        public ContentLightLevel() {
+            super(8, LEVEL);
+        }
+
+        @Override
+        public void read(NalContext context, RbspReader in) {
+            max_content_light_level = in.u16();
+            max_pic_average_light_level = in.u16();
+            reserved = in.i32();
+        }
+
+        @Override
+        public void write(NalContext context, RbspWriter out) {
+            out.u16(max_content_light_level);
+            out.u16(max_pic_average_light_level);
+            out.i32(reserved);
+        }
+
+        @Override
+        public void print(NalContext context, RbspPrinter out) {
+            out.raw("Level " + level + " - MaxFALL/MaxCLL metadata");
+
+            out.enter();
+            out.u16("max_content_light_level", max_content_light_level);
+            out.u16("max_pic_average_light_level", max_pic_average_light_level);
+            out.printH("reserved", 32, reserved);
+            out.leave();
+        }
+    }
 
     public static class Reserved extends DisplayManagementBlock {
         public byte[] bytes;
@@ -256,6 +341,11 @@ public class ST2094_10 implements Payload {
 
             out.enter();
             out.printH("bytes", bytes);
+            if (level == 4) { // FIXME
+                RbspReader r = new RbspReader(bytes, 0, 3);
+                out.u12("hi", r.u12());
+                out.u12("lo", r.u12());
+            }
             out.leave();
         }
     }
@@ -328,8 +418,16 @@ public class ST2094_10 implements Payload {
                             block = new ContentRangeOffsets();
                             break;
 
+                        case L4.LEVEL:
+                            block = new L4();
+                            break;
+
                         case ActiveArea.LEVEL:
                             block = new ActiveArea();
+                            break;
+
+                        case ContentLightLevel.LEVEL:
+                            block = new ContentLightLevel();
                             break;
 
                         default:

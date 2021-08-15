@@ -401,19 +401,11 @@ public class RbspPrinter {
         indent().name(name).value(value).endl();
     }
 
-    public void printInt(String name, int bits, int value) {
-        indent().name(name).value(value).endl();
-    }
-
     public void printULong(String name, int bits, long value) {
         indent().name(name).value(value).endl();
     }
 
     public void printSLong(String name, int bits, long value) {
-        indent().name(name).value(value).endl();
-    }
-
-    private void printLong(String name, int bits, long value) {
         indent().name(name).value(value).endl();
     }
 
