@@ -22,7 +22,7 @@ public class MuxerMP4Box extends Muxer {
         var builder = new ProcessBuilder(
                 "MP4Box", "-noprog", "-new", out.getPath(), "-brand", brand,
                 "-add", in.getPath(), "-add", audio
-        ).redirectOutput(INHERIT).redirectError(INHERIT);
+        ).redirectOutput(INHERIT).redirectErrorStream(true);
 
         System.out.println();
         System.out.println(builder.command());

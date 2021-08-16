@@ -32,8 +32,8 @@ public class FxDisplay extends Application {
     public void start(Stage stage) throws Exception {
         Parent pane = root.get();
 
-        double width = size.width;
-        double height = size.height;
+        double width = size.width();
+        double height = size.height();
 
         VBox box = new VBox(pane);
         VBox.setVgrow(pane, ALWAYS);

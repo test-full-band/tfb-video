@@ -175,8 +175,8 @@ public class Calibrate2160pHDR10_CalMAN {
     }
 
     public double[] getRed(Primaries p, double r, int saturation) {
-        double x = p.white.x + (p.red.x - p.white.x) / 100 * saturation;
-        double y = p.white.y + (p.red.y - p.white.y) / 100 * saturation;
+        double x = p.white.x() + (p.red.x() - p.white.x()) / 100 * saturation;
+        double y = p.white.y() + (p.red.y() - p.white.y()) / 100 * saturation;
 
         double[] rgb = p.XYZtoRGB.multiply(
                 new CIExyY(x, y, 1.0).CIEXYZ().array());

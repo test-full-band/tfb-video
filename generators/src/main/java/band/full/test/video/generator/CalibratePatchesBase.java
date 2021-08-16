@@ -99,9 +99,9 @@ public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
     }
 
     protected String formatCIE(CIExyY xyY) {
-        double l = xyY.Y * transfer.getNominalDisplayPeakLuminance();
+        double l = xyY.Y() * transfer.getNominalDisplayPeakLuminance();
         String luminance = formatLuminance(l);
-        return format("CIE(x=%.5f, y=%.5f) %s", xyY.x, xyY.y, luminance);
+        return format("CIE(x=%.5f, y=%.5f) %s", xyY.x(), xyY.y(), luminance);
     }
 
     /**
@@ -326,7 +326,7 @@ public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
         if (args.yuv[0] <= matrix.YMIN) {
             // fake color value for pure black
             CIExy white = primaries.white;
-            return new CIExyY(white.x, white.y, 0);
+            return new CIExyY(white.x(), white.y(), 0);
         }
 
         double[] buf = matrix.fromCodes(args.yuv, new double[3]);

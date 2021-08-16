@@ -9,7 +9,15 @@ import static java.lang.String.format;
  * @see <a href="https://en.wikipedia.org/wiki/Standard_illuminant">Standard
  *      illuminant</a>
  */
-public class CIEXYZ {
+public record CIEXYZ(double X, double Y, double Z) {
+    public CIEXYZ(double X, double Z) {
+        this(X, 1.0, Z);
+    }
+
+    public CIEXYZ(double[] XYZ) {
+        this(XYZ[0], XYZ[1], XYZ[2]);
+    }
+
     public static final CIEXYZ ILLUMINANT_C = new CIEXYZ(0.98074, 1.18232);
     public static final CIEXYZ ILLUMINANT_D50 = new CIEXYZ(0.96422, 0.82521);
     public static final CIEXYZ ILLUMINANT_D55 = new CIEXYZ(0.95682, 0.92149);
@@ -19,24 +27,6 @@ public class CIEXYZ {
      */
     public static final CIEXYZ ILLUMINANT_D65 = new CIEXYZ(0.95047, 1.08883);
     public static final CIEXYZ ILLUMINANT_D75 = new CIEXYZ(0.94972, 1.22638);
-
-    public final double X;
-    public final double Y;
-    public final double Z;
-
-    public CIEXYZ(double X, double Z) {
-        this(X, 1.0, Z);
-    }
-
-    public CIEXYZ(double X, double Y, double Z) {
-        this.X = X;
-        this.Y = Y;
-        this.Z = Z;
-    }
-
-    public CIEXYZ(double[] XYZ) {
-        this(XYZ[0], XYZ[1], XYZ[2]);
-    }
 
     public double[] array() {
         return new double[] {X, Y, Z};
@@ -70,13 +60,6 @@ public class CIEXYZ {
         return x > 216.0 / 24389.0
                 ? cbrt(x)
                 : (841.0 / 108.0) * x + (4.0 / 29.0);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || o.getClass() != getClass()) return false;
-        CIEXYZ other = (CIEXYZ) o;
-        return other.X == X && other.Y == Y && other.Z == Z;
     }
 
     @Override

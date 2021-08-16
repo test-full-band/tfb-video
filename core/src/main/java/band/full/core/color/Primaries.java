@@ -59,16 +59,16 @@ public class Primaries {
 
     private Matrix3x3 createRGBtoXYZ() {
         Matrix3x3 m = new Matrix3x3(
-                red.x / red.y, green.x / green.y, blue.x / blue.y,
+                red.x() / red.y(), green.x() / green.y(), blue.x() / blue.y(),
                 1.0, 1.0, 1.0,
-                (1.0 - red.x - red.y) / red.y,
-                (1.0 - green.x - green.y) / green.y,
-                (1.0 - blue.x - blue.y) / blue.y);
+                (1.0 - red.x() - red.y()) / red.y(),
+                (1.0 - green.x() - green.y()) / green.y(),
+                (1.0 - blue.x() - blue.y()) / blue.y());
 
         Matrix3x3 inverse = m.invert();
 
-        double[] w = {white.x / white.y, 1.0,
-            (1.0 - white.x - white.y) / white.y};
+        double[] w = {white.x() / white.y(), 1.0,
+            (1.0 - white.x() - white.y()) / white.y()};
 
         return m.multiplyColumns(inverse.multiply(w));
     }

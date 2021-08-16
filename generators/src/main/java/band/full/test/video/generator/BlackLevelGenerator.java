@@ -117,23 +117,23 @@ public class BlackLevelGenerator extends GeneratorBase<Void> {
 
     private static Label top(Resolution res, ColorMatrix matrix, int col) {
         Label l = text(res, matrix, col);
-        l.relocate(getX(res.width, col), 0);
+        l.relocate(getX(res.width(), col), 0);
         return l;
     }
 
     private static Label bottom(Resolution res, ColorMatrix matrix, int col) {
         Label l = text(res, matrix, col);
-        l.relocate(getX(res.width, col), res.height - l.getPrefHeight());
+        l.relocate(getX(res.width(), col), res.height() - l.getPrefHeight());
         return l;
     }
 
     private static Label text(Resolution res, ColorMatrix matrix, int col) {
         Label l = new Label(Integer.toString(getLuma(matrix, col)));
-        l.setFont(font(res.height / 54));
+        l.setFont(font(res.height() / 54));
         l.setTextFill(gray(matrix.fromLumaCode(matrix.YMIN * 4)));
         l.setTextAlignment(TextAlignment.CENTER);
         l.setAlignment(Pos.CENTER);
-        l.setPrefSize(getW(res.width, col), getLabelH(res.height));
+        l.setPrefSize(getW(res.width(), col), getLabelH(res.height()));
         return l;
     }
 

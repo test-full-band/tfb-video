@@ -85,7 +85,7 @@ public abstract class EncoderY4M implements AutoCloseable {
 
         var resolution = parameters.resolution;
 
-        int frameLength = resolution.width * resolution.height * 3
+        int frameLength = resolution.width() * resolution.height() * 3
                 / 2 * y4mBytesPerSample();
         frameBuffer = new byte[FRAME_HEADER.length + frameLength];
         arraycopy(FRAME_HEADER, 0, frameBuffer, 0, FRAME_HEADER.length);
@@ -93,7 +93,7 @@ public abstract class EncoderY4M implements AutoCloseable {
         yuv4mpegOut = open();
 
         String header = "YUV4MPEG2"
-                + " W" + resolution.width + " H" + resolution.height
+                + " W" + resolution.width() + " H" + resolution.height()
                 + " F" + (QUICK ? "1:1" : parameters.framerate)
                 + " Ip A1:1 C420p" + matrix.bitdepth + "\n";
 

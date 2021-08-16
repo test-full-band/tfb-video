@@ -31,8 +31,8 @@ import java.util.stream.Stream;
  */
 @TestInstance(PER_CLASS)
 public abstract class ChromaSubsamplingBase extends GeneratorBase<Args> {
-    private static final int CENTER_X = STD_2160p.width / 2;
-    private static final int CENTER_Y = STD_2160p.height / 2;
+    private static final int CENTER_X = STD_2160p.width() / 2;
+    private static final int CENTER_Y = STD_2160p.height() / 2;
     private static final double MAX_DISTANCE = CENTER_Y;
     private static final double RANGE = 32; // Fmax / Fmin
 

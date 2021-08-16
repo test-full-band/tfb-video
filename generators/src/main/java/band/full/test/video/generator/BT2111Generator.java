@@ -55,7 +55,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
             MuxerFactory muxer, String folder, String group) {
         super(factory, params, processor, muxer, folder, "BT2111", group);
 
-        if (width % STD_1080p.width != 0)
+        if (width % STD_1080p.width() != 0)
             throw new IllegalArgumentException(
                     "Unsupported resolution: " + resolution);
 
@@ -74,7 +74,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
                         "Unsupported transfer function: " + transfer);
         }
 
-        scale = width / STD_1080p.width;
+        scale = width / STD_1080p.width();
 
         wc = width / 8;
         wd = 206 * scale;

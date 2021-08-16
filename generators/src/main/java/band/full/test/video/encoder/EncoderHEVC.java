@@ -46,7 +46,7 @@ public class EncoderHEVC extends EncoderY4M {
                 "--keyint", Integer.toString(rate), "--no-open-gop", "--aud",
                 "--range", matrix.range == FULL ? "full" : "limited",
                 "--output-depth", Integer.toString(bitdepth)
-        ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
+        ).directory(dir).redirectOutput(INHERIT).redirectErrorStream(true);
         // TODO: passing/detecting chromaloc; avoid hardcoding
 
         var command = builder.command();

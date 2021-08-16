@@ -66,7 +66,7 @@ public class DecoderY4M implements AutoCloseable {
 
         var resolution = parameters.resolution;
 
-        int frameLength = resolution.width * resolution.height * 3
+        int frameLength = resolution.width() * resolution.height() * 3
                 / 2 * y4mBytesPerSample();
         frameBuffer = new byte[FRAME_HEADER.length + frameLength];
 
@@ -74,8 +74,8 @@ public class DecoderY4M implements AutoCloseable {
 
         var headers = readY4Mheader();
 
-        verify(headers, 'W', resolution.width);
-        verify(headers, 'H', resolution.height);
+        verify(headers, 'W', resolution.width());
+        verify(headers, 'H', resolution.height());
         verify(headers, 'F', QUICK ? "1:1" : parameters.framerate.toString());
         verify(headers, 'I', "p");
         verify(headers, 'A', "1:1");
@@ -168,10 +168,9 @@ public class DecoderY4M implements AutoCloseable {
         System.out.println("Frames read: " + framesRead);
 
         int framesSkipped = 0;
-        FrameBuffer fb = newFrameBuffer();
+        var fb = newFrameBuffer();
         while (read(fb)) {
-            // skip frames to the end of file
-            ++framesSkipped;
+            ++framesSkipped; // skip frames to the end of file
         }
 
         System.out.println("Frames skipped: " + framesSkipped);

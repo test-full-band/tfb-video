@@ -147,8 +147,8 @@ public abstract class CalibrateSaturationBase_CalMAN
         var white = primaries.white;
 
         return new CIExy(
-                white.x + (color.x - white.x) * saturation,
-                white.y + (color.y - white.y) * saturation);
+                white.x() + (color.x() - white.x()) * saturation,
+                white.y() + (color.y() - white.y()) * saturation);
     }
 
     private CIExy secondary(double... rgb) {

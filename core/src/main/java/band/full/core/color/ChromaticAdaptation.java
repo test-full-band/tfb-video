@@ -25,4 +25,6 @@ public class ChromaticAdaptation {
 
         return BRADFORD_MA_I.multiply(m).multiply(BRADFORD_MA);
     }
+
+    private ChromaticAdaptation() {}
 }

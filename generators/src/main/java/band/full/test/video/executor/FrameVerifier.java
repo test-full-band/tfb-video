@@ -37,46 +37,44 @@ public class FrameVerifier {
         verify(expected.V, actual.V, deviation, maxChromaMisses);
     }
 
-    public static void verifyRect(int[] yuvExpected,
-            FrameBuffer actual, Window window) {
-        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
-                actual, window.x, window.y, window.width, window.height);
+    public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
+            Window window) {
+        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2], actual,
+                window.x(), window.y(), window.width(), window.height());
     }
 
-    public static void verifyRect(int[] yuvExpected,
-            FrameBuffer actual, int x, int y, int w, int h) {
-        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
-                actual, x, y, w, h);
+    public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
+            int x, int y, int w, int h) {
+        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2], actual,
+                x, y, w, h);
     }
 
-    public static void verifyRect(int[] yuvExpected,
-            FrameBuffer actual, Window window,
-            int deviation, double maxMisses) {
-        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
-                actual, window.x, window.y, window.width, window.height,
+    public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
+            Window window, int deviation, double maxMisses) {
+        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2], actual,
+                window.x(), window.y(), window.width(), window.height(),
                 deviation, maxMisses);
     }
 
-    public static void verifyRect(int[] yuvExpected,
-            FrameBuffer actual, int x, int y, int w, int h,
-            int deviation, double maxMisses) {
+    public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
+            int x, int y, int w, int h, int deviation, double maxMisses) {
         verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
                 actual, x, y, w, h, deviation, maxMisses);
     }
 
-    public static void verifyRect(int[] yuvExpected,
-            FrameBuffer actual, Window window,
+    public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
+            Window window,
             int deviation, int maxLumaMisses, int maxChromaMisses) {
-        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
-                actual, window.x, window.y, window.width, window.height,
+        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2], actual,
+                window.x(), window.y(), window.width(), window.height(),
                 deviation, maxLumaMisses, maxChromaMisses);
     }
 
-    public static void verifyRect(int[] yuvExpected,
-            FrameBuffer actual, int x, int y, int w, int h,
+    public static void verifyRect(int[] yuvExpected, FrameBuffer actual,
+            int x, int y, int w, int h,
             int deviation, int maxLumaMisses, int maxChromaMisses) {
-        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2],
-                actual, x, y, w, h, deviation, maxLumaMisses, maxChromaMisses);
+        verifyRect(yuvExpected[0], yuvExpected[1], yuvExpected[2], actual,
+                x, y, w, h, deviation, maxLumaMisses, maxChromaMisses);
     }
 
     public static void verifyRect(int yExpected, int uExpected, int vExpected,

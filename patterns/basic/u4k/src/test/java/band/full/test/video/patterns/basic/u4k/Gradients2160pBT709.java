@@ -48,7 +48,7 @@ public class Gradients2160pBT709 {
     private static final int REMOVE_BITS = 2;
     private static final int REMOVE_BITS_RATIO = 1 << REMOVE_BITS;
     private static final int RANGE = 40;
-    private static final int WIDTH = STD_2160p.width;
+    private static final int WIDTH = STD_2160p.width();
     private static final double INT_DIVIDER = 1L << 32;
 
     private static final Random PRNG = new Random();

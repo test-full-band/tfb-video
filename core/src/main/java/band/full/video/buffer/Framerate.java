@@ -30,7 +30,7 @@ public class Framerate {
     private final String str;
     public final float rate;
 
-    Framerate(String str, float rate) {
+    private Framerate(String str, float rate) {
         this.str = str;
         this.rate = rate;
     }

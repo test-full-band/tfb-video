@@ -109,8 +109,8 @@ public abstract class GeneratorBase<A> {
         transfer = matrix.transfer;
         bitdepth = matrix.bitdepth;
 
-        width = resolution.width;
-        height = resolution.height;
+        width = resolution.width();
+        height = resolution.height();
 
         gop = round(framerate.rate);
     }
@@ -163,14 +163,15 @@ public abstract class GeneratorBase<A> {
      * placeholder digital silence audio track.
      */
     protected String silence(int seconds) {
-        String name = "target/silence" + seconds + "s.ac3";
+        String ac3 = "target/silence" + seconds + "s.ac3";
+        String log = "target/silence" + seconds + "s.log";
 
-        if (new File(name).exists()) return name;
+        if (new File(ac3).exists()) return ac3;
 
         var builder = new ProcessBuilder(
                 "ffmpeg", "-f", "s16le", "-ar", "48000", "-ac", "2",
-                "-i", "pipe:0", name
-        ).redirectOutput(INHERIT).redirectError(INHERIT);
+                "-i", "pipe:0", ac3
+        ).redirectOutput(INHERIT).redirectError(new File(log));
 
         try {
             System.out.println(builder.command());
@@ -193,7 +194,7 @@ public abstract class GeneratorBase<A> {
             throw new RuntimeException(e);
         }
 
-        return name;
+        return ac3;
     }
 
     public List<String> encode(File dir, A args)
@@ -235,12 +236,12 @@ public abstract class GeneratorBase<A> {
     }
 
     protected Label text(Window window, Color color, String text) {
-        return text(window.x, window.y, window.width, window.height,
+        return text(window.x(), window.y(), window.width(), window.height(),
                 color, text);
     }
 
     protected Label text(Window window, Color color, Font font, String text) {
-        return text(window.x, window.y, window.width, window.height,
+        return text(window.x(), window.y(), window.width(), window.height(),
                 color, font, text);
     }
 

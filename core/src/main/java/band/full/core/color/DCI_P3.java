@@ -36,4 +36,6 @@ public class DCI_P3 {
      */
     public static final Primaries PRIMARIES_D65 =
             new Primaries(12, CIE_R, CIE_G, CIE_B, CIE_D65);
+
+    private DCI_P3() {}
 }

@@ -15,11 +15,11 @@ public class FrameBuffer {
     public final ColorMatrix matrix;
 
     public FrameBuffer(Resolution r, ColorMatrix matrix) {
-        Y = new Plane(r.width, r.height, matrix.YMIN);
+        Y = new Plane(r.width(), r.height(), matrix.YMIN);
 
         // TODO Other than 4:2:0 subsampling
-        int wChroma = r.width / 2;
-        int hChroma = r.height / 2;
+        int wChroma = r.width() / 2;
+        int hChroma = r.height() / 2;
 
         U = new Plane(wChroma, hChroma, matrix.ACHROMATIC);
         V = new Plane(wChroma, hChroma, matrix.ACHROMATIC);
@@ -42,7 +42,8 @@ public class FrameBuffer {
     }
 
     public void fillRect(Window win, int[] yuv) {
-        fillRect(win.x, win.y, win.width, win.height, yuv[0], yuv[1], yuv[2]);
+        fillRect(win.x(), win.y(), win.width(), win.height(),
+                yuv[0], yuv[1], yuv[2]);
     }
 
     public void fillRect(int x, int y, int w, int h, int[] yuv) {
@@ -50,7 +51,8 @@ public class FrameBuffer {
     }
 
     public void fillRect(Window win, int yValue, int uValue, int vValue) {
-        fillRect(win.x, win.y, win.width, win.height, yValue, uValue, vValue);
+        fillRect(win.x(), win.y(), win.width(), win.height(),
+                yValue, uValue, vValue);
     }
 
     public void fillRect(int x, int y, int w, int h,

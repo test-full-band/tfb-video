@@ -39,7 +39,7 @@ public class EncoderAVC extends EncoderY4M {
                 "--transfer", getTransferString(transfer),
                 "--colormatrix", getColorMatrixString(colormatrix),
                 "--chromaloc", "2" // chroma_loc_info_present_flag
-        ).directory(dir).redirectOutput(INHERIT).redirectError(INHERIT);
+        ).directory(dir).redirectOutput(INHERIT).redirectErrorStream(true);
         // TODO: passing/detecting chromaloc; avoid hardcoding
 
         builder.command().addAll(parameters.encoderOptions);

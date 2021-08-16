@@ -6,17 +6,7 @@ import static java.lang.String.format;
  * @author Igor Malinin
  * @see <a href="https://en.wikipedia.org/wiki/Lab_color_space">Wikipedia</a>
  */
-public class CIELab {
-    public final double L;
-    public final double a;
-    public final double b;
-
-    public CIELab(double L, double a, double b) {
-        this.L = L;
-        this.a = a;
-        this.b = b;
-    }
-
+public record CIELab(double L, double a, double b) {
     public CIELab(double[] Lab) {
         this(Lab[0], Lab[1], Lab[2]);
     }
@@ -38,13 +28,6 @@ public class CIELab {
         return x > 6.0 / 29.0
                 ? x * x * x
                 : (108.0 / 841.0) * (x - (4.0 / 29.0));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || o.getClass() != getClass()) return false;
-        CIELab other = (CIELab) o;
-        return other.L == L && other.a == a && other.b == b;
     }
 
     @Override
