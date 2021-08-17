@@ -27,7 +27,7 @@ public class MuxerMP4Box extends Muxer {
         System.out.println();
         System.out.println(builder.command());
 
-        Process process = builder.start();
+        var process = builder.start();
 
         if (process.waitFor() != 0)
             throw new IOException("MP4Box finished with error: "

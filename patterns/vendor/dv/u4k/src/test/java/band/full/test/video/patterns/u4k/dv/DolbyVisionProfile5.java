@@ -25,9 +25,7 @@ import band.full.video.itu.TransferCharacteristics;
 import band.full.video.itu.h265.H265ReaderAnnexB;
 import band.full.video.itu.h265.H265WriterAnnexB;
 import band.full.video.itu.h265.NALU;
-import band.full.video.itu.h265.NALUnit;
 import band.full.video.itu.h265.SEI;
-import band.full.video.itu.h265.SEI.Message;
 import band.full.video.smpte.st2094.ST2094_10;
 
 import java.io.IOException;
@@ -65,7 +63,7 @@ public class DolbyVisionProfile5 {
         writer.write(reader.context, reader.read());
 
         for (int frame = 0;;) {
-            NALUnit nalu = reader.read();
+            var nalu = reader.read();
 
             // Insert RPU at the end of Access Unit
             if (nalu == null || nalu.type == AUD_NUT) {
@@ -78,7 +76,7 @@ public class DolbyVisionProfile5 {
             }
 
             if (nalu.type == PREFIX_SEI_NUT) {
-                Message msg = ((SEI) nalu).messages.get(0);
+                var msg = ((SEI) nalu).messages.get(0);
                 if (msg.payloadType == user_data_unregistered.code) {
                     if (fragment > 0) {
                         continue; // Write codec info only once!
