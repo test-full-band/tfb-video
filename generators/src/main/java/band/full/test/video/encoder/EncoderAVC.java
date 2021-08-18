@@ -48,111 +48,66 @@ public class EncoderAVC extends EncoderY4M {
     }
 
     public static String getColorPrimString(int code) {
-        switch (code) {
-            case 1:
-                return "bt709";
-            case 2:
-                return "undef";
-            case 4:
-                return "bt470m";
-            case 5:
-                return "bt470bg";
-            case 6:
-                return "smpte170m";
-            case 7:
-                return "smpte240m";
-            case 8:
-                return "film";
-            case 9:
-                return "bt2020";
-            case 10:
-                return "smpte428";
-            case 11:
-                return "smpte431";
-            case 12:
-                return "smpte432";
-            default:
-                throw new IllegalArgumentException(
-                        "Unknown colour_primaries: " + code);
-        }
+        return switch (code) {
+            case 1 -> "bt709";
+            case 2 -> "undef";
+            case 4 -> "bt470m";
+            case 5 -> "bt470bg";
+            case 6 -> "smpte170m";
+            case 7 -> "smpte240m";
+            case 8 -> "film";
+            case 9 -> "bt2020";
+            case 10 -> "smpte428";
+            case 11 -> "smpte431";
+            case 12 -> "smpte432";
+            default -> throw new IllegalArgumentException(
+                    "Unknown colour_primaries: " + code);
+        };
     }
 
     public static String getTransferString(int code) {
-        switch (code) {
-            case 1:
-                return "bt709";
-            case 2:
-                return "undef";
-            case 4:
-                return "bt470m";
-            case 5:
-                return "bt470bg";
-            case 6:
-                return "smpte170m";
-            case 7:
-                return "smpte240m";
-            case 8:
-                return "linear";
-            case 9:
-                return "log100";
-            case 10:
-                return "log316";
-            case 11:
-                return "iec61966-2-4";
-            case 12:
-                return "bt1361e";
-            case 13:
-                return "iec61966-2-1";
-            case 14:
-                return "bt2020-10";
-            case 15:
-                return "bt2020-12";
-            case 16:
-                return "smpte2084";
-            case 17:
-                return "smpte428";
-            case 18:
-                return "arib-std-b67";
-            default:
-                throw new IllegalArgumentException(
-                        "Unknown transfer_characteristic: " + code);
-        }
+        return switch (code) {
+            case 1 -> "bt709";
+            case 2 -> "undef";
+            case 4 -> "bt470m";
+            case 5 -> "bt470bg";
+            case 6 -> "smpte170m";
+            case 7 -> "smpte240m";
+            case 8 -> "linear";
+            case 9 -> "log100";
+            case 10 -> "log316";
+            case 11 -> "iec61966-2-4";
+            case 12 -> "bt1361e";
+            case 13 -> "iec61966-2-1";
+            case 14 -> "bt2020-10";
+            case 15 -> "bt2020-12";
+            case 16 -> "smpte2084";
+            case 17 -> "smpte428";
+            case 18 -> "arib-std-b67";
+            default -> throw new IllegalArgumentException(
+                    "Unknown transfer_characteristic: " + code);
+        };
     }
 
     public static String getColorMatrixString(int code) {
-        switch (code) {
-            case 0:
-                return "GBR";
-            case 1:
-                return "bt709";
-            case 2:
-                return "undef";
-            case 4:
-                return "fcc";
-            case 5:
-                return "bt470bg";
-            case 6:
-                return "smpte170m";
-            case 7:
-                return "smpte240m";
-            case 8:
-                return "YCgCo";
-            case 9:
-                return "bt2020nc";
-            case 10:
-                return "bt2020c";
-            case 11:
-                return "smpte2085";
-            case 12:
-                return "chroma-derived-nc";
-            case 13:
-                return "chroma-derived-c";
-            case 14:
-                return "ictcp";
-            default:
-                throw new IllegalArgumentException(
-                        "Unknown colour_matrix: " + code);
-        }
+        return switch (code) {
+            case 0 -> "GBR";
+            case 1 -> "bt709";
+            case 2 -> "undef";
+            case 4 -> "fcc";
+            case 5 -> "bt470bg";
+            case 6 -> "smpte170m";
+            case 7 -> "smpte240m";
+            case 8 -> "YCgCo";
+            case 9 -> "bt2020nc";
+            case 10 -> "bt2020c";
+            case 11 -> "smpte2085";
+            case 12 -> "chroma-derived-nc";
+            case 13 -> "chroma-derived-c";
+            case 14 -> "ictcp";
+            default -> throw new IllegalArgumentException(
+                    "Unknown colour_matrix: " + code);
+        };
     }
 
     @Override

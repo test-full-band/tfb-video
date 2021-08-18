@@ -88,13 +88,11 @@ public enum GeneratorFactory {
         PIPE, TEMP_FILE, KEEP_FILE;
 
         private static IO get(String property) {
-            switch (getProperty(property, "pipe")) {
-                case "temp":
-                    return TEMP_FILE;
-                case "keep":
-                    return KEEP_FILE;
-            }
-            return PIPE;
+            return switch (getProperty(property, "pipe")) {
+                case "temp" -> TEMP_FILE;
+                case "keep" -> KEEP_FILE;
+                default -> PIPE;
+            };
         }
 
         boolean isPipe() {

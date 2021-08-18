@@ -48,8 +48,7 @@ public class NalWriterAnnexBTest {
         }
 
         @Override
-        public void read(NalContext context, RbspReader in) {
-        }
+        public void read(NalContext context, RbspReader in) {}
 
         @Override
         public void write(NalContext context, RbspWriter out) {
@@ -57,8 +56,7 @@ public class NalWriterAnnexBTest {
         }
 
         @Override
-        public void print(NalContext context, RbspPrinter out) {
-        }
+        public void print(NalContext context, RbspPrinter out) {}
     }
 
     @Test

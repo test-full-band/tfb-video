@@ -18,8 +18,7 @@ public class ContentLightLevelInfo implements Payload {
     public int max_content_light_level; // u(16)
     public int max_pic_average_light_level; // u(16)
 
-    public ContentLightLevelInfo() {
-    }
+    public ContentLightLevelInfo() {}
 
     public ContentLightLevelInfo(NalContext context, RbspReader in, int size) {
         if (size != size(context)) throw new IllegalArgumentException();

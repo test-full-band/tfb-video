@@ -73,7 +73,6 @@ public class LinesGenerator extends GeneratorBase<Args> {
 
     @Override
     protected void verify(DecoderY4M d, Args args) {
-        d.read(fb -> {
-        });
+        d.read(fb -> {});
     }
 }

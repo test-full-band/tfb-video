@@ -41,8 +41,7 @@ public class ATSC1 implements T35, Payload {
     public short user_data_type_code; // u8
     public Payload user_data_type_structure;
 
-    public ATSC1() {
-    }
+    public ATSC1() {}
 
     public ATSC1(ST2094_10 dm) {
         user_data_type_code = 0x09;
@@ -62,17 +61,10 @@ public class ATSC1 implements T35, Payload {
     public void read(NalContext context, RbspReader in) {
         user_data_type_code = in.u8();
 
-        switch (user_data_type_code) {
-            case 0x09: {
-                user_data_type_structure = new ST2094_10(context, in);
-                break;
-            }
-
-            default:
-                int available = in.available() >> 3;
-                user_data_type_structure =
-                        new Payload.Bytes(in, available - 1);
-        }
+        user_data_type_structure = switch (user_data_type_code) {
+            case 0x09 -> new ST2094_10(context, in);
+            default -> new Payload.Bytes(in, (in.available() >> 3) - 1);
+        };
 
         int marker_bits = in.i8();
         if (marker_bits != -1) throw new IllegalStateException();
@@ -92,10 +84,10 @@ public class ATSC1 implements T35, Payload {
         out.raw("provider_code: 0x0031 [ATSC]");
         out.raw("user_identifier: 0x47413934 \"GA94\" [ATSC1]");
 
-        String udtc = toHexString((byte) user_data_type_code);
         if (user_data_type_code == 0x09) {
             out.raw("user_data_type_code: 0x09, SMPTE ST.2094-10");
         } else {
+            String udtc = toHexString((byte) user_data_type_code);
             out.raw("user_data_type_code: 0x" + udtc);
         }
 

@@ -15,15 +15,10 @@ public abstract class NALUnit extends NalUnit<H264Context> {
 
     @Override
     public boolean isZeroByteRequired() {
-        switch (type) {
-            case SPS_NUT:
-            case PPS_NUT:
-            case AUD_NUT:
-                return true;
-
-            default:
-                return false;
-        }
+        return switch (type) {
+            case SPS_NUT, PPS_NUT, AUD_NUT -> true;
+            default -> false;
+        };
     }
 
     @Override

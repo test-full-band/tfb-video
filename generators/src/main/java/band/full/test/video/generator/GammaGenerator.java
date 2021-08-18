@@ -40,7 +40,6 @@ public class GammaGenerator extends GeneratorBase<Void> {
 
     @Override
     protected void verify(DecoderY4M d, Void args) {
-        d.read(fb -> {
-        });
+        d.read(fb -> {});
     }
 }

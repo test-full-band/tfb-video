@@ -27,8 +27,7 @@ public class RPU implements Structure<NalContext> {
 
     public VdrDmDataPayload dm;
 
-    public RPU() {
-    }
+    public RPU() {}
 
     public RPU(RpuHeader header, RpuDataMapping mapping, VdrDmDataPayload dm) {
         this(header, mapping, null, dm);

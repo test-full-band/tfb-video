@@ -72,11 +72,9 @@ public abstract class NalWriterAnnexB<C extends NalContext,
 
         int end = pos;
         for (; count > 0;) {
-            while (bytes[--pos] != 0x00 || (bytes[pos + 1] & 0xFC) != 0) {
-            }
+            while (bytes[--pos] != 0x00 || (bytes[pos + 1] & 0xFC) != 0) {}
             int z = pos + 1, n = 1;
-            for (; bytes[--pos] == 0x00; n++) {
-            }
+            for (; bytes[--pos] == 0x00; n++) {}
             ++pos;
 
             if (n > 1) {

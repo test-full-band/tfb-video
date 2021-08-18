@@ -29,8 +29,7 @@ public class PicTiming implements Payload<H265Context> {
     public int[] num_nalus_in_du_minus1;
     public int[] du_cpb_removal_delay_increment_minus1; // u(v)
 
-    public PicTiming() {
-    }
+    public PicTiming() {}
 
     public PicTiming(H265Context context, RbspReader in, int size) {
         int start = in.available();

@@ -16,16 +16,10 @@ public abstract class NALUnit extends NalUnit<H265Context> {
 
     @Override
     public boolean isZeroByteRequired() {
-        switch (type) {
-            case VPS_NUT:
-            case SPS_NUT:
-            case PPS_NUT:
-            case AUD_NUT:
-                return true;
-
-            default:
-                return false;
-        }
+        return switch (type) {
+            case VPS_NUT, SPS_NUT, PPS_NUT, AUD_NUT -> true;
+            default -> false;
+        };
     }
 
     @Override
@@ -35,8 +29,8 @@ public abstract class NALUnit extends NalUnit<H265Context> {
 
     @Override
     public String getHeaderParamsString() {
-        return "Layer " + nuh_layer_id +
-                ", TemporalID " + (nuh_temporal_id_plus1 - 1);
+        return "Layer " + nuh_layer_id
+                + ", TemporalID " + (nuh_temporal_id_plus1 - 1);
     }
 
     public static NALUnit create(H265Context context, RbspReader in) {

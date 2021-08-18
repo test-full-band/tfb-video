@@ -207,36 +207,15 @@ public class VdrDmDataPayload implements Structure<NalContext> {
                 int length = in.ue();
                 short level = in.u8();
 
-                DisplayManagementBlock block;
-                switch (level) {
-                    case ContentRange.LEVEL:
-                        block = new ContentRange();
-                        break;
-
-                    case TrimPass.LEVEL:
-                        block = new TrimPass();
-                        break;
-
-                    case ContentRangeOffsets.LEVEL:
-                        block = new ContentRangeOffsets();
-                        break;
-
-                    case L4.LEVEL:
-                        block = new L4();
-                        break;
-
-                    case ActiveArea.LEVEL:
-                        block = new ActiveArea();
-                        break;
-
-                    case ContentLightLevel.LEVEL:
-                        block = new ContentLightLevel();
-                        break;
-
-                    default:
-                        block = new Reserved(length, level);
-                        break;
-                }
+                DisplayManagementBlock block = switch (level) {
+                    case ContentRange.LEVEL -> new ContentRange();
+                    case TrimPass.LEVEL -> new TrimPass();
+                    case ContentRangeOffsets.LEVEL -> new ContentRangeOffsets();
+                    case L4.LEVEL -> new L4();
+                    case ActiveArea.LEVEL -> new ActiveArea();
+                    case ContentLightLevel.LEVEL -> new ContentLightLevel();
+                    default -> new Reserved(length, level);
+                };
 
                 if (length != block.length)
                     throw new IllegalStateException();
