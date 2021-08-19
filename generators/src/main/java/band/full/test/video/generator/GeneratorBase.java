@@ -144,7 +144,7 @@ public abstract class GeneratorBase<A> {
             String mp4 = muxer.create(dir, pattern, factory.brand)
                     .mux(pattern + factory.suffix, audio);
 
-            // joined.delete();
+            joined.delete();
             inputs.stream().distinct()
                     .forEach(input -> new File(dir, input).delete());
 
