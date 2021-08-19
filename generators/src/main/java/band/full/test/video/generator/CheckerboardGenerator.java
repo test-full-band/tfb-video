@@ -18,20 +18,11 @@ import java.util.stream.Stream;
  * @author Igor Malinin
  */
 public class CheckerboardGenerator extends GeneratorBase<Args> {
-    public static class Args {
-        public final String suffix;
-        public final int yMin, yMax;
-
-        public Args(String suffix, int yMin, int yMax) {
-            this.suffix = suffix;
-            this.yMin = yMin;
-            this.yMax = yMax;
-        }
-
+    public record Args(String suffix, int yMin, int yMax) {
         @Override
         public String toString() {
             return format("%s %03d-%03d",
-                    suffix.length() == 0 ? "Nominal" : suffix,
+                    suffix.isEmpty() ? "Nominal" : suffix,
                     yMin, yMax);
         }
     }

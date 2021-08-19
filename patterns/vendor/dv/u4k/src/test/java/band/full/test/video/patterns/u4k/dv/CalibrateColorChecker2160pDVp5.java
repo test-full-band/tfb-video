@@ -22,7 +22,7 @@ public class CalibrateColorChecker2160pDVp5 extends CalibrateColorCheckerBase {
     private static final RpuFactory<CalibratePatchesBase.Args> RPU =
             (args, fragment, frame) -> new RPU(
                     rpuHeader(), rpuDataMappingNominal(),
-                    dmDataPayload(dmContentRangeSDR100(args.window / 100.0)));
+                    dmDataPayload(dmContentRangeSDR100(args.window() / 100.0)));
 
     public CalibrateColorChecker2160pDVp5() {
         super(HEVC, DV_P5, processor(RPU), muxer(), "UHD4K/DVp5", "U4K_DVp5");

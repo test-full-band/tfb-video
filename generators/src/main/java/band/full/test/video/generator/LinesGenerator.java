@@ -16,15 +16,9 @@ import java.util.stream.Stream;
  * @author Igor Malinin
  */
 public class LinesGenerator extends GeneratorBase<Args> {
-    public static class Args {
-        public final String suffix;
-        public final boolean vertical;
-        public final int width;
-
+    public record Args(String suffix, boolean vertical, int width) {
         public Args(boolean vertical, int width) {
-            suffix = (vertical ? "V" : "H") + width;
-            this.vertical = vertical;
-            this.width = width;
+            this((vertical ? "V" : "H") + width, vertical, width);
         }
 
         @Override

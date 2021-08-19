@@ -238,8 +238,7 @@ public class BT2111Generator extends GeneratorBase<Void> {
     private String transferLabel() {
         if (transfer instanceof ST2084)
             return bitdepth == 10 && primaries == BT2020.PRIMARIES
-                    ? "HDR10"
-                    : transfer.toString();
+                    ? "HDR10" : transfer.toString();
 
         String label = transfer.toString();
         if (bitdepth > 8) {

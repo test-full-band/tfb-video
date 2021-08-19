@@ -57,24 +57,8 @@ import javafx.scene.text.TextFlow;
  */
 @TestInstance(PER_CLASS)
 public abstract class CalibratePatchesBase extends GeneratorBase<Args> {
-    public static class Args {
-        public final String file;
-        public final String sequence;
-        public final String set;
-        public final String label;
-        public final int window; // Use 0 for 100% screen fill!
-        public final int[] yuv;
-
-        public Args(String file, String sequence, String set,
-                String label, int window, int[] yuv) {
-            this.file = file;
-            this.sequence = sequence;
-            this.set = set;
-            this.label = label;
-            this.window = window;
-            this.yuv = yuv;
-        }
-
+    public record Args(String file, String sequence, String set,
+            String label, int window, int[] yuv) {
         public Args(String file, String sequence, String set, String label,
                 int window, int y, int u, int v) {
             this(file, sequence, set, label, window, new int[] {y, u, v});

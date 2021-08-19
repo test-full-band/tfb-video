@@ -87,28 +87,28 @@ public abstract class CalibrateGrayscaleBase extends CalibratePatchesBase {
 
     @Override
     protected String getBottomCenterText(Args args) {
-        return "Code " + args.yuv[0];
+        return "Code " + args.yuv()[0];
     }
 
     @Override
     protected String getFolder(Args args) {
-        String suffix = args.window == 0
-                ? format("/Fill/%s", args.file)
-                : format("/Win%02d/%s", args.window, args.file);
+        String suffix = args.window() == 0
+                ? format("/Fill/%s", args.file())
+                : format("/Win%02d/%s", args.window(), args.file());
 
         return factory.folder + '/' + folder + suffix;
     }
 
     @Override
     protected String getPattern(Args args) {
-        StringBuilder buf = new StringBuilder(args.file);
-        if (args.window != 0) {
-            buf.append(args.window);
+        StringBuilder buf = new StringBuilder(args.file());
+        if (args.window() != 0) {
+            buf.append(args.window());
         }
 
         return buf.append(PG_SEPARATOR).append(group)
-                .append('-').append(args.sequence)
-                .append(getFormatSuffix(args.yuv[0])).toString();
+                .append('-').append(args.sequence())
+                .append(getFormatSuffix(args.yuv()[0])).toString();
     }
 
     protected String getFormatSuffix(int y) {

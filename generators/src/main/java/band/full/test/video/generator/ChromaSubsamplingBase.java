@@ -36,15 +36,7 @@ public abstract class ChromaSubsamplingBase extends GeneratorBase<Args> {
     private static final double MAX_DISTANCE = CENTER_Y;
     private static final double RANGE = 32; // Fmax / Fmin
 
-    public static class Args {
-        public final String suffix;
-        public final Consumer<EncoderY4M> generator;
-
-        public Args(String suffix, Consumer<EncoderY4M> generator) {
-            this.suffix = suffix;
-            this.generator = generator;
-        }
-
+    public record Args(String suffix, Consumer<EncoderY4M> generator) {
         @Override
         public String toString() {
             return suffix;

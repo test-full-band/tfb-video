@@ -28,17 +28,7 @@ import java.util.stream.Stream;
  * @author Igor Malinin
  */
 public abstract class Quants3DBase extends GeneratorBase<Args> {
-    public static class Args {
-        public final String speed;
-        public final int frames;
-        public final int lsb;
-
-        public Args(String speed, int frames, int lsb) {
-            this.speed = speed;
-            this.frames = frames;
-            this.lsb = lsb;
-        }
-
+    public record Args(String speed, int frames, int lsb) {
         @Override
         public String toString() {
             return format("speed: %s, frames: %d, lsb: %d", speed, frames, lsb);

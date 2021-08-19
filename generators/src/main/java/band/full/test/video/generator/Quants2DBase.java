@@ -50,17 +50,7 @@ public abstract class Quants2DBase extends GeneratorBase<Args> {
     public static final int ROWS = 15;
     public static final int COLS = 30;
 
-    public static class Args {
-        public final String suffix;
-        public final int yMin;
-        public final boolean redChroma;
-
-        public Args(String suffix, int yMin, boolean redChroma) {
-            this.suffix = suffix;
-            this.yMin = yMin;
-            this.redChroma = redChroma;
-        }
-
+    public record Args(String suffix, int yMin, boolean redChroma) {
         @Override
         public String toString() {
             return format("Y%03d%s %s",

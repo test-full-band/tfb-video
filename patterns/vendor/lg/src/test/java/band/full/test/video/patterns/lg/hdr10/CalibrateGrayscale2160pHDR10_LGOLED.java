@@ -83,7 +83,7 @@ public class CalibrateGrayscale2160pHDR10_LGOLED {
 
         @Override
         protected String getTopLeftText(Args args) {
-            String suffix = version == 6 && args.sequence.equals("$$")
+            String suffix = version == 6 && args.sequence().equals("$$")
                     ? "; set TV to max of 540 nit!"
                     : "";
 
@@ -107,7 +107,7 @@ public class CalibrateGrayscale2160pHDR10_LGOLED {
             String fileSuffix = version == 6 ? "" : format("_%d", display);
 
             return format("GrayHDR%s_LGOLED%d%s-%s-Y%03d", fileRange,
-                    version, fileSuffix, args.sequence, args.yuv[0]);
+                    version, fileSuffix, args.sequence(), args.yuv()[0]);
         }
     }
 
