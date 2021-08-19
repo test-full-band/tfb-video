@@ -71,14 +71,13 @@ public class RpuDataNLQ extends VdrRpuDataPayload {
         param.f_vdr_in_max = readCoefU(header, in);
 
         switch (header.nlq_method_idc) {
-            case NLQ_LINEAR_DZ:
+            case NLQ_LINEAR_DZ -> {
                 param.f_linear_deadzone_slope = readCoefU(header, in);
                 param.f_linear_deadzone_threshold = readCoefU(header, in);
-                break;
+            }
 
-            default:
-                throw new IllegalStateException(
-                        "nlq_method_idc: " + header.nlq_method_idc);
+            default -> throw new IllegalStateException(
+                    "nlq_method_idc: " + header.nlq_method_idc);
         }
     }
 
@@ -115,14 +114,13 @@ public class RpuDataNLQ extends VdrRpuDataPayload {
         writeCoefU(header, out, param.f_vdr_in_max);
 
         switch (header.nlq_method_idc) {
-            case NLQ_LINEAR_DZ:
+            case NLQ_LINEAR_DZ -> {
                 writeCoefU(header, out, param.f_linear_deadzone_slope);
                 writeCoefU(header, out, param.f_linear_deadzone_threshold);
-                break;
+            }
 
-            default:
-                throw new IllegalStateException(
-                        "nlq_method_idc: " + header.nlq_method_idc);
+            default -> throw new IllegalStateException(
+                    "nlq_method_idc: " + header.nlq_method_idc);
         }
     }
 
@@ -173,18 +171,16 @@ public class RpuDataNLQ extends VdrRpuDataPayload {
         printCoefU(header, out, "vdr_in_max_int", param.f_vdr_in_max);
 
         switch (header.nlq_method_idc) {
-            case NLQ_LINEAR_DZ:
+            case NLQ_LINEAR_DZ -> {
                 printCoefU(header, out, "linear_deadzone_slope",
                         param.f_linear_deadzone_slope);
 
                 printCoefU(header, out, "linear_deadzone_threshold",
                         param.f_linear_deadzone_threshold);
+            }
 
-                break;
-
-            default:
-                throw new IllegalStateException(
-                        "nlq_method_idc: " + header.nlq_method_idc);
+            default -> throw new IllegalStateException(
+                    "nlq_method_idc: " + header.nlq_method_idc);
         }
     }
 }

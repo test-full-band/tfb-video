@@ -85,7 +85,7 @@ public class RpuDataMapping extends VdrRpuDataPayload {
         Param param = rpu_data_mapp_ng_param[c][i];
 
         switch (mapping_idc[c][i]) {
-            case MAPPING_POLYNOMIAL:
+            case MAPPING_POLYNOMIAL -> {
                 param.poly_order_minus1 = in.ue();
                 if (param.poly_order_minus1 == 0) {
                     param.linear_interp_flag = in.u1();
@@ -105,9 +105,9 @@ public class RpuDataMapping extends VdrRpuDataPayload {
                         param.f_poly_coef[p] = readCoefS(header, in);
                     }
                 } // Non-linear
-                break;
+            }
 
-            case MAPPING_MMR:
+            case MAPPING_MMR -> {
                 param.mmr_order_minus1 = in.u2();
 
                 param.f_mmr_constant = readCoefS(header, in);
@@ -117,11 +117,10 @@ public class RpuDataMapping extends VdrRpuDataPayload {
                 for (int p = 0; p <= mmr_order; p++) {
                     param.f_mmr_coef[p] = readCoefS(header, in);
                 }
-                break;
+            }
 
-            default:
-                throw new IllegalStateException(
-                        "mapping_idc: " + mapping_idc);
+            default -> throw new IllegalStateException(
+                    "mapping_idc: " + mapping_idc);
         }
     }
 
@@ -156,7 +155,7 @@ public class RpuDataMapping extends VdrRpuDataPayload {
         Param param = rpu_data_mapp_ng_param[c][i];
 
         switch (mapping_idc[c][i]) {
-            case MAPPING_POLYNOMIAL:
+            case MAPPING_POLYNOMIAL -> {
                 out.ue(param.poly_order_minus1);
                 if (param.poly_order_minus1 == 0) {
                     out.u1(param.linear_interp_flag);
@@ -176,9 +175,9 @@ public class RpuDataMapping extends VdrRpuDataPayload {
                         writeCoefS(header, out, param.f_poly_coef[p]);
                     }
                 } // Non-linear
-                break;
+            }
 
-            case MAPPING_MMR:
+            case MAPPING_MMR -> {
                 out.u2(param.mmr_order_minus1);
 
                 writeCoefS(header, out, param.f_mmr_constant);
@@ -187,10 +186,10 @@ public class RpuDataMapping extends VdrRpuDataPayload {
                 for (int p = 0; p <= mmr_order; p++) {
                     writeCoefS(header, out, param.f_mmr_coef[p]);
                 }
-                break;
+            }
 
-            default:
-                throw new IllegalStateException("mapping_idc: " + mapping_idc);
+            default -> throw new IllegalStateException(
+                    "mapping_idc: " + mapping_idc);
         }
     }
 
@@ -238,7 +237,7 @@ public class RpuDataMapping extends VdrRpuDataPayload {
         Param param = rpu_data_mapp_ng_param[c][i];
 
         switch (mapping_idc[c][i]) {
-            case MAPPING_POLYNOMIAL:
+            case MAPPING_POLYNOMIAL -> {
                 out.ue("poly_order_minus1", param.poly_order_minus1);
                 if (param.poly_order_minus1 == 0) {
                     out.u1("linear_interp_flag", param.linear_interp_flag);
@@ -261,9 +260,9 @@ public class RpuDataMapping extends VdrRpuDataPayload {
                                 param.f_poly_coef[p]);
                     }
                 } // Non-linear
-                break;
+            }
 
-            case MAPPING_MMR:
+            case MAPPING_MMR -> {
                 out.u2("mmr_order_minus1", param.mmr_order_minus1);
 
                 printCoefS(header, out, "mmr_constant", param.f_mmr_constant);
@@ -273,10 +272,10 @@ public class RpuDataMapping extends VdrRpuDataPayload {
                     printCoefS(header, out, "mmr_coef[" + p + "]",
                             param.f_mmr_coef[p]);
                 }
-                break;
+            }
 
-            default:
-                throw new IllegalStateException("mapping_idc: " + mapping_idc);
+            default -> throw new IllegalStateException(
+                    "mapping_idc: " + mapping_idc);
         }
     }
 }

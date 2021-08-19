@@ -137,36 +137,33 @@ public class SEI extends NALUnit {
         public void read(H265Context context, RbspReader in) {
             payloadType = readValue(in);
             int size = readValue(in);
+
             PayloadType type = PayloadType.get(payloadType);
-            if (type != null) {
-                switch (type) {
+            if (type == null) {
+                payload = new Payload.Bytes(in, size);
+            } else {
+                payload = switch (type) {
                     case pic_timing:
                         if (context.sps == null) {
-                            break; // will not be able to parse it
+                            // will not be able to parse it
+                            yield new Payload.Bytes(in, size);
                         }
-                        payload = new PicTiming(context, in, size);
-                        return;
+                        yield new PicTiming(context, in, size);
 
                     case user_data_registered_itu_t_t35:
-                        payload = new UserDataRegisteredT35(
-                                context, in, size);
-                        return;
+                        yield new UserDataRegisteredT35(context, in, size);
 
                     case mastering_display_colour_volume:
-                        payload = new MasteringDisplayColourVolume(
+                        yield new MasteringDisplayColourVolume(
                                 context, in, size);
-                        return;
 
                     case content_light_level_info:
-                        payload = new ContentLightLevelInfo(
-                                context, in, size);
-                        return;
+                        yield new ContentLightLevelInfo(context, in, size);
 
-                    default: // default
-                }
+                    default:
+                        yield new Payload.Bytes(in, size);
+                };
             }
-
-            payload = new Payload.Bytes(in, size);
         }
 
         int readValue(RbspReader in) {

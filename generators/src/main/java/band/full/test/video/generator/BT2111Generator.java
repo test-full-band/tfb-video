@@ -59,20 +59,18 @@ public class BT2111Generator extends GeneratorBase<Void> {
             throw new IllegalArgumentException(
                     "Unsupported resolution: " + resolution);
 
-        switch (transfer.code()) {
+        alpha = switch (transfer.code()) {
             case 2: // DV PQ
             case 16: // PQ
-                alpha = 0.58;
-                break;
+                yield 0.58;
 
             case 18: // HLG
-                alpha = 0.75;
-                break;
+                yield 0.75;
 
             default:
                 throw new IllegalArgumentException(
                         "Unsupported transfer function: " + transfer);
-        }
+        };
 
         scale = width / STD_1080p.width();
 

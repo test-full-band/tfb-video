@@ -79,7 +79,7 @@ public class RPU implements Structure<NalContext> {
         header.read(null, in);
 
         switch (header.rpu_type) {
-            case 2:
+            case 2 -> {
                 if (!header.use_prev_vdr_rpu) {
                     mapping = new RpuDataMapping();
                     mapping.read(header, in);
@@ -93,11 +93,10 @@ public class RPU implements Structure<NalContext> {
                         dm.read(header, in);
                     }
                 }
-                break;
+            }
 
-            default:
-                throw new IllegalStateException(
-                        "Unknown RPU type: " + header.rpu_type);
+            default -> throw new IllegalStateException(
+                    "Unknown RPU type: " + header.rpu_type);
         }
 
         while (!in.isByteAligned())
@@ -109,7 +108,7 @@ public class RPU implements Structure<NalContext> {
         header.write(null, out);
 
         switch (header.rpu_type) {
-            case 2:
+            case 2 -> {
                 if (!header.use_prev_vdr_rpu) {
                     mapping.write(header, out);
                     if ((header.rpu_format & 0x700) == 0
@@ -120,11 +119,10 @@ public class RPU implements Structure<NalContext> {
                         dm.write(header, out);
                     }
                 }
-                break;
+            }
 
-            default:
-                throw new IllegalStateException(
-                        "Unknown RPU type: " + header.rpu_type);
+            default -> throw new IllegalStateException(
+                    "Unknown RPU type: " + header.rpu_type);
         }
 
         while (!out.isByteAligned()) {
@@ -137,7 +135,7 @@ public class RPU implements Structure<NalContext> {
         header.print(null, out);
 
         switch (header.rpu_type) {
-            case 2:
+            case 2 -> {
                 if (!header.use_prev_vdr_rpu) {
                     mapping.print(header, out);
                     if ((header.rpu_format & 0x700) == 0
@@ -148,11 +146,10 @@ public class RPU implements Structure<NalContext> {
                         dm.print(header, out);
                     }
                 }
-                break;
+            }
 
-            default:
-                throw new IllegalStateException(
-                        "Unknown RPU type: " + header.rpu_type);
+            default -> throw new IllegalStateException(
+                    "Unknown RPU type: " + header.rpu_type);
         }
     }
 }

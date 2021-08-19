@@ -29,7 +29,7 @@ public class RpuData implements Structure<NalContext> {
         header.read(null, in);
 
         switch (header.rpu_type) {
-            case 2:
+            case 2 -> {
                 if (!header.use_prev_vdr_rpu) {
                     mapping = new RpuDataMapping();
                     mapping.read(header, in);
@@ -44,11 +44,10 @@ public class RpuData implements Structure<NalContext> {
                         dm.read(header, in);
                     }
                 }
-                break;
+            }
 
-            default:
-                throw new IllegalStateException(
-                        "Unknown RPU type: " + header.rpu_type);
+            default -> throw new IllegalStateException(
+                    "Unknown RPU type: " + header.rpu_type);
         }
 
         while (!in.isByteAligned())
