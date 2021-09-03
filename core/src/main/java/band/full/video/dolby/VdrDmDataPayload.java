@@ -13,7 +13,7 @@ import band.full.video.smpte.st2094.ST2094_10.ContentLightLevel;
 import band.full.video.smpte.st2094.ST2094_10.ContentRange;
 import band.full.video.smpte.st2094.ST2094_10.ContentRangeOffsets;
 import band.full.video.smpte.st2094.ST2094_10.DisplayManagementBlock;
-import band.full.video.smpte.st2094.ST2094_10.L4;
+import band.full.video.smpte.st2094.ST2094_10.TemporallyFilteredImageLevel;
 import band.full.video.smpte.st2094.ST2094_10.Reserved;
 import band.full.video.smpte.st2094.ST2094_10.TrimPass;
 
@@ -211,7 +211,7 @@ public class VdrDmDataPayload implements Structure<NalContext> {
                     case ContentRange.LEVEL -> new ContentRange();
                     case TrimPass.LEVEL -> new TrimPass();
                     case ContentRangeOffsets.LEVEL -> new ContentRangeOffsets();
-                    case L4.LEVEL -> new L4();
+                    case TemporallyFilteredImageLevel.LEVEL -> new TemporallyFilteredImageLevel();
                     case ActiveArea.LEVEL -> new ActiveArea();
                     case ContentLightLevel.LEVEL -> new ContentLightLevel();
                     default -> new Reserved(length, level);

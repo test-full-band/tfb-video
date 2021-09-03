@@ -19,6 +19,9 @@ import band.full.video.itu.nal.Structure;
  * @see <a href=
  *      "https://www.atsc.org/wp-content/uploads/2017/05/A341-2018-Video-HEVC-1.pdf">
  *      A/341:2018</a> Video - HEVC
+ * @see <a href=
+ *      https://www.etsi.org/deliver/etsi_ts/103500_103599/103572/01.03.01_60/ts_103572v010301p.pdf">
+ *      ETSI TS 103 572</a> V1.3.1 (2021-08)
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class ST2094_10 implements Payload {
@@ -82,7 +85,11 @@ public class ST2094_10 implements Payload {
         }
     }
 
-    /** Level 2 Metadata – Trim Pass */
+    /**
+     * Level 2 Metadata – Trim Pass
+     * <p>
+     * DV: CMv2.9 L2 Trim Controls
+     */
     public static class TrimPass extends DisplayManagementBlock {
         public static final short LEVEL = 2;
 
@@ -200,35 +207,36 @@ public class ST2094_10 implements Payload {
 
     // (DV, Non-ST.2094-10)
     /** Level 4 Metadata - unknown */
-    public static class L4 extends DisplayManagementBlock {
+    public static class TemporallyFilteredImageLevel
+            extends DisplayManagementBlock {
         public static final short LEVEL = 4;
 
-        public short f1_PQ;
-        public short f2_PQ;
+        public short TF_PQ_mean;
+        public short TF_PQ_stdev;
 
-        public L4() {
+        public TemporallyFilteredImageLevel() {
             super(3, LEVEL);
         }
 
         @Override
         public void read(NalContext context, RbspReader in) {
-            f1_PQ = in.u12();
-            f2_PQ = in.u12();
+            TF_PQ_mean = in.u12();
+            TF_PQ_stdev = in.u12();
         }
 
         @Override
         public void write(NalContext context, RbspWriter out) {
-            out.u12(f1_PQ);
-            out.u12(f2_PQ);
+            out.u12(TF_PQ_mean);
+            out.u12(TF_PQ_stdev);
         }
 
         @Override
         public void print(NalContext context, RbspPrinter out) {
-            out.raw("Level " + level + " - unknown");
+            out.raw("Level " + level + " - Temporally Filtered Image Level");
 
             out.enter();
-            out.u12("f1", f1_PQ);
-            out.u12("f2", f2_PQ);
+            out.u12("TF_PQ_mean", TF_PQ_mean);
+            out.u12("TF_PQ_stdev", TF_PQ_stdev);
             out.leave();
         }
     }
@@ -317,6 +325,9 @@ public class ST2094_10 implements Payload {
             out.leave();
         }
     }
+
+    // (DV, Non-ST.2094-10)
+    // ** Level 8 Metadata - DV: CMv4 L8 Trim Controls */
 
     public static class Reserved extends DisplayManagementBlock {
         public byte[] bytes;
@@ -407,7 +418,7 @@ public class ST2094_10 implements Payload {
                         case ContentRange.LEVEL -> new ContentRange();
                         case TrimPass.LEVEL -> new TrimPass();
                         case ContentRangeOffsets.LEVEL -> new ContentRangeOffsets();
-                        case L4.LEVEL -> new L4();
+                        case TemporallyFilteredImageLevel.LEVEL -> new TemporallyFilteredImageLevel();
                         case ActiveArea.LEVEL -> new ActiveArea();
                         case ContentLightLevel.LEVEL -> new ContentLightLevel();
                         default -> new Reserved(length, level);
