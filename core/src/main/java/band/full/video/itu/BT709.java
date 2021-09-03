@@ -1,7 +1,6 @@
 package band.full.video.itu;
 
-import static band.full.core.color.Primaries.sRGB;
-
+import band.full.core.color.CIExy;
 import band.full.core.color.Primaries;
 
 /**
@@ -24,7 +23,11 @@ public class BT709 {
      * <li>Annex B of SMPTE RP 177 (1993)
      * </ul>
      */
-    public static final Primaries PRIMARIES = sRGB;
+    public static final Primaries PRIMARIES = new Primaries(1,
+            new CIExy(0.640, 0.330),
+            new CIExy(0.300, 0.600),
+            new CIExy(0.150, 0.060),
+            new CIExy(0.3127, 0.3290));
 
     /**
      * BT.709 only defines low resolution rounded values, use precise definition

@@ -124,15 +124,19 @@ public final class Matrix3x3 {
     }
 
     public Matrix3x3 multiplyColumns(double[] multipliers) {
+        return multiplyColumns(multipliers[0], multipliers[1], multipliers[2]);
+    }
+
+    public Matrix3x3 multiplyColumns(double m0, double m1, double m2) {
         double[][] m = new double[3][];
 
         for (int y = 0; y < 3; y++) {
             double[] dstRow = m[y] = new double[3];
             double[] srcRow = values[y];
 
-            for (int x = 0; x < 3; x++) {
-                dstRow[x] = srcRow[x] * multipliers[x];
-            }
+            dstRow[0] = srcRow[0] * m0;
+            dstRow[1] = srcRow[1] * m1;
+            dstRow[2] = srcRow[2] * m2;
         }
 
         return new Matrix3x3(m);

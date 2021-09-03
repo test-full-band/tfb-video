@@ -1,9 +1,9 @@
 package band.full.core.color;
 
-import static band.full.core.color.Primaries.sRGB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import band.full.video.itu.BT2020;
+import band.full.video.itu.BT709;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +18,7 @@ public class TestPrimaries {
 
     @Test
     public void checkRGBtoXYZ() {
-        var RGBtoXYZ = sRGB.RGBtoXYZ;
+        var RGBtoXYZ = BT709.PRIMARIES.RGBtoXYZ;
 
         assertEquals(0.4124, RGBtoXYZ.get(0, 0), 1e-4);
         assertEquals(0.3576, RGBtoXYZ.get(0, 1), 1e-4);
@@ -35,7 +35,7 @@ public class TestPrimaries {
 
     @Test
     public void checkXYZtoRGB() {
-        var XYZtoRGB = sRGB.XYZtoRGB;
+        var XYZtoRGB = BT709.PRIMARIES.XYZtoRGB;
 
         assertEquals(3.241, XYZtoRGB.get(0, 0), 1e-4);
         assertEquals(-1.54, XYZtoRGB.get(0, 1), 1e-2);

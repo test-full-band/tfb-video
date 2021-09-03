@@ -1,5 +1,6 @@
 package band.full.test.video.executor;
 
+import static band.full.core.ArrayMath.multiply;
 import static band.full.test.video.executor.FxDisplay.runAndWait;
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 import static java.lang.Math.max;
@@ -10,6 +11,7 @@ import band.full.core.Dither;
 import band.full.core.Quantizer;
 import band.full.video.buffer.FrameBuffer;
 import band.full.video.buffer.Plane;
+import band.full.video.itu.ColorMatrix;
 
 import javax.imageio.ImageIO;
 
@@ -17,7 +19,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -29,10 +30,6 @@ public class FxImage {
     @FunctionalInterface
     public interface Transform {
         public int transform(double[] rgb);
-    }
-
-    public static void overlay(Supplier<Parent> supplier, FrameBuffer fb) {
-        overlay(supplier.get(), fb);
     }
 
     public static void overlay(Parent parent, FrameBuffer fb) {
@@ -60,11 +57,23 @@ public class FxImage {
      * used when applying non fully transparent overlay data.
      */
     public static void overlay(Image image, FrameBuffer fb) {
+        overlay(image, fb.matrix, Quantizer::round, fb);
+    }
+
+    public static void overlay(Image image, ColorMatrix matrix, Quantizer q,
+            FrameBuffer fb) {
         var reader = image.getPixelReader();
 
         Plane Y = fb.Y, U = fb.U, V = fb.V;
 
-        var yuv = new double[3]; // reusable buffer
+        double srcPeak = matrix.transfer.getNominalDisplayPeakLuminance();
+        double dstPeak = fb.matrix.transfer.getNominalDisplayPeakLuminance();
+        double factor = srcPeak / dstPeak;
+
+        // reusable buffers
+        var rgbImg = new double[3];
+        var rgbBuf = new double[3];
+        var yuv = new double[3];
 
         for (int y = 0; y < fb.Y.height; y++) {
             boolean hasChromaY = (y & 1) == 0;
@@ -80,34 +89,62 @@ public class FxImage {
                     continue; // transparent overlay -> skip math
                 }
 
-                var matrix = fb.matrix;
-                matrix.fromARGB(argb, yuv);
+                fromARGB(argb, rgbImg);
+                matrix.transfer.toLinear(rgbImg, rgbImg);
+                multiply(rgbImg, rgbImg, factor);
+                fb.matrix.fromLinearRGB(rgbImg, yuv);
 
                 double opacity = alpha / 255.0;
                 double transparency = 1.0 - opacity;
 
-                double overY = yuv[0];
-                double oldY = matrix.fromLumaCode(Y.get(x, y));
-                double newY = oldY * transparency + overY * opacity;
-                Y.set(x, y, round(matrix.toLumaCode(newY)));
-
                 if (hasChromaX && hasChromaY) {
-                    // for overlay chroma just drop in-between samples (equals
-                    // to nearest neighbor) there is no need of higher quality
+                    // for overlay chroma just drop in-between samples, assume
+                    // chroma low-pass filtering is applied on the source image,
+                    // otherwise color aliasing is possible but for simple
+                    // purposes it could be good enough
                     int cx = x >> 1, cy = y >> 1;
 
-                    double overU = yuv[1];
-                    double oldU = matrix.fromChromaCode(U.get(cx, cy));
-                    double newU = oldU * transparency + overU * opacity;
-                    U.set(cx, cy, round(matrix.toChromaCode(newU)));
+                    yuv[0] = fb.matrix.fromLumaCode(Y.get(x, y));
+                    yuv[1] = fb.matrix.fromChromaCode(U.get(cx, cy));
+                    yuv[2] = fb.matrix.fromChromaCode(V.get(cx, cy));
 
-                    double overV = yuv[2];
-                    double oldV = matrix.fromChromaCode(V.get(cx, cy));
-                    double newV = oldV * transparency + overV * opacity;
-                    V.set(cx, cy, round(matrix.toChromaCode(newV)));
+                    fb.matrix.toLinearRGB(yuv, rgbBuf);
+
+                    for (int i = 0; i < 3; i++) {
+                        rgbBuf[i] = rgbBuf[i] * transparency
+                                + rgbImg[i] * opacity;
+                    }
+
+                    fb.matrix.fromLinearRGB(rgbBuf, yuv);
+
+                    Y.set(x, y, q.quantize(fb.matrix.toLumaCode(yuv[0])));
+                    U.set(cx, cy, q.quantize(fb.matrix.toChromaCode(yuv[1])));
+                    V.set(cx, cy, q.quantize(fb.matrix.toChromaCode(yuv[2])));
+                } else {
+                    double imgY = fb.matrix.transfer.toLinear(yuv[0]);
+
+                    double bufY = fb.matrix.transfer.toLinear(
+                            fb.matrix.fromLumaCode(Y.get(x, y)));
+
+                    double newY = bufY * transparency + imgY * opacity;
+
+                    Y.set(x, y, q.quantize(fb.matrix.toLumaCode(
+                            fb.matrix.transfer.fromLinear(newY))));
                 }
             }
         }
+    }
+
+    /**
+     * Input is packed 32 bit ARGB (8 bit per component).<br>
+     * Output is nonlinear YUV.
+     */
+    public static double[] fromARGB(int argb, double[] rgb) {
+        rgb[0] = ((argb >> 16) & 0xff) / 255.0;
+        rgb[1] = ((argb >> 8) & 0xff) / 255.0;
+        rgb[2] = ((argb) & 0xff) / 255.0;
+
+        return rgb;
     }
 
     public static void write(FrameBuffer fb, String file)

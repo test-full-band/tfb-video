@@ -115,18 +115,6 @@ public abstract class ColorMatrix {
         return codes;
     }
 
-    /**
-     * Input is packed 32 bit ARGB (8 bit per component).<br>
-     * Output is nonlinear YUV.
-     */
-    public double[] fromARGB(int argb, double[] yuv) {
-        yuv[0] = ((argb >> 16) & 0xff) / 255.0;
-        yuv[1] = ((argb >> 8) & 0xff) / 255.0;
-        yuv[2] = ((argb) & 0xff) / 255.0;
-
-        return fromRGB(yuv, yuv);
-    }
-
     public boolean isAchromatic(int[] yuv) {
         return yuv[1] == ACHROMATIC && yuv[2] == ACHROMATIC;
     }

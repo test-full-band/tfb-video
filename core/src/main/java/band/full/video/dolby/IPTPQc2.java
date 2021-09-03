@@ -32,8 +32,6 @@ public final class IPTPQc2 extends ColorMatrix {
     public static final IPTPQc2 PQ10IPTc2 = new IPTPQc2(10);
     public static final IPTPQc2 PQ12IPTc2 = new IPTPQc2(12);
 
-    private static final double[] RESHAPING = {1.0, 2.0, 2.0};
-
     /**
      * <pre>
      * [1.0,  0.09753,  0.20520]
@@ -44,7 +42,7 @@ public final class IPTPQc2 extends ColorMatrix {
     public static final Matrix3x3 IPTtoPQLMS = getYCCtoRGB(IPTPQ_YCCtoRGB_coef);
 
     private static final Matrix3x3 IPTtoPQLMS_RESHAPED =
-            IPTtoPQLMS.multiplyColumns(RESHAPING);
+            IPTtoPQLMS.multiplyColumns(1.0, 2.0, 2.0);
 
     /**
      * <pre>

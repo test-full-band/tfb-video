@@ -2,7 +2,7 @@ package band.full.test.video.patterns.lg.hdr10;
 
 import static band.full.test.video.encoder.EncoderParameters.HDR10;
 import static band.full.test.video.encoder.EncoderParameters.HDR10FR;
-import static band.full.test.video.encoder.EncoderParameters.MASTER_DISPLAY_PRIMARIES;
+import static band.full.test.video.encoder.EncoderParameters.MASTER_DISPLAY_PRIMARIES_P3;
 import static band.full.test.video.generator.GeneratorFactory.HEVC;
 import static band.full.video.itu.ColorRange.FULL;
 import static java.lang.String.format;
@@ -73,8 +73,8 @@ public class CalibrateGrayscale2160pHDR10_LGOLED {
         private final int display;
 
         LG(EncoderParameters ep, int version, int display) {
-            super(HEVC, ep.withEncoderOptions("--master-display",
-                    MASTER_DISPLAY_PRIMARIES + "L(" + display + "0000,0)"),
+            super(HEVC, ep.withMasterDisplay(
+                    MASTER_DISPLAY_PRIMARIES_P3 + "L(" + display + "0000,0)"),
                     "UHD4K/HDR10/Calibrate/[LG]", "U4K_HDR10");
 
             this.version = version;

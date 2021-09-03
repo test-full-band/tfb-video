@@ -1,6 +1,6 @@
 package band.full.video.itu;
 
-import static band.full.core.color.Primaries.sRGB;
+import static band.full.video.itu.BT709.PRIMARIES;
 import static band.full.video.itu.BT709.TRANSFER;
 import static band.full.video.itu.ColorRange.FULL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  * @author Igor Malinin
  */
 public class TestYCbCr {
-    private static final YCbCr MATRIX = new YCbCr(1, TRANSFER, sRGB, 8);
+    private static final YCbCr MATRIX = new YCbCr(1, TRANSFER, PRIMARIES, 8);
 
     @Test
     public void valuesLimited() {
@@ -28,7 +28,7 @@ public class TestYCbCr {
 
     @Test
     public void valuesFull() {
-        var matrix = new YCbCr(1, TRANSFER, sRGB, 8, FULL);
+        var matrix = new YCbCr(1, TRANSFER, PRIMARIES, 8, FULL);
 
         assertEquals(0, matrix.VMIN);
         assertEquals(255, matrix.VMAX);
