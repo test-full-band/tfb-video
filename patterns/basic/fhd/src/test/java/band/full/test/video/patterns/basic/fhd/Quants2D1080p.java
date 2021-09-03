@@ -15,6 +15,6 @@ import band.full.test.video.generator.Quants2DBase8;
 @GenerateVideo(MAIN)
 public class Quants2D1080p extends Quants2DBase8 {
     public Quants2D1080p() {
-        super(AVC, FULLHD_MAIN8, "FullHD/Quants2D", "1080p");
+        super(AVC, FULLHD_MAIN8, "FullHD", "1080p");
     }
 }

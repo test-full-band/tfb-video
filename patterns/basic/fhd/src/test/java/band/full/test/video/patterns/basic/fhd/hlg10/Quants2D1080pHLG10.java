@@ -18,6 +18,6 @@ import band.full.test.video.generator.Quants2DBase10HDR;
 public class Quants2D1080pHLG10 extends Quants2DBase10HDR {
     public Quants2D1080pHLG10() {
         super(HEVC, new EncoderParameters(STD_1080p, HLG10, FPS_23_976),
-                "FullHD/HLG10/Quants2D", "FHD_HLG10");
+                "FullHD/HLG10", "FHD_HLG10");
     }
 }

@@ -1,4 +1,4 @@
-package band.full.test.video.patterns.basic.hdr10;
+package band.full.test.video.patterns.basic.u4k.hdr10;
 
 import static band.full.test.video.encoder.EncoderParameters.HDR10;
 import static band.full.test.video.executor.GenerateVideo.Type.LOSSLESS;

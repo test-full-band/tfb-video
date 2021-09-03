@@ -60,14 +60,15 @@ public abstract class Quants2DBase extends GeneratorBase<Args> {
 
     protected Quants2DBase(GeneratorFactory factory,
             EncoderParameters params, String folder, String group) {
-        super(factory, params, folder, "Quants2D", group);
+        super(factory, params, folder + "/Quants2D", "Quants2D", group);
     }
 
     /** only package private direct children are allowed */
     protected Quants2DBase(GeneratorFactory factory,
             EncoderParameters params, NalUnitPostProcessor<Args> processor,
             MuxerFactory muxer, String folder, String group) {
-        super(factory, params, processor, muxer, folder, "Quants2D", group);
+        super(factory, params, processor, muxer,
+                folder + "/Quants2D", "Quants2D", group);
     }
 
     @Override
