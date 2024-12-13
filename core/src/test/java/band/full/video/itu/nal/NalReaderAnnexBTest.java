@@ -46,8 +46,8 @@ public class NalReaderAnnexBTest {
 
     private void assertRbspBytes(String expected, String in)
             throws IOException {
-        try (TestReaderAnnexB test = new TestReaderAnnexB(fromHexString(in))) {
-            RbspReader r = test.nalu();
+        try (var reader = new TestReaderAnnexB(fromHexString(in))) {
+            RbspReader r = reader.nalu();
             assertArrayEquals(fromHexString(expected), r.readTrailingBits());
         }
     }

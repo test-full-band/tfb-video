@@ -118,7 +118,7 @@ public class EncoderAVC extends EncoderY4M {
     public static String encode(File dir, String name,
             EncoderParameters parameters, Consumer<EncoderY4M> consumer)
             throws IOException, InterruptedException {
-        try (EncoderAVC encoder = new EncoderAVC(dir, name, parameters)) {
+        try (var encoder = new EncoderAVC(dir, name, parameters)) {
             consumer.accept(encoder);
             return name + AVC_SUFFIX;
         }

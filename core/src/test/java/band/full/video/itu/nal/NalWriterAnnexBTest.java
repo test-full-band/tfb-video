@@ -118,8 +118,8 @@ public class NalWriterAnnexBTest {
 
     private static void assertRbspBytes(String expected, String... rbsps)
             throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (TestWriterAnnexB writer = new TestWriterAnnexB(out)) {
+        var out = new ByteArrayOutputStream();
+        try (var writer = new TestWriterAnnexB(out)) {
             for (var hex : rbsps) {
                 var rbsp = fromHexString(hex);
                 writer.write(null, new TestNALU(true, NALU_TYPE, rbsp));

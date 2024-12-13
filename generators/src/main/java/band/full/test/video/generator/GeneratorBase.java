@@ -24,8 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.function.Function;
 
@@ -128,11 +126,11 @@ public abstract class GeneratorBase<A> {
             var inputs = encode(dir, args);
             var joined = new File(dir, pattern + factory.suffix);
 
-            try (OutputStream out = new FileOutputStream(joined)) {
+            try (var out = new FileOutputStream(joined)) {
                 int fragment = 0;
                 for (String input : inputs) {
                     File file = new File(dir, input);
-                    try (InputStream in = new FileInputStream(file)) {
+                    try (var in = new FileInputStream(file)) {
                         processor.process(args, fragment++, in, out);
                     }
                 }

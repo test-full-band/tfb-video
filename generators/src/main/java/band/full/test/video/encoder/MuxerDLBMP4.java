@@ -6,6 +6,8 @@ import static java.nio.file.Files.exists;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 
@@ -36,7 +38,7 @@ public class MuxerDLBMP4 extends Muxer {
 
         try {
             String suffix = OS_WINDOWS ? ".exe" : OS_MAC ? "_mac" : "";
-            URL url = new URL(MP4BASE_GITHUB + "mp4muxer" + suffix);
+            URL url = new URI(MP4BASE_GITHUB + "mp4muxer" + suffix).toURL();
 
             try (var in = url.openStream()) {
                 copy(in, path);
@@ -51,7 +53,7 @@ public class MuxerDLBMP4 extends Muxer {
                     throw new IOException("chmod finished with error: "
                             + process.exitValue());
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (URISyntaxException | IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

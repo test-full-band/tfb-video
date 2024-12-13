@@ -13,8 +13,8 @@ import band.full.video.smpte.st2094.ST2094_10.ContentLightLevel;
 import band.full.video.smpte.st2094.ST2094_10.ContentRange;
 import band.full.video.smpte.st2094.ST2094_10.ContentRangeOffsets;
 import band.full.video.smpte.st2094.ST2094_10.DisplayManagementBlock;
-import band.full.video.smpte.st2094.ST2094_10.TemporallyFilteredImageLevel;
 import band.full.video.smpte.st2094.ST2094_10.Reserved;
+import band.full.video.smpte.st2094.ST2094_10.TemporallyFilteredImageLevel;
 import band.full.video.smpte.st2094.ST2094_10.TrimPass;
 
 import java.util.Arrays;

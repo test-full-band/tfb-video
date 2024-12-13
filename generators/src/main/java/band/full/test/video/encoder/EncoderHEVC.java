@@ -67,7 +67,7 @@ public class EncoderHEVC extends EncoderY4M {
     public static String encode(File dir, String name,
             EncoderParameters parameters, Consumer<EncoderY4M> consumer)
             throws IOException, InterruptedException {
-        try (EncoderHEVC encoder = new EncoderHEVC(dir, name, parameters)) {
+        try (var encoder = new EncoderHEVC(dir, name, parameters)) {
             consumer.accept(encoder);
             return name + HEVC_SUFFIX;
         }

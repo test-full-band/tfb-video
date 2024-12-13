@@ -323,7 +323,7 @@ public class DecoderY4M implements AutoCloseable {
 
     public static void decode(File dir, String name, EncoderParameters ep,
             String ss, String to, Consumer<DecoderY4M> consumer) {
-        try (DecoderY4M decoder = new DecoderY4M(dir, name, ep, ss, to)) {
+        try (var decoder = new DecoderY4M(dir, name, ep, ss, to)) {
             consumer.accept(decoder);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
