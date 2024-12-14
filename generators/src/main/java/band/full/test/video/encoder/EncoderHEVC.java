@@ -34,7 +34,9 @@ public class EncoderHEVC extends EncoderY4M {
 
         var builder = new ProcessBuilder(
                 getExecutable(),
-                Y4M.isPipe() ? "-" : name + ".y4m", name + HEVC_SUFFIX, "--y4m",
+                "--input", Y4M.isPipe() ? "-" : name + ".y4m", "--y4m",
+                "--output", name + HEVC_SUFFIX,
+                "--log-level", "full",
                 "--profile", bitdepth == 8 ? "main" : "main" + bitdepth,
                 "--colorprim", Integer.toString(colorprim),
                 "--transfer", Integer.toString(transfer),
